@@ -1,5 +1,3 @@
-// lib/screens/add_entry_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -29,6 +27,56 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
   };
 
   DateTime _selectedDate = DateTime.now();
+  double _netProfit = 0.0;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.entry != null) {
+      // Preenche o formulário em modo de edição
+      final e = widget.entry!;
+      _selectedDate = e.date;
+      _controllers['uberEarnings']!.text = e.uberEarnings.toString();
+      _controllers['tips']!.text = e.tips.toString();
+      _controllers['fuelCost']!.text = e.fuelCost.toString();
+      _controllers['foodCost']!.text = e.foodCost.toString();
+      _controllers['cleaningCost']!.text = e.cleaningCost.toString();
+      _controllers['otherCosts']!.text = e.otherCosts.toString();
+      _controllers['kmDriven']!.text = e.kmDriven.toString();
+      _controllers['hoursWorked']!.text = e.hoursWorked.toString();
+    }
+    // Adiciona listeners para calcular lucro em tempo real
+    _controllers.forEach((key, controller) {
+      controller.addListener(_updateNetProfit);
+    });
+    // Calcula o lucro inicial
+    _updateNetProfit();
+  }
+
+  @override
+  void dispose() {
+    _controllers.forEach((key, controller) {
+      controller.removeListener(_updateNetProfit);
+      controller.dispose();
+    });
+    // super.dispose();
+  }
+
+  void _updateNetProfit() {
+    final double earnings =
+        (double.tryParse(_controllers['uberEarnings']!.text) ?? 0.0) +
+        (double.tryParse(_controllers['tips']!.text) ?? 0.0);
+
+    final double expenses =
+        (double.tryParse(_controllers['fuelCost']!.text) ?? 0.0) +
+        (double.tryParse(_controllers['foodCost']!.text) ?? 0.0) +
+        (double.tryParse(_controllers['cleaningCost']!.text) ?? 0.0) +
+        (double.tryParse(_controllers['otherCosts']!.text) ?? 0.0);
+
+    setState(() {
+      _netProfit = earnings - expenses;
+    });
+  }
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -45,25 +93,9 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
   }
 
   void _saveForm() {
-    // if (_formKey.currentState!.validate()) {
-    //   final newEntry = DailyEntry(
-    //     date: _selectedDate,
-    //     uberEarnings:
-    //         double.tryParse(_controllers['uberEarnings']!.text) ?? 0.0,
-    //     tips: double.tryParse(_controllers['tips']!.text) ?? 0.0,
-    //     fuelCost: double.tryParse(_controllers['fuelCost']!.text) ?? 0.0,
-    //     foodCost: double.tryParse(_controllers['foodCost']!.text) ?? 0.0,
-    //     cleaningCost:
-    //         double.tryParse(_controllers['cleaningCost']!.text) ?? 0.0,
-    //     otherCosts: double.tryParse(_controllers['otherCosts']!.text) ?? 0.0,
-    //     kmDriven: double.tryParse(_controllers['kmDriven']!.text) ?? 0.0,
-    //     hoursWorked: double.tryParse(_controllers['hoursWorked']!.text) ?? 0.0,
-    //   );
-    //   Provider.of<EntryProvider>(context, listen: false).addEntry(newEntry);
-    // }
-    if (widget.entry != null) {
-      final updatedEntry = DailyEntry(
-        id: widget.entry!.id, // MANTÉM O ID ORIGINAL
+    if (_formKey.currentState!.validate()) {
+      final data = DailyEntry(
+        id: widget.entry?.id,
         date: _selectedDate,
         uberEarnings:
             double.tryParse(_controllers['uberEarnings']!.text) ?? 0.0,
@@ -76,116 +108,206 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
         kmDriven: double.tryParse(_controllers['kmDriven']!.text) ?? 0.0,
         hoursWorked: double.tryParse(_controllers['hoursWorked']!.text) ?? 0.0,
       );
-      Provider.of<EntryProvider>(
-        context,
-        listen: false,
-      ).updateEntry(updatedEntry);
-    } else {
-      final newEntry = DailyEntry(
-        date: _selectedDate,
-        uberEarnings:
-            double.tryParse(_controllers['uberEarnings']!.text) ?? 0.0,
-        tips: double.tryParse(_controllers['tips']!.text) ?? 0.0,
-        fuelCost: double.tryParse(_controllers['fuelCost']!.text) ?? 0.0,
-        foodCost: double.tryParse(_controllers['foodCost']!.text) ?? 0.0,
-        cleaningCost:
-            double.tryParse(_controllers['cleaningCost']!.text) ?? 0.0,
-        otherCosts: double.tryParse(_controllers['otherCosts']!.text) ?? 0.0,
-        kmDriven: double.tryParse(_controllers['kmDriven']!.text) ?? 0.0,
-        hoursWorked: double.tryParse(_controllers['hoursWorked']!.text) ?? 0.0,
-      );
-      Provider.of<EntryProvider>(context, listen: false).addEntry(newEntry);
-    }
 
-    Navigator.of(context).pop();
-  }
+      final provider = Provider.of<EntryProvider>(context, listen: false);
+      if (widget.entry == null) {
+        provider.addEntry(data);
+      } else {
+        provider.updateEntry(data);
+      }
 
-  @override
-  void initState() {
-    super.initState();
-    if (widget.entry != null) {
-      final e = widget.entry!;
-      _selectedDate = e.date;
-      _controllers['uberEarnings']!.text = e.uberEarnings.toString();
-      _controllers['tips']!.text = e.tips.toString();
-      _controllers['fuelCost']!.text = e.fuelCost.toString();
-      _controllers['foodCost']!.text = e.foodCost.toString();
-      _controllers['cleaningCost']!.text = e.cleaningCost.toString();
-      _controllers['otherCosts']!.text = e.otherCosts.toString();
-      _controllers['kmDriven']!.text = e.kmDriven.toString();
-      _controllers['hoursWorked']!.text = e.hoursWorked.toString();
+      Navigator.of(context).pop();
     }
   }
 
-  @override
-  void dispose() {
-    _controllers.forEach((key, controller) => controller.dispose());
-    super.dispose();
-  }
-
-  Widget _buildTextField(String label, String key) {
-    return TextFormField(
-      controller: _controllers[key],
-      decoration: InputDecoration(labelText: label),
-      keyboardType: TextInputType.numberWithOptions(decimal: true),
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Por favor, insira um valor.';
-        }
-        if (double.tryParse(value) == null) {
-          return 'Por favor, insira um número válido.';
-        }
-        return null;
-      },
+  Widget _buildTextField(String label, String key, IconData icon) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+      child: TextFormField(
+        controller: _controllers[key],
+        decoration: InputDecoration(
+          labelText: label,
+          prefixIcon: Icon(icon),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+        keyboardType: TextInputType.numberWithOptions(decimal: true),
+        validator: (value) {
+          if (value != null &&
+              value.isNotEmpty &&
+              double.tryParse(value) == null) {
+            return 'Por favor, insira um número válido.';
+          }
+          return null;
+        },
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final currencyFormat = NumberFormat.currency(
+      locale: 'pt_BR',
+      symbol: 'R\$',
+    );
+
     return Scaffold(
       appBar: AppBar(
-        // title: Text('Adicionar Lançamento'),
         title: Text(
-          widget.entry == null ? 'Adicionar Lançamento' : 'Editar Lançamento',
+          widget.entry == null ? 'Novo Lançamento' : 'Editar Lançamento',
         ),
-
         actions: [IconButton(icon: Icon(Icons.save), onPressed: _saveForm)],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            children: [
-              Row(
+      body: Column(
+        children: [
+          Expanded(
+            child: Form(
+              key: _formKey,
+              child: ListView(
+                padding: const EdgeInsets.all(8.0),
                 children: [
-                  Expanded(
-                    child: Text(
-                      'Data: ${DateFormat('dd/MM/yyyy').format(_selectedDate)}',
+                  // CARD DE DATA
+                  Card(
+                    elevation: 2,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Data: ${DateFormat('dd/MM/yyyy').format(_selectedDate)}',
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          TextButton.icon(
+                            icon: Icon(Icons.calendar_today),
+                            label: Text('Alterar'),
+                            onPressed: () => _selectDate(context),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                  TextButton(
-                    child: Text('Selecionar Data'),
-                    onPressed: () => _selectDate(context),
+                  SizedBox(height: 10),
+
+                  // CARD DE GANHOS
+                  ExpansionTile(
+                    title: Text(
+                      'Ganhos',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                    ),
+                    initiallyExpanded: true,
+                    children: [
+                      _buildTextField(
+                        'Repasse Uber (R\$)',
+                        'uberEarnings',
+                        Icons.attach_money,
+                      ),
+                      _buildTextField(
+                        'Gorjetas (R\$)',
+                        'tips',
+                        Icons.card_giftcard,
+                      ),
+                    ],
+                  ),
+
+                  // CARD DE GASTOS
+                  ExpansionTile(
+                    title: Text(
+                      'Gastos do Dia',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                    ),
+                    children: [
+                      _buildTextField(
+                        'Combustível (R\$)',
+                        'fuelCost',
+                        Icons.local_gas_station,
+                      ),
+                      _buildTextField(
+                        'Alimentação (R\$)',
+                        'foodCost',
+                        Icons.restaurant,
+                      ),
+                      _buildTextField(
+                        'Limpeza (R\$)',
+                        'cleaningCost',
+                        Icons.wash,
+                      ),
+                      _buildTextField(
+                        'Outros Gastos (R\$)',
+                        'otherCosts',
+                        Icons.more_horiz,
+                      ),
+                    ],
+                  ),
+
+                  // CARD DE MÉTRICAS
+                  ExpansionTile(
+                    title: Text(
+                      'Métricas de Trabalho',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                    ),
+                    children: [
+                      _buildTextField(
+                        'KM Rodados',
+                        'kmDriven',
+                        Icons.directions_car,
+                      ),
+                      _buildTextField(
+                        'Horas Trabalhadas',
+                        'hoursWorked',
+                        Icons.timer,
+                      ),
+                    ],
                   ),
                 ],
               ),
-              _buildTextField('Repasse Uber (R\$)', 'uberEarnings'),
-              _buildTextField('Gorjetas (R\$)', 'tips'),
-              _buildTextField('Combustível (R\$)', 'fuelCost'),
-              _buildTextField('Alimentação (R\$)', 'foodCost'),
-              _buildTextField('Limpeza (R\$)', 'cleaningCost'),
-              _buildTextField('Outros Gastos (R\$)', 'otherCosts'),
-              _buildTextField('KM Rodados', 'kmDriven'),
-              _buildTextField('Horas Trabalhadas', 'hoursWorked'),
-              SizedBox(height: 20),
-              ElevatedButton(
-                child: Text('Salvar Lançamento'),
-                onPressed: _saveForm,
-              ),
-            ],
+            ),
           ),
-        ),
+
+          // RODAPÉ COM CÁLCULO DE LUCRO
+          Container(
+            padding: const EdgeInsets.all(16.0),
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: Theme.of(context).scaffoldBackgroundColor,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  spreadRadius: 1,
+                  blurRadius: 5,
+                  offset: Offset(0, -3),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Lucro do Dia:',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                Text(
+                  currencyFormat.format(_netProfit),
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: _netProfit >= 0
+                        ? Colors.green.shade700
+                        : Colors.red.shade700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
