@@ -186,125 +186,113 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
         ),
         actions: [IconButton(icon: Icon(Icons.save), onPressed: _saveForm)],
       ),
-      body: Column(
+      body: ListView(
+        padding: EdgeInsets.zero,
         children: [
-          Expanded(
-            child: Form(
-              key: _formKey,
-              child: ListView(
-                padding: const EdgeInsets.all(8.0),
-                children: [
-                  // CARD DE DATA
-                  Card(
-                    elevation: 2,
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Data: ${DateFormat('dd/MM/yyyy').format(_selectedDate)}',
-                            style: Theme.of(context).textTheme.titleMedium,
-                          ),
-                          TextButton.icon(
-                            icon: Icon(Icons.calendar_today),
-                            label: Text('Alterar'),
-                            onPressed: () => _selectDate(context),
-                          ),
-                        ],
-                      ),
+          Form(
+            key: _formKey,
+            child: Column(
+              children: [
+                // CARD DE DATA
+                Card(
+                  elevation: 2,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Data: ${DateFormat('dd/MM/yyyy').format(_selectedDate)}',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        TextButton.icon(
+                          icon: Icon(Icons.calendar_today),
+                          label: Text('Alterar'),
+                          onPressed: () => _selectDate(context),
+                        ),
+                      ],
                     ),
                   ),
-                  SizedBox(height: 10),
+                ),
+                SizedBox(height: 10),
 
-                  // CARD DE GANHOS
-                  ExpansionTile(
-                    title: Text(
-                      'Ganhos',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                      ),
-                    ),
-                    initiallyExpanded: true,
-                    children: [
-                      _buildTextField(
-                        'Repasse Uber (R\$)',
-                        'uberEarnings',
-                        Icons.attach_money,
-                        required: true, // obrigatório
-                      ),
-                      _buildTextField(
-                        'Gorjetas (R\$)',
-                        'tips',
-                        Icons.card_giftcard,
-                      ),
-                    ],
+                // CARD DE GANHOS
+                ExpansionTile(
+                  title: Text(
+                    'Ganhos',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                   ),
+                  initiallyExpanded: true,
+                  children: [
+                    _buildTextField(
+                      'Repasse Uber (R\$)',
+                      'uberEarnings',
+                      Icons.attach_money,
+                      required: true, // obrigatório
+                    ),
+                    _buildTextField(
+                      'Gorjetas (R\$)',
+                      'tips',
+                      Icons.card_giftcard,
+                    ),
+                  ],
+                ),
 
-                  // CARD DE GASTOS
-                  ExpansionTile(
-                    title: Text(
-                      'Gastos do Dia',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                      ),
-                    ),
-                    children: [
-                      _buildTextField(
-                        'Combustível (R\$)',
-                        'fuelCost',
-                        Icons.local_gas_station,
-                      ),
-                      _buildTextField(
-                        'Alimentação (R\$)',
-                        'foodCost',
-                        Icons.restaurant,
-                      ),
-                      _buildTextField(
-                        'Limpeza (R\$)',
-                        'cleaningCost',
-                        Icons.wash,
-                      ),
-                      _buildTextField(
-                        'Outros Gastos (R\$)',
-                        'otherCosts',
-                        Icons.more_horiz,
-                      ),
-                    ],
+                // CARD DE GASTOS
+                ExpansionTile(
+                  title: Text(
+                    'Gastos do Dia',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                   ),
+                  children: [
+                    _buildTextField(
+                      'Combustível (R\$)',
+                      'fuelCost',
+                      Icons.local_gas_station,
+                    ),
+                    _buildTextField(
+                      'Alimentação (R\$)',
+                      'foodCost',
+                      Icons.restaurant,
+                    ),
+                    _buildTextField(
+                      'Limpeza (R\$)',
+                      'cleaningCost',
+                      Icons.wash,
+                    ),
+                    _buildTextField(
+                      'Outros Gastos (R\$)',
+                      'otherCosts',
+                      Icons.more_horiz,
+                    ),
+                  ],
+                ),
 
-                  // CARD DE MÉTRICAS
-                  ExpansionTile(
-                    title: Text(
-                      'Métricas de Trabalho',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                      ),
-                    ),
-                    children: [
-                      _buildTextField(
-                        'KM Rodados',
-                        'kmDriven',
-                        Icons.directions_car,
-                        required: true, // obrigatório
-                      ),
-                      _buildTextField(
-                        'Horas Trabalhadas',
-                        'hoursWorked',
-                        Icons.timer,
-                        required: true, // obrigatório
-                      ),
-                    ],
+                // CARD DE MÉTRICAS
+                ExpansionTile(
+                  title: Text(
+                    'Métricas de Trabalho',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                   ),
-                ],
-              ),
+                  children: [
+                    _buildTextField(
+                      'KM Rodados',
+                      'kmDriven',
+                      Icons.directions_car,
+                      required: true, // obrigatório
+                    ),
+                    _buildTextField(
+                      'Horas Trabalhadas',
+                      'hoursWorked',
+                      Icons.timer,
+                      required: true, // obrigatório
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
-
-          // RODAPÉ COM CÁLCULO DE LUCRO
+          // Rodapé com cálculo de lucro
           Container(
             padding: const EdgeInsets.all(16.0),
             width: double.infinity,
