@@ -98,7 +98,6 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
     if (_formKey.currentState!.validate()) {
       final provider = Provider.of<EntryProvider>(context, listen: false);
 
-      // Verifica duplicidade apenas ao adicionar novo lançamento
       if (widget.entry == null && provider.entryExistsForDate(_selectedDate)) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Já existe um lançamento para esta data!')),
@@ -106,19 +105,22 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
         return;
       }
 
+      double parseField(String key) {
+        final text = _controllers[key]?.text.replaceAll(',', '.') ?? '';
+        return double.tryParse(text) ?? 0.0;
+      }
+
       final data = DailyEntry(
         id: widget.entry?.id,
         date: _selectedDate,
-        uberEarnings:
-            double.tryParse(_controllers['uberEarnings']!.text) ?? 0.0,
-        tips: double.tryParse(_controllers['tips']!.text) ?? 0.0,
-        fuelCost: double.tryParse(_controllers['fuelCost']!.text) ?? 0.0,
-        foodCost: double.tryParse(_controllers['foodCost']!.text) ?? 0.0,
-        cleaningCost:
-            double.tryParse(_controllers['cleaningCost']!.text) ?? 0.0,
-        otherCosts: double.tryParse(_controllers['otherCosts']!.text) ?? 0.0,
-        kmDriven: double.tryParse(_controllers['kmDriven']!.text) ?? 0.0,
-        hoursWorked: double.tryParse(_controllers['hoursWorked']!.text) ?? 0.0,
+        uberEarnings: parseField('uberEarnings'),
+        tips: parseField('tips'),
+        fuelCost: parseField('fuelCost'),
+        foodCost: parseField('foodCost'),
+        cleaningCost: parseField('cleaningCost'),
+        otherCosts: parseField('otherCosts'),
+        kmDriven: parseField('kmDriven'),
+        hoursWorked: parseField('hoursWorked'),
       );
 
       if (widget.entry == null) {
