@@ -13,22 +13,17 @@ class EntryProvider with ChangeNotifier {
 
   // final DatabaseHelper _dbHelper = DatabaseHelper.instance;
 
-  // EntryProvider() {
-  //   fetchEntries();
-  // }
+  EntryProvider() {
+    fetchEntries();
+  }
 
-  // Future<void> fetchEntries() async {
-  //   _isLoading = true;
-  //   notifyListeners();
-  //   _entries = await _dbHelper.getAllEntries();
-  //   _isLoading = false;
-  //   notifyListeners();
-  // }
-
-  // Future<void> addEntry(DailyEntry entry) async {
-  //   await _dbHelper.insert(entry);
-  //   await fetchEntries(); // Recarrega a lista após adicionar
-  // }
+  Future<void> fetchEntries() async {
+    _isLoading = true;
+    notifyListeners();
+    _entries = await _repository.getAllEntries();
+    _isLoading = false;
+    notifyListeners();
+  }
 
   // Métricas para a tela de Resumo
   double get totalGains {
@@ -74,5 +69,14 @@ class EntryProvider with ChangeNotifier {
 
   Future<List<DailyEntry>> getMonthlyEntries(int year, int month) async {
     return await _repository.getEntriesByMonth(year, month);
+  }
+
+  bool entryExistsForDate(DateTime date) {
+    return entries.any(
+      (e) =>
+          e.date.year == date.year &&
+          e.date.month == date.month &&
+          e.date.day == date.day,
+    );
   }
 }

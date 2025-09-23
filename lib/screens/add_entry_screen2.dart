@@ -94,6 +94,16 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
 
   void _saveForm() {
     if (_formKey.currentState!.validate()) {
+      final provider = Provider.of<EntryProvider>(context, listen: false);
+
+      // Verifica duplicidade apenas ao adicionar novo lançamento
+      if (widget.entry == null && provider.entryExistsForDate(_selectedDate)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Já existe um lançamento para esta data!')),
+        );
+        return;
+      }
+
       final data = DailyEntry(
         id: widget.entry?.id,
         date: _selectedDate,
@@ -109,7 +119,6 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
         hoursWorked: double.tryParse(_controllers['hoursWorked']!.text) ?? 0.0,
       );
 
-      final provider = Provider.of<EntryProvider>(context, listen: false);
       if (widget.entry == null) {
         provider.addEntry(data);
       } else {
