@@ -30,6 +30,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
 
   DateTime _selectedDate = DateTime.now();
   double _netProfit = 0.0;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -96,48 +97,59 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
 
   void _saveForm() async {
     if (_formKey.currentState!.validate()) {
-      final provider = Provider.of<EntryProvider>(context, listen: false);
+      try {
+        setState(() => _isLoading = true);
 
-      if (widget.entry == null && provider.entryExistsForDate(_selectedDate)) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Já existe um lançamento para esta data!')),
+        final provider = Provider.of<EntryProvider>(context, listen: false);
+
+        if (widget.entry == null &&
+            provider.entryExistsForDate(_selectedDate)) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Já existe um lançamento para esta data!')),
+          );
+          return;
+        }
+
+        double parseField(String key) {
+          final text = _controllers[key]?.text.replaceAll(',', '.') ?? '';
+          return double.tryParse(text) ?? 0.0;
+        }
+
+        final data = DailyEntry(
+          id: widget.entry?.id,
+          date: _selectedDate,
+          uberEarnings: parseField('uberEarnings'),
+          tips: parseField('tips'),
+          fuelCost: parseField('fuelCost'),
+          foodCost: parseField('foodCost'),
+          cleaningCost: parseField('cleaningCost'),
+          otherCosts: parseField('otherCosts'),
+          kmDriven: parseField('kmDriven'),
+          hoursWorked: parseField('hoursWorked'),
         );
-        return;
-      }
 
-      double parseField(String key) {
-        final text = _controllers[key]?.text.replaceAll(',', '.') ?? '';
-        return double.tryParse(text) ?? 0.0;
-      }
+        if (widget.entry == null) {
+          await provider.addEntry(data);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Lançamento salvo com sucesso!')),
+          );
+        } else {
+          await provider.updateEntry(data);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Lançamento atualizado com sucesso!')),
+          );
+        }
 
-      final data = DailyEntry(
-        id: widget.entry?.id,
-        date: _selectedDate,
-        uberEarnings: parseField('uberEarnings'),
-        tips: parseField('tips'),
-        fuelCost: parseField('fuelCost'),
-        foodCost: parseField('foodCost'),
-        cleaningCost: parseField('cleaningCost'),
-        otherCosts: parseField('otherCosts'),
-        kmDriven: parseField('kmDriven'),
-        hoursWorked: parseField('hoursWorked'),
-      );
-
-      if (widget.entry == null) {
-        await provider.addEntry(data);
+        // Aguarda o SnackBar aparecer antes de fechar a tela
+        await Future.delayed(const Duration(milliseconds: 400));
+        Navigator.of(context).pop();
+      } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lançamento salvo com sucesso!')),
+          SnackBar(content: Text('Erro ao salvar: ${e.toString()}')),
         );
-      } else {
-        await provider.updateEntry(data);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lançamento atualizado com sucesso!')),
-        );
+      } finally {
+        setState(() => _isLoading = false);
       }
-
-      // Aguarda o SnackBar aparecer antes de fechar a tela
-      await Future.delayed(const Duration(milliseconds: 400));
-      Navigator.of(context).pop();
     }
   }
 
@@ -175,6 +187,10 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
     );
   }
 
+  bool get _formIsDirty {
+    return _controllers.values.any((controller) => controller.text.isNotEmpty);
+  }
+
   @override
   Widget build(BuildContext context) {
     final currencyFormat = NumberFormat.currency(
@@ -182,156 +198,191 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
       symbol: 'R\$',
     );
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          widget.entry == null ? 'Novo Lançamento' : 'Editar Lançamento',
+    return WillPopScope(
+      onWillPop: () async {
+        if (_formIsDirty) {
+          return await showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: Text('Descartar alterações?'),
+                  content: Text(
+                    'Você tem alterações não salvas. Deseja descartá-las?',
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(false),
+                      child: Text('Cancelar'),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(true),
+                      child: Text('Descartar'),
+                    ),
+                  ],
+                ),
+              ) ??
+              false;
+        }
+        return true;
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(
+            widget.entry == null ? 'Novo Lançamento' : 'Editar Lançamento',
+          ),
+          actions: [IconButton(icon: Icon(Icons.save), onPressed: _saveForm)],
         ),
-        actions: [IconButton(icon: Icon(Icons.save), onPressed: _saveForm)],
-      ),
-      body: ListView(
-        padding: EdgeInsets.zero,
-        children: [
-          Form(
-            key: _formKey,
-            child: Column(
-              children: [
-                // CARD DE DATA
-                Card(
-                  elevation: 2,
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Data: ${DateFormat('dd/MM/yyyy').format(_selectedDate)}',
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                        TextButton.icon(
-                          icon: Icon(Icons.calendar_today),
-                          label: Text('Alterar'),
-                          onPressed: () => _selectDate(context),
-                        ),
-                      ],
+        body: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            Form(
+              key: _formKey,
+              child: Column(
+                children: [
+                  // CARD DE DATA
+                  Card(
+                    elevation: 2,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Data: ${DateFormat('dd/MM/yyyy').format(_selectedDate)}',
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          TextButton.icon(
+                            icon: Icon(Icons.calendar_today),
+                            label: Text('Alterar'),
+                            onPressed: () => _selectDate(context),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-                SizedBox(height: 10),
+                  SizedBox(height: 10),
 
-                // CARD DE GANHOS
-                ExpansionTile(
-                  title: Text(
-                    'Ganhos',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                  // CARD DE GANHOS
+                  ExpansionTile(
+                    title: Text(
+                      'Ganhos',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                    ),
+                    initiallyExpanded: true,
+                    children: [
+                      _buildTextField(
+                        'Repasse Uber (R\$)',
+                        'uberEarnings',
+                        Icons.attach_money,
+                        required: true, // obrigatório
+                      ),
+                      _buildTextField(
+                        'Gorjetas (R\$)',
+                        'tips',
+                        Icons.card_giftcard,
+                      ),
+                    ],
                   ),
-                  initiallyExpanded: true,
-                  children: [
-                    _buildTextField(
-                      'Repasse Uber (R\$)',
-                      'uberEarnings',
-                      Icons.attach_money,
-                      required: true, // obrigatório
-                    ),
-                    _buildTextField(
-                      'Gorjetas (R\$)',
-                      'tips',
-                      Icons.card_giftcard,
-                    ),
-                  ],
-                ),
 
-                // CARD DE GASTOS
-                ExpansionTile(
-                  title: Text(
-                    'Gastos do Dia',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                  // CARD DE GASTOS
+                  ExpansionTile(
+                    title: Text(
+                      'Gastos do Dia',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                    ),
+                    children: [
+                      _buildTextField(
+                        'Combustível (R\$)',
+                        'fuelCost',
+                        Icons.local_gas_station,
+                      ),
+                      _buildTextField(
+                        'Alimentação (R\$)',
+                        'foodCost',
+                        Icons.restaurant,
+                      ),
+                      _buildTextField(
+                        'Limpeza (R\$)',
+                        'cleaningCost',
+                        Icons.wash,
+                      ),
+                      _buildTextField(
+                        'Outros Gastos (R\$)',
+                        'otherCosts',
+                        Icons.more_horiz,
+                      ),
+                    ],
                   ),
-                  children: [
-                    _buildTextField(
-                      'Combustível (R\$)',
-                      'fuelCost',
-                      Icons.local_gas_station,
-                    ),
-                    _buildTextField(
-                      'Alimentação (R\$)',
-                      'foodCost',
-                      Icons.restaurant,
-                    ),
-                    _buildTextField(
-                      'Limpeza (R\$)',
-                      'cleaningCost',
-                      Icons.wash,
-                    ),
-                    _buildTextField(
-                      'Outros Gastos (R\$)',
-                      'otherCosts',
-                      Icons.more_horiz,
-                    ),
-                  ],
-                ),
 
-                // CARD DE MÉTRICAS
-                ExpansionTile(
-                  title: Text(
-                    'Métricas de Trabalho',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                  ),
-                  children: [
-                    _buildTextField(
-                      'KM Rodados',
-                      'kmDriven',
-                      Icons.directions_car,
-                      required: true, // obrigatório
+                  ExpansionTile(
+                    title: Text(
+                      'Métricas de Trabalho',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
                     ),
-                    _buildTextField(
-                      'Horas Trabalhadas',
-                      'hoursWorked',
-                      Icons.timer,
-                      required: true, // obrigatório
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          // Rodapé com cálculo de lucro
-          Container(
-            padding: const EdgeInsets.all(16.0),
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: Theme.of(context).scaffoldBackgroundColor,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  spreadRadius: 1,
-                  blurRadius: 5,
-                  offset: Offset(0, -3),
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  // 'Lucro do Dia:',
-                  AppLocalizations.of(context)!.dailyProfit,
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                Text(
-                  currencyFormat.format(_netProfit),
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: _netProfit >= 0
-                        ? Colors.green.shade700
-                        : Colors.red.shade700,
+                    children: [
+                      _buildTextField(
+                        'KM Rodados',
+                        'kmDriven',
+                        Icons.directions_car,
+                        required: true, // obrigatório
+                      ),
+                      _buildTextField(
+                        'Horas Trabalhadas',
+                        'hoursWorked',
+                        Icons.timer,
+                        required: true, // obrigatório
+                      ),
+                    ],
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+            // Rodapé com cálculo de lucro
+            Container(
+              padding: const EdgeInsets.all(16.0),
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Theme.of(context).scaffoldBackgroundColor,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    spreadRadius: 1,
+                    blurRadius: 5,
+                    offset: Offset(0, -3),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    // 'Lucro do Dia:',
+                    AppLocalizations.of(context)!.dailyProfit,
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  Text(
+                    currencyFormat.format(_netProfit),
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: _netProfit >= 0
+                          ? Colors.green.shade700
+                          : Colors.red.shade700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
