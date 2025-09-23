@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter/services.dart';
 import '../models/daily_entry.dart';
 import '../providers/entry_provider.dart';
 
@@ -145,13 +146,16 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
         ),
         keyboardType: TextInputType.numberWithOptions(decimal: true),
+        inputFormatters: [
+          FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
+        ],
         validator: (value) {
           if (required && (value == null || value.isEmpty)) {
             return 'Campo obrigatório.';
           }
           if (value != null &&
               value.isNotEmpty &&
-              double.tryParse(value) == null) {
+              double.tryParse(value.replaceAll(',', '.')) == null) {
             return 'Por favor, insira um número válido.';
           }
           return null;
