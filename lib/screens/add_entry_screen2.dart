@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
+import 'package:uber_tracker/l10n/app_localizations.dart';
 import '../models/daily_entry.dart';
 import '../providers/entry_provider.dart';
 
@@ -311,7 +312,8 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Lucro do Dia:',
+                  // 'Lucro do Dia:',
+                  AppLocalizations.of(context)!.dailyProfit,
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 Text(
