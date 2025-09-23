@@ -93,7 +93,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
     }
   }
 
-  void _saveForm() {
+  void _saveForm() async {
     if (_formKey.currentState!.validate()) {
       final provider = Provider.of<EntryProvider>(context, listen: false);
 
@@ -121,11 +121,19 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
       );
 
       if (widget.entry == null) {
-        provider.addEntry(data);
+        await provider.addEntry(data);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Lançamento salvo com sucesso!')),
+        );
       } else {
-        provider.updateEntry(data);
+        await provider.updateEntry(data);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Lançamento atualizado com sucesso!')),
+        );
       }
 
+      // Aguarda o SnackBar aparecer antes de fechar a tela
+      await Future.delayed(const Duration(milliseconds: 400));
       Navigator.of(context).pop();
     }
   }
