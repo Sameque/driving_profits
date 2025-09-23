@@ -59,7 +59,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
       controller.removeListener(_updateNetProfit);
       controller.dispose();
     });
-    // super.dispose();
+    super.dispose();
   }
 
   void _updateNetProfit() {
@@ -120,7 +120,12 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
     }
   }
 
-  Widget _buildTextField(String label, String key, IconData icon) {
+  Widget _buildTextField(
+    String label,
+    String key,
+    IconData icon, {
+    bool required = false,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
       child: TextFormField(
@@ -132,6 +137,9 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
         ),
         keyboardType: TextInputType.numberWithOptions(decimal: true),
         validator: (value) {
+          if (required && (value == null || value.isEmpty)) {
+            return 'Campo obrigatório.';
+          }
           if (value != null &&
               value.isNotEmpty &&
               double.tryParse(value) == null) {
@@ -203,6 +211,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
                         'Repasse Uber (R\$)',
                         'uberEarnings',
                         Icons.attach_money,
+                        required: true, // obrigatório
                       ),
                       _buildTextField(
                         'Gorjetas (R\$)',
@@ -259,11 +268,13 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
                         'KM Rodados',
                         'kmDriven',
                         Icons.directions_car,
+                        required: true, // obrigatório
                       ),
                       _buildTextField(
                         'Horas Trabalhadas',
                         'hoursWorked',
                         Icons.timer,
+                        required: true, // obrigatório
                       ),
                     ],
                   ),
