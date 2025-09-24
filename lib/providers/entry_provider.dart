@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:uber_tracker/services/database_helper.dart';
 import '../models/daily_entry.dart';
 import '../repositories/entry_repository.dart';
 
@@ -10,8 +9,6 @@ class EntryProvider with ChangeNotifier {
 
   List<DailyEntry> get entries => _entries;
   bool get isLoading => _isLoading;
-
-  // final DatabaseHelper _dbHelper = DatabaseHelper.instance;
 
   EntryProvider() {
     fetchEntries();
@@ -25,7 +22,6 @@ class EntryProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // Métricas para a tela de Resumo
   double get totalGains {
     return _entries.fold(0.0, (sum, item) => sum + item.totalGains);
   }
@@ -52,9 +48,35 @@ class EntryProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> addEntry(DailyEntry entry) async {
-    await _repository.insertEntry(entry);
-    await loadEntries();
+  void startWorkSession(DailyEntry entry) {
+    _entries.add(entry);
+    notifyListeners();
+  }
+
+  Future<void> closeWorkSession(DailyEntry entry) async {
+    final index = _entries.indexWhere(
+      (e) =>
+          e.date.year == entry.date.year &&
+          e.date.month == entry.date.month &&
+          e.date.day == entry.date.day,
+    );
+
+    if (index != -1) {
+      _entries.removeAt(index);
+      await _repository.insertEntry(entry);
+      await loadEntries();
+    } else {
+      await _repository.insertEntry(entry);
+      await loadEntries();
+    }
+  }
+
+  void updateOpenEntry(DailyEntry entry) {
+    final index = _entries.indexWhere((e) => e.id == entry.id);
+    if (index != -1) {
+      _entries[index] = entry;
+      notifyListeners();
+    }
   }
 
   Future<void> updateEntry(DailyEntry entry) async {
@@ -62,7 +84,7 @@ class EntryProvider with ChangeNotifier {
     await loadEntries();
   }
 
-  Future<void> deleteEntry(int id) async {
+  Future<void> deleteEntry(String id) async {
     await _repository.deleteEntry(id);
     await loadEntries();
   }
@@ -72,7 +94,7 @@ class EntryProvider with ChangeNotifier {
   }
 
   bool entryExistsForDate(DateTime date) {
-    return entries.any(
+    return _entries.any(
       (e) =>
           e.date.year == date.year &&
           e.date.month == date.month &&
