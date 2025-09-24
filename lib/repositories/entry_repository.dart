@@ -15,7 +15,7 @@ class EntryRepository {
 
   Future<Database> _initDatabase() async {
     final documentsDirectory = await getApplicationDocumentsDirectory();
-    final path = join(documentsDirectory.path, 'tracker.db');
+    final path = join(documentsDirectory.path, 'tracker2.db');
     return await openDatabase(
       path,
       version: 4,
@@ -23,7 +23,7 @@ class EntryRepository {
       onUpgrade: (db, oldVersion, newVersion) async {
         await db.execute('''
           CREATE TABLE IF NOT EXISTS daily_entries (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id TEXT PRIMARY KEY,
             date TEXT NOT NULL,
             uberEarnings REAL NOT NULL,
             tips REAL NOT NULL,
@@ -42,7 +42,7 @@ class EntryRepository {
   Future _createDb(Database db, int version) async {
     await db.execute('''
       CREATE TABLE daily_entries (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id TEXT PRIMARY KEY,
         date TEXT NOT NULL,
         uberEarnings REAL NOT NULL,
         tips REAL NOT NULL,
@@ -89,7 +89,7 @@ class EntryRepository {
     );
   }
 
-  Future<int> deleteEntry(int id) async {
+  Future<int> deleteEntry(String id) async {
     final db = await database;
     return await db.delete('daily_entries', where: 'id = ?', whereArgs: [id]);
   }
