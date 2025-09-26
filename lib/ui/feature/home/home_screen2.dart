@@ -1,8 +1,8 @@
 // lib/screens/home_screen.dart
 
 import 'package:flutter/material.dart';
-import 'daily_list_screen.dart';
-import 'summary_screen2.dart';
+import '../list/daily_list_screen.dart';
+import '../summary/summary_screen2.dart';
 // Importe a tela de manutenção quando a criar
 
 class HomeScreen extends StatefulWidget {

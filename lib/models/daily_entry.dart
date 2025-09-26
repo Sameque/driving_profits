@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:uber_tracker/models/entry_status.dart';
 import 'package:uuid/uuid.dart';
 
 class DailyEntry {
@@ -12,10 +13,9 @@ class DailyEntry {
   final double foodCost;
   final double cleaningCost;
   final double otherCosts;
-  final double kmDriven;
-  final double? kmStart;
-  final double? kmEnd;
-  final double hoursWorked;
+  final int? kmStart;
+  final int? kmEnd;
+  final EntryStatus status;
 
   DailyEntry({
     String? id,
@@ -30,9 +30,23 @@ class DailyEntry {
     required this.foodCost,
     required this.cleaningCost,
     required this.otherCosts,
-    required this.kmDriven,
-    required this.hoursWorked,
+    required this.status,
   }) : this.id = id ?? const Uuid().v4();
+
+  DailyEntry.start({
+    required this.date,
+    required TimeOfDay this.startTime,
+    required int this.kmStart,
+  }) : id = const Uuid().v4(),
+       endTime = null,
+       uberEarnings = 0.0,
+       tips = 0.0,
+       fuelCost = 0.0,
+       foodCost = 0.0,
+       cleaningCost = 0.0,
+       otherCosts = 0.0,
+       kmEnd = null,
+       status = EntryStatus.open;
 
   double get totalGains => uberEarnings + tips;
   double get totalExpenses => fuelCost + foodCost + cleaningCost + otherCosts;
@@ -48,36 +62,42 @@ class DailyEntry {
       'foodCost': foodCost,
       'cleaningCost': cleaningCost,
       'otherCosts': otherCosts,
-      'kmDriven': kmDriven,
-      'hoursWorked': hoursWorked,
+      'kmStart': kmStart,
+      'kmEnd': kmEnd,
+      'startTime': startTime != null
+          ? '${startTime!.hour.toString().padLeft(2, '0')}:${startTime!.minute.toString().padLeft(2, '0')}'
+          : null,
+      'endTime': endTime != null
+          ? '${endTime!.hour.toString().padLeft(2, '0')}:${endTime!.minute.toString().padLeft(2, '0')}'
+          : null,
+      'status': status.name,
     };
   }
 
   factory DailyEntry.fromMap(Map<String, dynamic> map) {
-    final startTimeParts = map['startTime']?.split(':') ?? "00:00";
-    final endTimeParts = map['endTime']?.split(':') ?? "00:00";
+    final startTimeStr = map['startTime'] as String?;
+    final endTimeStr = map['endTime'] as String?;
+
+    TimeOfDay? parseTime(String? timeStr) {
+      if (timeStr == null || timeStr.isEmpty) return null;
+      final parts = timeStr.split(':');
+      return TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
+    }
 
     return DailyEntry(
-      id: map['id'] as String,
+      id: map['id'] == null ? null : map['id'] as String,
       date: DateTime.parse(map['date']),
-      startTime: TimeOfDay(
-        hour: int.parse(startTimeParts[0]),
-        minute: int.parse(startTimeParts[1]),
-      ),
-      endTime: TimeOfDay(
-        hour: int.parse(endTimeParts[0]),
-        minute: int.parse(endTimeParts[1]),
-      ),
-      uberEarnings: map['uberEarnings'],
-      tips: map['tips'],
-      fuelCost: map['fuelCost'],
-      foodCost: map['foodCost'],
-      cleaningCost: map['cleaningCost'],
-      otherCosts: map['otherCosts'],
-      kmDriven: map['kmDriven'],
-      hoursWorked: map['hoursWorked'],
+      startTime: parseTime(startTimeStr),
+      endTime: parseTime(endTimeStr),
+      uberEarnings: map['uberEarnings'] ?? 0.0,
+      tips: map['tips'] ?? 0.0,
+      fuelCost: map['fuelCost'] ?? 0.0,
+      foodCost: map['foodCost'] ?? 0.0,
+      cleaningCost: map['cleaningCost'] ?? 0.0,
+      otherCosts: map['otherCosts'] ?? 0.0,
       kmStart: map['kmStart'],
       kmEnd: map['kmEnd'],
+      status: EntryStatus.values.byName(map['status'] ?? 'none'),
     );
   }
 }

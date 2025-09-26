@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import '../providers/entry_provider.dart';
-import 'add_entry_screen2.dart';
+import 'package:uber_tracker/models/entry_status.dart';
+import 'package:uber_tracker/ui/feature/entry/start_entry_screen.dart';
+import '../../../providers/entry_provider.dart';
+import '../entry/add_entry_screen2.dart';
 
 class DailyListScreen extends StatelessWidget {
   const DailyListScreen({super.key});
@@ -21,15 +23,22 @@ class DailyListScreen extends StatelessWidget {
           if (entryProvider.isLoading) {
             return Center(child: CircularProgressIndicator());
           }
-          if (entryProvider.entries.isEmpty) {
+
+          final allEntries = [
+            ...entryProvider.openEntries,
+            ...entryProvider.entries,
+          ];
+          allEntries.sort((a, b) => b.date.compareTo(a.date));
+
+          if (allEntries.isEmpty) {
             return Center(
               child: Text('Nenhum lançamento encontrado. Adicione um!'),
             );
           }
           return ListView.builder(
-            itemCount: entryProvider.entries.length,
+            itemCount: allEntries.length,
             itemBuilder: (ctx, i) {
-              final entry = entryProvider.entries[i];
+              final entry = allEntries[i];
               return Dismissible(
                 key: Key(entry.id.toString()),
                 direction: DismissDirection.endToStart,
@@ -53,7 +62,11 @@ class DailyListScreen extends StatelessWidget {
                   );
                 },
                 onDismissed: (direction) {
-                  entryProvider.deleteEntry(entry.id!);
+                  if (entry.status == EntryStatus.open) {
+                    entryProvider.removeOpenEntry(entry);
+                  } else {
+                    entryProvider.deleteEntry(entry.id!);
+                  }
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Lançamento apagado!')),
                   );
@@ -65,6 +78,9 @@ class DailyListScreen extends StatelessWidget {
                   child: Icon(Icons.delete, color: Colors.white),
                 ),
                 child: Card(
+                  color: entry.status == EntryStatus.open
+                      ? Colors.amber[100]
+                      : null,
                   margin: EdgeInsets.symmetric(horizontal: 15, vertical: 5),
                   child: ListTile(
                     leading: CircleAvatar(
@@ -73,7 +89,7 @@ class DailyListScreen extends StatelessWidget {
                       ),
                     ),
                     title: Text(
-                      'Lucro: ${currencyFormat.format(entry.netProfit)}',
+                      '${entry.status == EntryStatus.open ? 'Aberto - ' : ''}Lucro: ${currencyFormat.format(entry.netProfit)}',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         color: entry.netProfit >= 0 ? Colors.green : Colors.red,
@@ -103,7 +119,7 @@ class DailyListScreen extends StatelessWidget {
         onPressed: () {
           Navigator.of(
             context,
-          ).push(MaterialPageRoute(builder: (ctx) => AddEntryScreen()));
+          ).push(MaterialPageRoute(builder: (ctx) => StartEntryScreen()));
         },
       ),
     );
