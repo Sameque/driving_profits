@@ -201,7 +201,10 @@ class EntryDto extends ChangeNotifier {
   }
 
   // total horas em formato de tempo (HH:MM)
-  TimeOfDay get totalHoursWorked {
+  TimeOfDay? get totalHoursWorked {
+    if (endTime == null || startTime == null) {
+      return null;
+    }
     final totalHours = TimeOfDay(
       hour: endTime!.hour - startTime!.hour,
       minute: endTime!.minute - startTime!.minute,
