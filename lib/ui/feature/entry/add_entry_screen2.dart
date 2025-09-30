@@ -26,15 +26,62 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
   TimeOfDay? _endTime;
   EntryDto entryDto = EntryDto();
 
+  // Controladores para os campos de texto
+  late TextEditingController _uberEarningsController;
+  late TextEditingController _tipsController;
+  late TextEditingController _fuelCostController;
+  late TextEditingController _foodCostController;
+  late TextEditingController _cleaningCostController;
+  late TextEditingController _otherCostsController;
+  late TextEditingController _kmStartController;
+  late TextEditingController _kmEndController;
+
   @override
   void initState() {
     super.initState();
     entryDto = EntryDto.fromMap(widget.entry.toMap());
+
+    _uberEarningsController = TextEditingController(
+      text: entryDto.getUberEarnings,
+    );
+    _tipsController = TextEditingController(text: entryDto.getTips);
+    _fuelCostController = TextEditingController(text: entryDto.getFuelCost);
+    _foodCostController = TextEditingController(text: entryDto.getFoodCost);
+    _cleaningCostController = TextEditingController(
+      text: entryDto.getCleaningCost,
+    );
+    _otherCostsController = TextEditingController(text: entryDto.getOtherCosts);
+    _kmStartController = TextEditingController(text: entryDto.getKmStart);
+    _kmEndController = TextEditingController(text: entryDto.getKmEnd);
+
+    entryDto.addListener(_onEntryChanged);
   }
 
   @override
   void dispose() {
+    _uberEarningsController.dispose();
+    _tipsController.dispose();
+    _fuelCostController.dispose();
+    _foodCostController.dispose();
+    _cleaningCostController.dispose();
+    _otherCostsController.dispose();
+    _kmStartController.dispose();
+    _kmEndController.dispose();
+    entryDto.removeListener(_onEntryChanged);
     super.dispose();
+  }
+
+  void _onEntryChanged() {
+    setState(() {
+      _uberEarningsController.text = entryDto.getUberEarnings;
+      _tipsController.text = entryDto.getTips;
+      _fuelCostController.text = entryDto.getFuelCost;
+      _foodCostController.text = entryDto.getFoodCost;
+      _cleaningCostController.text = entryDto.getCleaningCost;
+      _otherCostsController.text = entryDto.getOtherCosts;
+      _kmStartController.text = entryDto.getKmStart;
+      _kmEndController.text = entryDto.getKmEnd;
+    });
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -80,8 +127,6 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
       return;
     }
 
-    bool isClosing = entryDto.endTime != null && entryDto.kmEnd != null;
-
     try {
       final provider = Provider.of<EntryProvider>(context, listen: false);
 
@@ -109,13 +154,13 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
     String key,
     IconData icon,
     ValueChanged<String>? onChanged,
-    String? value,
+    TextEditingController controller,
   ) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
       child: TextFormField(
         onChanged: onChanged,
-        controller: TextEditingController(text: value ?? ''),
+        controller: controller,
         decoration: InputDecoration(
           labelText: label,
           prefixIcon: Icon(icon),
@@ -214,14 +259,14 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
                         'uberEarnings',
                         Icons.attach_money,
                         entryDto.setUberEarnings,
-                        entryDto.getUberEarnings,
+                        _uberEarningsController,
                       ),
                       _buildTextFieldForAmount(
                         'Gorjetas (R\$)',
                         'tips',
                         Icons.card_giftcard,
                         entryDto.setTips,
-                        entryDto.getTips,
+                        _tipsController,
                       ),
                     ],
                   ),
@@ -241,28 +286,28 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
                         'fuelCost',
                         Icons.local_gas_station,
                         entryDto.setFuelCost,
-                        entryDto.getFuelCost,
+                        _fuelCostController,
                       ),
                       _buildTextFieldForAmount(
                         'Alimentação (R\$)',
                         'foodCost',
                         Icons.restaurant,
                         entryDto.setFoodCost,
-                        entryDto.getFoodCost,
+                        _foodCostController,
                       ),
                       _buildTextFieldForAmount(
                         'Limpeza (R\$)',
                         'cleaningCost',
                         Icons.wash,
                         entryDto.setCleaningCost,
-                        entryDto.getCleaningCost,
+                        _cleaningCostController,
                       ),
                       _buildTextFieldForAmount(
                         'Outros Gastos (R\$)',
                         'otherCosts',
                         Icons.more_horiz,
                         entryDto.setOtherCosts,
-                        entryDto.getOtherCosts,
+                        _otherCostsController,
                       ),
                     ],
                   ),
@@ -284,9 +329,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
                         ),
                         child: TextFormField(
                           onChanged: entryDto.setKmStart,
-                          controller: TextEditingController(
-                            text: entryDto.getKmStart,
-                          ),
+                          controller: _kmStartController,
 
                           decoration: InputDecoration(
                             labelText: 'Quilometragem Inicial (km)',
@@ -306,9 +349,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
                         ),
                         child: TextFormField(
                           onChanged: entryDto.setKmEnd,
-                          controller: TextEditingController(
-                            text: entryDto.getKmEnd,
-                          ),
+                          controller: _kmEndController,
                           decoration: InputDecoration(
                             labelText: 'Quilometragem Final (km)',
                             prefixIcon: Icon(Icons.directions_car),

@@ -20,15 +20,45 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
   final _formKey = GlobalKey<FormState>();
   late EntryDto entryDto;
 
+  // Controladores para os campos de texto
+  late TextEditingController _fuelController;
+  late TextEditingController _foodController;
+  late TextEditingController _cleaningController;
+  late TextEditingController _otherController;
+
   @override
   void initState() {
     super.initState();
     entryDto = EntryDto.fromMap(widget.entry.toMap());
+
+    // Inicializa os controladores com os valores atuais
+    _fuelController = TextEditingController(text: entryDto.getFuelCost);
+    _foodController = TextEditingController(text: entryDto.getFoodCost);
+    _cleaningController = TextEditingController(text: entryDto.getCleaningCost);
+    _otherController = TextEditingController(text: entryDto.getOtherCosts);
+
+    // Adiciona listener para atualizar a UI quando os valores mudam
+    entryDto.addListener(_onEntryChanged);
   }
 
   @override
   void dispose() {
+    _fuelController.dispose();
+    _foodController.dispose();
+    _cleaningController.dispose();
+    _otherController.dispose();
+    entryDto.removeListener(_onEntryChanged);
     super.dispose();
+  }
+
+  void _onEntryChanged() {
+    setState(() {
+      // Atualiza os controladores com os novos valores
+      _fuelController.text = entryDto.getFuelCost;
+      _foodController.text = entryDto.getFoodCost;
+      _cleaningController.text = entryDto.getCleaningCost;
+      _otherController.text = entryDto.getOtherCosts;
+    });
   }
 
   void _save() async {
@@ -56,7 +86,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
 
   Widget _amountField({
     required String label,
-    required String initial,
+    required TextEditingController controller,
     required ValueChanged<String> onChanged,
     IconData icon = Icons.attach_money,
   }) {
@@ -64,7 +94,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
       child: TextFormField(
         onChanged: onChanged,
-        controller: TextEditingController(text: initial),
+        controller: controller,
         decoration: InputDecoration(
           labelText: label,
           prefixIcon: Icon(icon),
@@ -121,25 +151,25 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
             // Campos de gastos
             _amountField(
               label: 'Combustível (R\$)',
-              initial: entryDto.getFuelCost,
+              controller: _fuelController,
               onChanged: entryDto.setFuelCost,
               icon: Icons.local_gas_station,
             ),
             _amountField(
               label: 'Alimentação (R\$)',
-              initial: entryDto.getFoodCost,
+              controller: _foodController,
               onChanged: entryDto.setFoodCost,
               icon: Icons.restaurant,
             ),
             _amountField(
               label: 'Lavagem/Limpeza (R\$)',
-              initial: entryDto.getCleaningCost,
+              controller: _cleaningController,
               onChanged: entryDto.setCleaningCost,
               icon: Icons.local_laundry_service,
             ),
             _amountField(
               label: 'Outros Gastos (R\$)',
-              initial: entryDto.getOtherCosts,
+              controller: _otherController,
               onChanged: entryDto.setOtherCosts,
               icon: Icons.more_horiz,
             ),
