@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
+import 'package:uber_tracker/ui/widget/custom_snackbar.dart';
 import '../../../models/daily_entry.dart';
 import '../../../providers/entry_provider.dart';
 
@@ -49,8 +50,9 @@ class _StartEntryScreenState extends State<StartEntryScreen> {
   void _saveForm() async {
     if (_formKey.currentState!.validate()) {
       if (_kmStartController.text.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Preencha a quilometragem inicial!')),
+        CustomSnackBar.warning(
+          context: context,
+          message: 'Preencha a quilometragem inicial!',
         );
         return;
       }
@@ -59,13 +61,6 @@ class _StartEntryScreenState extends State<StartEntryScreen> {
         setState(() => _isLoading = true);
 
         final provider = Provider.of<EntryProvider>(context, listen: false);
-
-        // if (provider.entryExistsForDate(_selectedDate)) {
-        //   ScaffoldMessenger.of(context).showSnackBar(
-        //     SnackBar(content: Text('Já existe um lançamento para esta data!')),
-        //   );
-        //   return;
-        // }
 
         final int kmStart = int.parse(_kmStartController.text);
 
@@ -76,15 +71,17 @@ class _StartEntryScreenState extends State<StartEntryScreen> {
         );
 
         provider.startWorkSession(data);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Jornada iniciada com sucesso!')),
+        CustomSnackBar.success(
+          context: context,
+          message: 'Jornada iniciada com sucesso!',
         );
 
         await Future.delayed(const Duration(milliseconds: 400));
         Navigator.of(context).pop();
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao salvar: ${e.toString()}')),
+        CustomSnackBar.error(
+          context: context,
+          message: 'Erro ao salvar: ${e.toString()}',
         );
       } finally {
         setState(() => _isLoading = false);
