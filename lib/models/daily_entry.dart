@@ -63,7 +63,7 @@ class DailyEntry {
       'cleaningCost': cleaningCost,
       'otherCosts': otherCosts,
       'kmStart': kmStart,
-      'kmEnd': kmEnd,
+      'kmEnd': kmEnd ?? 0,
       'startTime': startTime != null
           ? '${startTime!.hour.toString().padLeft(2, '0')}:${startTime!.minute.toString().padLeft(2, '0')}'
           : null,

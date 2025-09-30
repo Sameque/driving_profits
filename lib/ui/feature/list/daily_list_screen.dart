@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:uber_tracker/models/entry_status.dart';
+import 'package:uber_tracker/providers/entry_provider.dart';
+import 'package:uber_tracker/ui/feature/entry/add_entry_screen2.dart';
+import 'package:uber_tracker/ui/feature/entry/close_entry_screen.dart';
+import 'package:uber_tracker/ui/feature/entry/expenses_screen.dart';
 import 'package:uber_tracker/ui/feature/entry/start_entry_screen.dart';
-import '../../../providers/entry_provider.dart';
-import '../entry/add_entry_screen2.dart';
-import '../entry/close_entry_screen.dart';
-import '../entry/expenses_screen.dart';
+import 'package:uber_tracker/ui/widget/custom_snackbar.dart';
 
 class DailyListScreen extends StatelessWidget {
   const DailyListScreen({super.key});
@@ -26,10 +27,7 @@ class DailyListScreen extends StatelessWidget {
             return Center(child: CircularProgressIndicator());
           }
 
-          final allEntries = [
-            ...entryProvider.openEntries,
-            ...entryProvider.entries,
-          ];
+          final allEntries = [...entryProvider.entries];
           allEntries.sort((a, b) => b.date.compareTo(a.date));
 
           if (allEntries.isEmpty) {
@@ -64,13 +62,11 @@ class DailyListScreen extends StatelessWidget {
                   );
                 },
                 onDismissed: (direction) {
-                  if (entry.status == EntryStatus.open) {
-                    entryProvider.removeOpenEntry(entry);
-                  } else {
-                    entryProvider.deleteEntry(entry.id!);
-                  }
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Lançamento apagado!')),
+                  entryProvider.deleteEntry(entry.id!);
+
+                  CustomSnackBar.success(
+                    context: context,
+                    message: 'Lançamento apagado!',
                   );
                 },
                 background: Container(

@@ -68,7 +68,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
       final map = entryDto.toMap();
       final updated = DailyEntry.fromMap(map);
 
-      provider.updateOpenEntry(updated);
+      provider.updateEntry(updated);
 
       CustomSnackBar.success(
         context: context,
