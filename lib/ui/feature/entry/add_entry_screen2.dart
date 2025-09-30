@@ -4,10 +4,10 @@ import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
 import 'package:uber_tracker/l10n/app_localizations.dart';
 import 'package:uber_tracker/models/daily_entry.dart';
-import 'package:uber_tracker/models/entry_status.dart';
 import 'package:uber_tracker/providers/entry_provider.dart';
 import 'package:uber_tracker/ui/feature/entry/entry_dto.dart';
 import 'package:uber_tracker/ui/widget/currency_input_formatter.dart';
+import 'package:uber_tracker/ui/widget/custom_snackbar.dart';
 
 class AddEntryScreen extends StatefulWidget {
   final DailyEntry entry;
@@ -80,79 +80,26 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
       return;
     }
 
-    // bool isClosing = _endTime != null && _controllers['kmEnd']!.text.isNotEmpty;
-
-    //TODO: USAR ESSA REGRA PA UM BOTÃO DE FECHAR
-
-    // if (isClosing) {
-    //   if (double.tryParse(
-    //             _controllers['uberEarnings']!.text.replaceAll(',', '.'),
-    //           ) ==
-    //           null ||
-    //       double.parse(
-    //             _controllers['uberEarnings']!.text.replaceAll(',', '.'),
-    //           ) ==
-    //           0.0) {
-    //     ScaffoldMessenger.of(context).showSnackBar(
-    //       SnackBar(
-    //         content: Text('O repasse Uber é obrigatório ao fechar a jornada!'),
-    //       ),
-    //     );
-    //     return;
-    //   }
-    //   final double startKm = double.parse(
-    //     _controllers['kmStart']!.text.replaceAll(',', '.'),
-    //   );
-    //   final double endKm = double.parse(
-    //     _controllers['kmEnd']!.text.replaceAll(',', '.'),
-    //   );
-    //   if (endKm <= startKm) {
-    //     ScaffoldMessenger.of(context).showSnackBar(
-    //       SnackBar(
-    //         content: Text(
-    //           'A quilometragem final deve ser maior que a inicial!',
-    //         ),
-    //       ),
-    //     );
-    //     return;
-    //   }
-    // }
-    // await provider.closeWorkSession(data);
-    // ScaffoldMessenger.of(context).showSnackBar(
-    //   SnackBar(content: Text('Jornada finalizada com sucesso!')),
-    // );
+    bool isClosing = entryDto.endTime != null && entryDto.kmEnd != null;
 
     try {
       final provider = Provider.of<EntryProvider>(context, listen: false);
 
-      // if (widget.entry == null &&
-      //     provider.entryExistsForDate(_selectedDate)) {
-      //   ScaffoldMessenger.of(context).showSnackBar(
-      //     SnackBar(content: Text('Já existe um lançamento para esta data!')),
-      //   );
-      //   return;
-      // }
+      final data = DailyEntry.fromMap(entryDto.toMap());
 
-      // double parseField(String key) {
-      //   final text = _controllers[key]!.text.replaceAll(',', '.');
-      //   return double.tryParse(text) ?? 0.0;
-      // }
-      late Map<String, dynamic> mapEntry = entryDto.toMap();
-      mapEntry['status'] = EntryStatus.closed.toString().split('.').last;
-      final data = DailyEntry.fromMap(mapEntry);
+      provider.updateEntry(data);
 
-      await provider.closeWorkSession(data);
-
-      provider.updateOpenEntry(data);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Jornada atualizada com sucesso!')),
+      CustomSnackBar.success(
+        context: context,
+        message: 'Jornada atualizada com sucesso!',
       );
 
       await Future.delayed(const Duration(milliseconds: 400));
       Navigator.of(context).pop();
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro ao salvar: ${e.toString()}')),
+      CustomSnackBar.error(
+        context: context,
+        message: 'Erro ao salvar: ${e.toString()}',
       );
     }
   }
@@ -179,14 +126,6 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
           FilteringTextInputFormatter.digitsOnly,
           CurrencyInputFormatter(),
         ],
-        validator: (value) {
-          if (value != null &&
-              value.isNotEmpty &&
-              double.tryParse(value.replaceAll(',', '.')) == null) {
-            return 'Por favor, insira um número válido.';
-          }
-          return null;
-        },
       ),
     );
   }
@@ -404,8 +343,9 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
                         title: Text('Horas Trabalhadas (calculado)'),
                         trailing: Text(
                           entryDto.totalHoursWorked
-                              .format(context)
-                              .toString() /*_hoursWorked.toStringAsFixed(1)*/,
+                                  ?.format(context)
+                                  .toString() ??
+                              '',
                         ),
                       ),
                     ],

@@ -5,6 +5,8 @@ import 'package:uber_tracker/models/entry_status.dart';
 import 'package:uber_tracker/ui/feature/entry/start_entry_screen.dart';
 import '../../../providers/entry_provider.dart';
 import '../entry/add_entry_screen2.dart';
+import '../entry/close_entry_screen.dart';
+import '../entry/expenses_screen.dart';
 
 class DailyListScreen extends StatelessWidget {
   const DailyListScreen({super.key});
@@ -98,15 +100,49 @@ class DailyListScreen extends StatelessWidget {
                     subtitle: Text(
                       'Ganhos: ${currencyFormat.format(entry.totalGains)} | Gastos: ${currencyFormat.format(entry.totalExpenses)}',
                     ),
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (ctx) => AddEntryScreen(
-                            entry: entry,
-                          ), // Passa o 'entry' para a tela de edição
+                    onTap: () {},
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: Icon(Icons.edit),
+                          tooltip: 'Editar',
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (ctx) => AddEntryScreen(entry: entry),
+                              ),
+                            );
+                          },
                         ),
-                      );
-                    },
+                        if (entry.status == EntryStatus.open) ...[
+                          IconButton(
+                            icon: Icon(Icons.receipt),
+                            tooltip: 'Gastos',
+                            onPressed: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (ctx) =>
+                                      ExpensesScreen(entry: entry),
+                                ),
+                              );
+                            },
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.check_circle_outline),
+                            tooltip: 'Fechar',
+                            onPressed: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (ctx) =>
+                                      CloseEntryScreen(entry: entry),
+                                ),
+                              );
+                            },
+                          ),
+                        ],
+                      ],
+                    ),
                   ),
                 ),
               );
