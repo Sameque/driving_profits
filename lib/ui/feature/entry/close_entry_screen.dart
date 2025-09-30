@@ -5,6 +5,7 @@ import 'package:uber_tracker/models/daily_entry.dart';
 import 'package:uber_tracker/models/entry_status.dart';
 import 'package:uber_tracker/providers/entry_provider.dart';
 import 'package:uber_tracker/ui/feature/entry/entry_dto.dart';
+import 'package:uber_tracker/ui/feature/entry/close_entry_validations.dart';
 import 'package:uber_tracker/ui/widget/currency_input_formatter.dart';
 import 'package:uber_tracker/ui/widget/custom_snackbar.dart';
 
@@ -41,6 +42,13 @@ class _CloseEntryScreenState extends State<CloseEntryScreen> {
 
   void _save() async {
     if (!_formKey.currentState!.validate()) return;
+
+    final validationErrors = CloseEntryValidations.validateForSave(entryDto);
+    if (validationErrors.isNotEmpty) {
+      CustomSnackBar.error(context: context, message: validationErrors.first);
+      return;
+    }
+
     try {
       final provider = Provider.of<EntryProvider>(context, listen: false);
       final map = entryDto.toMap();
@@ -67,6 +75,7 @@ class _CloseEntryScreenState extends State<CloseEntryScreen> {
     required String initial,
     required ValueChanged<String> onChanged,
     IconData icon = Icons.attach_money,
+    String? Function(String?)? validator,
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
@@ -83,6 +92,7 @@ class _CloseEntryScreenState extends State<CloseEntryScreen> {
           FilteringTextInputFormatter.digitsOnly,
           CurrencyInputFormatter(),
         ],
+        validator: validator,
       ),
     );
   }
@@ -114,27 +124,48 @@ class _CloseEntryScreenState extends State<CloseEntryScreen> {
                   ),
                 ),
                 keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value == null || value.isEmpty)
-                    return 'Informe a km final';
-                  return null;
-                },
+                validator: (value) =>
+                    CloseEntryValidations.validateKmEnd(value, entryDto),
               ),
             ),
-            ListTile(
-              title: Text(
-                entryDto.endTime == null
-                    ? 'Hora Final: Não definida'
-                    : 'Hora Final: ${entryDto.endTime!.format(context)}',
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                vertical: 8.0,
+                horizontal: 16.0,
               ),
-              trailing: const Icon(Icons.access_time),
-              onTap: _selectEndTime,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ListTile(
+                    title: Text(
+                      entryDto.endTime == null
+                          ? 'Hora Final: Não definida'
+                          : 'Hora Final: ${entryDto.endTime!.format(context)}',
+                    ),
+                    trailing: const Icon(Icons.access_time),
+                    onTap: _selectEndTime,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                  if (CloseEntryValidations.hasEndTimeError(entryDto))
+                    Padding(
+                      padding: const EdgeInsets.only(left: 16.0, top: 4.0),
+                      child: Text(
+                        CloseEntryValidations.getEndTimeErrorMessage(
+                          entryDto,
+                          context,
+                        )!,
+                        style: const TextStyle(color: Colors.red, fontSize: 12),
+                      ),
+                    ),
+                ],
+              ),
             ),
             _amountField(
               label: 'Ganhos Uber',
               initial: entryDto.getUberEarnings,
               onChanged: entryDto.setUberEarnings,
               icon: Icons.payments,
+              validator: CloseEntryValidations.validateUberEarnings,
             ),
             _amountField(
               label: 'Gorjetas',
