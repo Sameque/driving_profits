@@ -9,16 +9,16 @@ import 'package:uber_tracker/ui/feature/entry/entry_dto.dart';
 import 'package:uber_tracker/ui/widget/currency_input_formatter.dart';
 import 'package:uber_tracker/ui/widget/custom_snackbar.dart';
 
-class AddEntryScreen extends StatefulWidget {
+class EditEntryScreen extends StatefulWidget {
   final DailyEntry entry;
 
-  const AddEntryScreen({super.key, required this.entry});
+  const EditEntryScreen({super.key, required this.entry});
 
   @override
-  _AddEntryScreenState createState() => _AddEntryScreenState();
+  _EditEntryScreenState createState() => _EditEntryScreenState();
 }
 
-class _AddEntryScreenState extends State<AddEntryScreen> {
+class _EditEntryScreenState extends State<EditEntryScreen> {
   final _formKey = GlobalKey<FormState>();
 
   // DateTime _selectedDate = DateTime.now();

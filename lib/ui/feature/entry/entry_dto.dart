@@ -17,9 +17,8 @@ class EntryDto extends ChangeNotifier {
   late double otherCosts;
   late EntryStatus status;
 
-  EntryDto({String? id}) : this.id = id ?? const Uuid().v4();
+  EntryDto({String? id}) : id = id ?? const Uuid().v4();
 
-  //from map constructor
   EntryDto.fromMap(Map<String, dynamic> map)
     : id = (map['id'] as String?) ?? const Uuid().v4() {
     date = DateTime.tryParse(map['date']) ?? DateTime.now();
