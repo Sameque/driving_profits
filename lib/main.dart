@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'providers/entry_provider.dart';
-import 'ui/feature/home/home_screen2.dart';
+import 'ui/feature/home/home_screen.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:uber_tracker/l10n/app_localizations.dart';
 

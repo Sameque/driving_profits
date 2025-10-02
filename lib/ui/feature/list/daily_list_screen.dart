@@ -3,7 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:uber_tracker/models/entry_status.dart';
 import 'package:uber_tracker/providers/entry_provider.dart';
-import 'package:uber_tracker/ui/feature/entry/edit_entry_screen2.dart';
+import 'package:uber_tracker/ui/feature/entry/edit_entry_screen.dart';
 import 'package:uber_tracker/ui/feature/entry/close_entry_screen.dart';
 import 'package:uber_tracker/ui/feature/entry/expenses_screen.dart';
 import 'package:uber_tracker/ui/feature/entry/start_entry_screen.dart';
