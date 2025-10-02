@@ -47,9 +47,9 @@ class EntryDto extends ChangeNotifier {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-      'date': getDate,
-      'startTime': getStartTime,
-      'endTime': getEndTime,
+      'date': getDateStr,
+      'startTime': getStartTimeStr,
+      'endTime': getEndTimeStr,
       'kmStart': kmStart,
       'kmEnd': kmEnd,
       'uberEarnings': uberEarnings,
@@ -79,8 +79,14 @@ class EntryDto extends ChangeNotifier {
     fuelCost = litersUsed * fuelPrice;
   }
 
-  void setDate(String value) {
+  void setDateStr(String value) {
     date = DateTime.tryParse(value) ?? DateTime.now();
+    notifyListeners();
+  }
+
+  void setDate(DateTime value) {
+    date = value;
+    notifyListeners();
   }
 
   void setStartTime(TimeOfDay? value) {
@@ -93,16 +99,18 @@ class EntryDto extends ChangeNotifier {
       startTime = null;
       return;
     }
+
     final parts = value.split(':');
     if (parts.length == 2) {
       final hour = int.tryParse(parts[0]);
       final minute = int.tryParse(parts[1]);
       if (hour != null && minute != null) {
         startTime = TimeOfDay(hour: hour, minute: minute);
-        return;
+      } else {
+        startTime = null;
       }
+      notifyListeners();
     }
-    startTime = null;
   }
 
   void setEndTime(TimeOfDay? value) {
@@ -115,16 +123,18 @@ class EntryDto extends ChangeNotifier {
       endTime = null;
       return;
     }
+
     final parts = value.split(':');
     if (parts.length == 2) {
       final hour = int.tryParse(parts[0]);
       final minute = int.tryParse(parts[1]);
       if (hour != null && minute != null) {
         endTime = TimeOfDay(hour: hour, minute: minute);
-        return;
+      } else {
+        endTime = null;
       }
+      notifyListeners();
     }
-    endTime = null;
   }
 
   void setUberEarnings(String value) {
@@ -192,11 +202,11 @@ class EntryDto extends ChangeNotifier {
   }
 
   //getters in string format
-  String get getDate => date.toIso8601String().split('T').first;
-  String get getStartTime => startTime != null
+  String get getDateStr => date.toIso8601String().split('T').first;
+  String get getStartTimeStr => startTime != null
       ? '${startTime!.hour.toString().padLeft(2, '0')}:${startTime!.minute.toString().padLeft(2, '0')}'
       : '';
-  String get getEndTime => endTime != null
+  String get getEndTimeStr => endTime != null
       ? '${endTime!.hour.toString().padLeft(2, '0')}:${endTime!.minute.toString().padLeft(2, '0')}'
       : '';
   String get getKmStart => kmStart?.toString() ?? '';
@@ -215,6 +225,9 @@ class EntryDto extends ChangeNotifier {
   String get getStatus => status.toString().split('.').last;
 
   //computed properties
+  TimeOfDay? get getEndTime => endTime;
+  TimeOfDay? get getStartTime => startTime;
+  DateTime get getDate => date;
   double get totalEarnings => uberEarnings + tips;
   double get totalCosts => fuelCost + foodCost + cleaningCost + otherCosts;
   double get netEarnings => totalEarnings - totalCosts;

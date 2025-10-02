@@ -21,52 +21,50 @@ class EditEntryScreen extends StatefulWidget {
 class _EditEntryScreenState extends State<EditEntryScreen> {
   final _formKey = GlobalKey<FormState>();
 
-  // DateTime _selectedDate = DateTime.now();
-  TimeOfDay? _startTime;
-  TimeOfDay? _endTime;
-  EntryDto entryDto = EntryDto();
+  late EntryDto entryDto;
+
+  bool _isLoading = false;
+  bool _hasUnsavedChanges = false;
 
   @override
   void initState() {
     super.initState();
     entryDto = EntryDto.fromMap(widget.entry.toMap());
+    entryDto.addListener(() => _hasUnsavedChanges = true);
   }
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: entryDto.date,
+      initialDate: entryDto.getDate,
       firstDate: DateTime(2020),
       lastDate: DateTime.now(),
+      locale: const Locale('pt', 'BR'),
     );
     if (picked != null && picked != entryDto.date) {
-      setState(() {
-        entryDto.date = picked;
-      });
+      entryDto.setDate(picked);
     }
   }
 
   Future<void> _selectStartTime() async {
     final TimeOfDay? picked = await showTimePicker(
       context: context,
-      initialTime: _startTime ?? TimeOfDay.now(),
+      initialTime: entryDto.getStartTime ?? TimeOfDay.now(),
+      initialEntryMode: TimePickerEntryMode.dial,
     );
     if (picked != null) {
-      setState(() {
-        entryDto.setStartTime(picked);
-      });
+      entryDto.setStartTime(picked);
     }
   }
 
   Future<void> _selectEndTime() async {
     final TimeOfDay? picked = await showTimePicker(
       context: context,
-      initialTime: _endTime ?? TimeOfDay.now(),
+      initialTime: entryDto.getEndTime ?? TimeOfDay.now(),
+      initialEntryMode: TimePickerEntryMode.dial,
     );
     if (picked != null) {
-      setState(() {
-        entryDto.setEndTime(picked);
-      });
+      entryDto.setEndTime(picked);
     }
   }
 
@@ -76,6 +74,8 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
     }
 
     try {
+      setState(() => _isLoading = true);
+
       final provider = Provider.of<EntryProvider>(context, listen: false);
 
       final data = DailyEntry.fromMap(entryDto.toMap());
@@ -94,6 +94,8 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
         context: context,
         message: 'Erro ao salvar: ${e.toString()}',
       );
+    } finally {
+      setState(() => _isLoading = false);
     }
   }
 
@@ -102,6 +104,10 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
     required String initial,
     required ValueChanged<String> onChanged,
     IconData icon = Icons.attach_money,
+    String? Function(String?)? validator,
+    List<TextInputFormatter>? inputFormatters,
+    bool isCurrency = true,
+    bool autofocus = false,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
@@ -118,10 +124,24 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
           ).colorScheme.surfaceVariant.withOpacity(0.1),
         ),
         keyboardType: TextInputType.number,
-        inputFormatters: [
-          FilteringTextInputFormatter.digitsOnly,
-          CurrencyInputFormatter(),
-        ],
+        inputFormatters:
+            inputFormatters ??
+            (isCurrency
+                ? [
+                    FilteringTextInputFormatter.digitsOnly,
+                    CurrencyInputFormatter(),
+                  ]
+                : [FilteringTextInputFormatter.digitsOnly]),
+        validator:
+            validator ??
+            (value) {
+              if (value == null || value.isEmpty) return null;
+              final parsed = double.tryParse(value.replaceAll(',', '.'));
+              if (parsed == null || parsed < 0) {
+                return 'Insira um valor válido maior ou igual a zero.';
+              }
+              return null;
+            },
       ),
     );
   }
@@ -135,209 +155,214 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
 
     return WillPopScope(
       onWillPop: () async {
-        if (true) {
+        if (_hasUnsavedChanges) {
           return await showDialog(
                 context: context,
                 builder: (context) => AlertDialog(
-                  title: Text('Descartar alterações?'),
-                  content: Text(
+                  title: const Text('Descartar alterações?'),
+                  content: const Text(
                     'Você tem alterações não salvas. Deseja descartá-las?',
                   ),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.of(context).pop(false),
-                      child: Text('Cancelar'),
+                      child: const Text('Cancelar'),
                     ),
                     TextButton(
                       onPressed: () => Navigator.of(context).pop(true),
-                      child: Text('Descartar'),
+                      child: const Text('Descartar'),
                     ),
                   ],
                 ),
               ) ??
               false;
         }
-        // return true;
+        return true;
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text('Editar Lançamento'),
-          actions: [IconButton(icon: Icon(Icons.save), onPressed: _saveForm)],
+          title: const Text('Editar Lançamento'),
+          centerTitle: false,
+          elevation: 0,
+          scrolledUnderElevation: 4,
+          backgroundColor: Theme.of(context).colorScheme.surface,
+          foregroundColor: Theme.of(context).colorScheme.onSurface,
+          shape: Border(
+            bottom: BorderSide(
+              color: Theme.of(context).colorScheme.outlineVariant,
+              width: 1,
+            ),
+          ),
         ),
-        body: ListView(
-          padding: EdgeInsets.zero,
+        body: Stack(
           children: [
             Form(
               key: _formKey,
-              child: Column(
+              child: ListView(
+                padding: const EdgeInsets.all(16.0),
                 children: [
-                  // CARD DE DATA
-                  Card(
-                    elevation: 2,
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Data: ${DateFormat('dd/MM/yyyy').format(entryDto.date)}',
-                            style: Theme.of(context).textTheme.titleMedium,
-                          ),
-                          TextButton.icon(
-                            icon: Icon(Icons.calendar_today),
-                            label: Text('Alterar'),
-                            onPressed: () => _selectDate(context),
-                          ),
-                        ],
+                  // Data
+                  ListTile(
+                    title: const Text('Data'),
+                    subtitle: Text(
+                      DateFormat('dd/MM/yyyy').format(entryDto.date),
+                    ),
+                    trailing: const Icon(Icons.calendar_today),
+                    onTap: () => _selectDate(context),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: BorderSide(
+                        color: Theme.of(context).colorScheme.outlineVariant,
                       ),
+                    ),
+                    tileColor: Theme.of(
+                      context,
+                    ).colorScheme.surfaceVariant.withOpacity(0.1),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Ganhos
+                  Text(
+                    'Ganhos',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                  SizedBox(height: 10),
-
-                  // CARD DE GANHOS
-                  ExpansionTile(
-                    title: Text(
-                      'Ganhos',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                      ),
-                    ),
-                    initiallyExpanded: true,
-                    children: [
-                      _buildTextField(
-                        label: 'Repasse Uber (R\$)',
-                        initial: entryDto.getUberEarnings,
-                        onChanged: entryDto.setUberEarnings,
-                        icon: Icons.attach_money,
-                      ),
-                      _buildTextField(
-                        label: 'Gorjetas (R\$)',
-                        initial: entryDto.getTips,
-                        onChanged: entryDto.setTips,
-                        icon: Icons.card_giftcard,
-                      ),
-                    ],
+                  const SizedBox(height: 8),
+                  _buildTextField(
+                    label: 'Repasse Uber (R\$)',
+                    initial: entryDto.getUberEarnings,
+                    onChanged: entryDto.setUberEarnings,
+                    icon: Icons.attach_money,
+                    autofocus: true,
                   ),
-
-                  // CARD DE GASTOS
-                  ExpansionTile(
-                    title: Text(
-                      'Gastos do Dia',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                      ),
-                    ),
-                    children: [
-                      _buildTextField(
-                        label: 'Alimentação (R\$)',
-                        initial: entryDto.getFoodCost,
-                        onChanged: entryDto.setFoodCost,
-                        icon: Icons.restaurant,
-                      ),
-                      _buildTextField(
-                        label: 'Limpeza (R\$)',
-                        initial: entryDto.getCleaningCost,
-                        onChanged: entryDto.setCleaningCost,
-                        icon: Icons.wash,
-                      ),
-                      _buildTextField(
-                        label: 'Outros Gastos (R\$)',
-                        initial: entryDto.getOtherCosts,
-                        onChanged: entryDto.setOtherCosts,
-                        icon: Icons.more_horiz,
-                      ),
-                    ],
+                  _buildTextField(
+                    label: 'Gorjetas (R\$)',
+                    initial: entryDto.getTips,
+                    onChanged: entryDto.setTips,
+                    icon: Icons.card_giftcard,
                   ),
+                  const SizedBox(height: 24),
 
-                  // CARD DE MÉTRICAS
-                  ExpansionTile(
-                    title: Text(
-                      'Métricas de Trabalho',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
+                  // Gastos do Dia
+                  Text(
+                    'Gastos do Dia',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  _buildTextField(
+                    label: 'Alimentação (R\$)',
+                    initial: entryDto.getFoodCost,
+                    onChanged: entryDto.setFoodCost,
+                    icon: Icons.restaurant,
+                  ),
+                  _buildTextField(
+                    label: 'Limpeza (R\$)',
+                    initial: entryDto.getCleaningCost,
+                    onChanged: entryDto.setCleaningCost,
+                    icon: Icons.wash,
+                  ),
+                  _buildTextField(
+                    label: 'Outros Gastos (R\$)',
+                    initial: entryDto.getCleaningCost,
+                    onChanged: entryDto.setCleaningCost,
+                    icon: Icons.more_horiz,
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Métricas de Trabalho
+                  Text(
+                    'Métricas de Trabalho',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  _buildTextField(
+                    label: 'Quilometragem Inicial (km)',
+                    initial: entryDto.getKmStart,
+                    onChanged: entryDto.setKmStart,
+                    icon: Icons.directions_car,
+                    isCurrency: false,
+                  ),
+                  _buildTextField(
+                    label: 'Quilometragem Final (km)',
+                    initial: entryDto.getKmEnd,
+                    onChanged: entryDto.setKmEnd,
+                    icon: Icons.directions_car,
+                    isCurrency: false,
+                  ),
+                  ListTile(
+                    title: const Text('Hora Inicial'),
+                    subtitle: Text(
+                      entryDto.startTime?.format(context) ?? 'Não definida',
+                    ),
+                    trailing: const Icon(Icons.access_time),
+                    onTap: _selectStartTime,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: BorderSide(
+                        color: Theme.of(context).colorScheme.outlineVariant,
                       ),
                     ),
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 8.0,
-                          horizontal: 16.0,
-                        ),
-                        child: TextFormField(
-                          onChanged: entryDto.setKmStart,
-                          controller: TextEditingController(
-                            text: entryDto.getKmStart,
-                          ),
+                    tileColor: Theme.of(
+                      context,
+                    ).colorScheme.surfaceVariant.withOpacity(0.1),
+                  ),
+                  const SizedBox(height: 16),
+                  ListTile(
+                    title: const Text('Hora Final'),
+                    subtitle: Text(
+                      entryDto.endTime?.format(context) ?? 'Não definida',
+                    ),
+                    trailing: const Icon(Icons.access_time),
+                    onTap: _selectEndTime,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: BorderSide(
+                        color: Theme.of(context).colorScheme.outlineVariant,
+                      ),
+                    ),
+                    tileColor: Theme.of(
+                      context,
+                    ).colorScheme.surfaceVariant.withOpacity(0.1),
+                  ),
+                  const SizedBox(height: 16),
+                  ListTile(
+                    title: const Text('KM Rodados (calculado)'),
+                    trailing: Text(entryDto.totalKm.toString()),
+                    tileColor: Theme.of(
+                      context,
+                    ).colorScheme.surfaceVariant.withOpacity(0.1),
+                  ),
+                  ListTile(
+                    title: const Text('Horas Trabalhadas (calculado)'),
+                    trailing: Text(
+                      entryDto.totalHoursWorked?.format(context) ?? '',
+                    ),
+                    tileColor: Theme.of(
+                      context,
+                    ).colorScheme.surfaceVariant.withOpacity(0.1),
+                  ),
+                  const SizedBox(height: 32),
 
-                          decoration: InputDecoration(
-                            labelText: 'Quilometragem Inicial (km)',
-                            prefixIcon: Icon(Icons.directions_car),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          keyboardType: TextInputType.number,
-                        ),
+                  // Botão para salvar
+                  FilledButton(
+                    onPressed: _isLoading ? null : _saveForm,
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size.fromHeight(50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
-
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 8.0,
-                          horizontal: 16.0,
-                        ),
-                        child: TextFormField(
-                          onChanged: entryDto.setKmEnd,
-                          controller: TextEditingController(
-                            text: entryDto.getKmEnd,
-                          ),
-
-                          decoration: InputDecoration(
-                            labelText: 'Quilometragem Final (km)',
-                            prefixIcon: Icon(Icons.directions_car),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          keyboardType: TextInputType.number,
-                        ),
-                      ),
-                      ListTile(
-                        title: Text(
-                          'Hora Inicial: ${entryDto.startTime?.format(context) ?? 'Não definida'}',
-                        ),
-                        trailing: Icon(Icons.access_time),
-                        onTap: _selectStartTime,
-                      ),
-                      ListTile(
-                        title: Text(
-                          entryDto.endTime == null
-                              ? 'Hora Final: Não definida'
-                              : 'Hora Final: ${entryDto.endTime!.format(context)}',
-                        ),
-                        trailing: Icon(Icons.access_time),
-                        onTap: _selectEndTime,
-                      ),
-                      ListTile(
-                        title: Text('KM Rodados (calculado)'),
-                        trailing: Text(entryDto.totalKm.toString()),
-                      ),
-                      ListTile(
-                        title: Text('Horas Trabalhadas (calculado)'),
-                        trailing: Text(
-                          entryDto.totalHoursWorked
-                                  ?.format(context)
-                                  .toString() ??
-                              '',
-                        ),
-                      ),
-                    ],
+                    ),
+                    child: const Text('Salvar Alterações'),
                   ),
                 ],
               ),
             ),
+            if (_isLoading) const Center(child: CircularProgressIndicator()),
           ],
         ),
         bottomNavigationBar: SafeArea(
@@ -355,7 +380,7 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
                       color: Colors.black.withOpacity(0.1),
                       spreadRadius: 1,
                       blurRadius: 5,
-                      offset: Offset(0, -3),
+                      offset: const Offset(0, -3),
                     ),
                   ],
                 ),
