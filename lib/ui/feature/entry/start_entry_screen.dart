@@ -27,6 +27,7 @@ class _StartEntryScreenState extends State<StartEntryScreen> {
       initialDate: _selectedDate,
       firstDate: DateTime(2020),
       lastDate: DateTime.now(),
+      locale: const Locale('pt', 'BR'), // Para consistência com formato de data
     );
     if (picked != null && picked != _selectedDate) {
       setState(() {
@@ -39,6 +40,7 @@ class _StartEntryScreenState extends State<StartEntryScreen> {
     final TimeOfDay? picked = await showTimePicker(
       context: context,
       initialTime: _startTime,
+      initialEntryMode: TimePickerEntryMode.dial,
     );
     if (picked != null) {
       setState(() {
@@ -49,14 +51,6 @@ class _StartEntryScreenState extends State<StartEntryScreen> {
 
   void _saveForm() async {
     if (_formKey.currentState!.validate()) {
-      if (_kmStartController.text.isEmpty) {
-        CustomSnackBar.warning(
-          context: context,
-          message: 'Preencha a quilometragem inicial!',
-        );
-        return;
-      }
-
       try {
         setState(() => _isLoading = true);
 
@@ -94,79 +88,127 @@ class _StartEntryScreenState extends State<StartEntryScreen> {
     TextEditingController controller,
     IconData icon,
   ) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-      child: TextFormField(
-        controller: controller,
-        decoration: InputDecoration(
-          labelText: label,
-          prefixIcon: Icon(icon),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-        ),
-        keyboardType: TextInputType.numberWithOptions(decimal: true),
-        inputFormatters: [
-          FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
-        ],
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return 'Campo obrigatório.';
-          }
-          if (double.tryParse(value.replaceAll(',', '.')) == null) {
-            return 'Por favor, insira um número válido.';
-          }
-          return null;
-        },
+    return TextFormField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        filled: true,
+        fillColor: Theme.of(
+          context,
+        ).colorScheme.surfaceVariant.withOpacity(0.1),
       ),
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      inputFormatters: [
+        FilteringTextInputFormatter.allow(RegExp(r'^\d*[,|.]?\d{0,3}')),
+      ],
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Campo obrigatório.';
+        }
+        final parsedValue = double.tryParse(value.replaceAll(',', '.'));
+        if (parsedValue == null || parsedValue < 0) {
+          return 'Por favor, insira um número válido maior ou igual a zero.';
+        }
+        return null;
+      },
+      autofocus: true, // Focar automaticamente no campo para melhor UX
     );
+  }
+
+  @override
+  void dispose() {
+    _kmStartController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Iniciar Jornada'),
-        actions: [IconButton(icon: Icon(Icons.save), onPressed: _saveForm)],
+        title: const Text('Iniciar Jornada'),
+        centerTitle:
+            false, // Alinha o título à esquerda para melhor legibilidade em telas maiores
+        elevation: 0, // Remove sombra para um visual mais moderno e flat
+        scrolledUnderElevation: 4, // Adiciona elevação sutil ao scrollar
+        backgroundColor: Theme.of(
+          context,
+        ).colorScheme.surface, // Integra com o tema
+        foregroundColor: Theme.of(
+          context,
+        ).colorScheme.onSurface, // Garante contraste
+        shape: Border(
+          bottom: BorderSide(
+            color: Theme.of(context).colorScheme.outlineVariant,
+            width: 1,
+          ),
+        ), // Adiciona uma borda inferior sutil para separação
       ),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          padding: const EdgeInsets.all(16.0),
-          children: [
-            // CARD DE DATA
-            Card(
-              elevation: 2,
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Data: ${DateFormat('dd/MM/yyyy').format(_selectedDate)}',
-                      style: Theme.of(context).textTheme.titleMedium,
+      body: Stack(
+        children: [
+          Form(
+            key: _formKey,
+            child: ListView(
+              padding: const EdgeInsets.all(16.0),
+              children: [
+                // Usando ListTile para consistência e tappable
+                ListTile(
+                  title: const Text('Data'),
+                  subtitle: Text(
+                    DateFormat('dd/MM/yyyy').format(_selectedDate),
+                  ),
+                  trailing: const Icon(Icons.calendar_today),
+                  onTap: () => _selectDate(context),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(
+                      color: Theme.of(context).colorScheme.outlineVariant,
                     ),
-                    TextButton.icon(
-                      icon: Icon(Icons.calendar_today),
-                      label: Text('Alterar'),
-                      onPressed: () => _selectDate(context),
-                    ),
-                  ],
+                  ),
+                  tileColor: Theme.of(
+                    context,
+                  ).colorScheme.surfaceVariant.withOpacity(0.1),
                 ),
-              ),
+                const SizedBox(height: 16),
+                ListTile(
+                  title: const Text('Hora Inicial'),
+                  subtitle: Text(_startTime.format(context)),
+                  trailing: const Icon(Icons.access_time),
+                  onTap: _selectStartTime,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(
+                      color: Theme.of(context).colorScheme.outlineVariant,
+                    ),
+                  ),
+                  tileColor: Theme.of(
+                    context,
+                  ).colorScheme.surfaceVariant.withOpacity(0.1),
+                ),
+                const SizedBox(height: 16),
+                _buildTextField(
+                  'Quilometragem Inicial (km)',
+                  _kmStartController,
+                  Icons.directions_car,
+                ),
+                const SizedBox(height: 32),
+                // Botão principal para salvar, melhor UX que ícone no appBar
+                FilledButton(
+                  onPressed: _isLoading ? null : _saveForm,
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size.fromHeight(50),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text('Iniciar Jornada'),
+                ),
+              ],
             ),
-            SizedBox(height: 20),
-            ListTile(
-              title: Text('Hora Inicial: ${_startTime.format(context)}'),
-              trailing: Icon(Icons.access_time),
-              onTap: _selectStartTime,
-            ),
-            SizedBox(height: 20),
-            _buildTextField(
-              'Quilometragem Inicial (km)',
-              _kmStartController,
-              Icons.directions_car,
-            ),
-          ],
-        ),
+          ),
+          if (_isLoading) const Center(child: CircularProgressIndicator()),
+        ],
       ),
     );
   }

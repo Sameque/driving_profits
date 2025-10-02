@@ -78,6 +78,30 @@ class CloseEntryValidations {
         validateEndTimeAfterStartTime(entryDto) != null;
   }
 
+  /// Valida se a eficiência de combustível é válida
+  static String? validateFuelEfficiency(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Informe a média de consumo';
+    }
+    final efficiency = double.tryParse(value.replaceAll(',', '.'));
+    if (efficiency == null || efficiency <= 0) {
+      return 'Média de consumo deve ser maior que zero';
+    }
+    return null;
+  }
+
+  /// Valida se o preço do combustível é válido
+  static String? validateFuelPrice(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Informe o valor do combustível';
+    }
+    final price = double.tryParse(value.replaceAll(',', '.'));
+    if (price == null || price <= 0) {
+      return 'Valor do combustível deve ser maior que zero';
+    }
+    return null;
+  }
+
   /// Validação completa para salvar a jornada
   static List<String> validateForSave(EntryDto entryDto) {
     final errors = <String>[];

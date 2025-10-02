@@ -26,62 +26,10 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
   TimeOfDay? _endTime;
   EntryDto entryDto = EntryDto();
 
-  // Controladores para os campos de texto
-  late TextEditingController _uberEarningsController;
-  late TextEditingController _tipsController;
-  late TextEditingController _fuelCostController;
-  late TextEditingController _foodCostController;
-  late TextEditingController _cleaningCostController;
-  late TextEditingController _otherCostsController;
-  late TextEditingController _kmStartController;
-  late TextEditingController _kmEndController;
-
   @override
   void initState() {
     super.initState();
     entryDto = EntryDto.fromMap(widget.entry.toMap());
-
-    _uberEarningsController = TextEditingController(
-      text: entryDto.getUberEarnings,
-    );
-    _tipsController = TextEditingController(text: entryDto.getTips);
-    _fuelCostController = TextEditingController(text: entryDto.getFuelCost);
-    _foodCostController = TextEditingController(text: entryDto.getFoodCost);
-    _cleaningCostController = TextEditingController(
-      text: entryDto.getCleaningCost,
-    );
-    _otherCostsController = TextEditingController(text: entryDto.getOtherCosts);
-    _kmStartController = TextEditingController(text: entryDto.getKmStart);
-    _kmEndController = TextEditingController(text: entryDto.getKmEnd);
-
-    entryDto.addListener(_onEntryChanged);
-  }
-
-  @override
-  void dispose() {
-    _uberEarningsController.dispose();
-    _tipsController.dispose();
-    _fuelCostController.dispose();
-    _foodCostController.dispose();
-    _cleaningCostController.dispose();
-    _otherCostsController.dispose();
-    _kmStartController.dispose();
-    _kmEndController.dispose();
-    entryDto.removeListener(_onEntryChanged);
-    super.dispose();
-  }
-
-  void _onEntryChanged() {
-    setState(() {
-      _uberEarningsController.text = entryDto.getUberEarnings;
-      _tipsController.text = entryDto.getTips;
-      _fuelCostController.text = entryDto.getFuelCost;
-      _foodCostController.text = entryDto.getFoodCost;
-      _cleaningCostController.text = entryDto.getCleaningCost;
-      _otherCostsController.text = entryDto.getOtherCosts;
-      _kmStartController.text = entryDto.getKmStart;
-      _kmEndController.text = entryDto.getKmEnd;
-    });
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -149,22 +97,25 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
     }
   }
 
-  Widget _buildTextFieldForAmount(
-    String label,
-    String key,
-    IconData icon,
-    ValueChanged<String>? onChanged,
-    TextEditingController controller,
-  ) {
+  Widget _buildTextField({
+    required String label,
+    required String initial,
+    required ValueChanged<String> onChanged,
+    IconData icon = Icons.attach_money,
+  }) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+      padding: const EdgeInsets.only(bottom: 16.0),
       child: TextFormField(
         onChanged: onChanged,
-        controller: controller,
+        controller: TextEditingController(text: initial),
         decoration: InputDecoration(
           labelText: label,
           prefixIcon: Icon(icon),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+          filled: true,
+          fillColor: Theme.of(
+            context,
+          ).colorScheme.surfaceVariant.withOpacity(0.1),
         ),
         keyboardType: TextInputType.number,
         inputFormatters: [
@@ -254,19 +205,17 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
                     ),
                     initiallyExpanded: true,
                     children: [
-                      _buildTextFieldForAmount(
-                        'Repasse Uber (R\$)',
-                        'uberEarnings',
-                        Icons.attach_money,
-                        entryDto.setUberEarnings,
-                        _uberEarningsController,
+                      _buildTextField(
+                        label: 'Repasse Uber (R\$)',
+                        initial: entryDto.getUberEarnings,
+                        onChanged: entryDto.setUberEarnings,
+                        icon: Icons.attach_money,
                       ),
-                      _buildTextFieldForAmount(
-                        'Gorjetas (R\$)',
-                        'tips',
-                        Icons.card_giftcard,
-                        entryDto.setTips,
-                        _tipsController,
+                      _buildTextField(
+                        label: 'Gorjetas (R\$)',
+                        initial: entryDto.getTips,
+                        onChanged: entryDto.setTips,
+                        icon: Icons.card_giftcard,
                       ),
                     ],
                   ),
@@ -281,33 +230,23 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
                       ),
                     ),
                     children: [
-                      _buildTextFieldForAmount(
-                        'Combustível (R\$)',
-                        'fuelCost',
-                        Icons.local_gas_station,
-                        entryDto.setFuelCost,
-                        _fuelCostController,
+                      _buildTextField(
+                        label: 'Alimentação (R\$)',
+                        initial: entryDto.getFoodCost,
+                        onChanged: entryDto.setFoodCost,
+                        icon: Icons.restaurant,
                       ),
-                      _buildTextFieldForAmount(
-                        'Alimentação (R\$)',
-                        'foodCost',
-                        Icons.restaurant,
-                        entryDto.setFoodCost,
-                        _foodCostController,
+                      _buildTextField(
+                        label: 'Limpeza (R\$)',
+                        initial: entryDto.getCleaningCost,
+                        onChanged: entryDto.setCleaningCost,
+                        icon: Icons.wash,
                       ),
-                      _buildTextFieldForAmount(
-                        'Limpeza (R\$)',
-                        'cleaningCost',
-                        Icons.wash,
-                        entryDto.setCleaningCost,
-                        _cleaningCostController,
-                      ),
-                      _buildTextFieldForAmount(
-                        'Outros Gastos (R\$)',
-                        'otherCosts',
-                        Icons.more_horiz,
-                        entryDto.setOtherCosts,
-                        _otherCostsController,
+                      _buildTextField(
+                        label: 'Outros Gastos (R\$)',
+                        initial: entryDto.getOtherCosts,
+                        onChanged: entryDto.setOtherCosts,
+                        icon: Icons.more_horiz,
                       ),
                     ],
                   ),
@@ -329,7 +268,9 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
                         ),
                         child: TextFormField(
                           onChanged: entryDto.setKmStart,
-                          controller: _kmStartController,
+                          controller: TextEditingController(
+                            text: entryDto.getKmStart,
+                          ),
 
                           decoration: InputDecoration(
                             labelText: 'Quilometragem Inicial (km)',
@@ -349,7 +290,10 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
                         ),
                         child: TextFormField(
                           onChanged: entryDto.setKmEnd,
-                          controller: _kmEndController,
+                          controller: TextEditingController(
+                            text: entryDto.getKmEnd,
+                          ),
+
                           decoration: InputDecoration(
                             labelText: 'Quilometragem Final (km)',
                             prefixIcon: Icon(Icons.directions_car),

@@ -21,6 +21,7 @@ class CloseEntryScreen extends StatefulWidget {
 class _CloseEntryScreenState extends State<CloseEntryScreen> {
   final _formKey = GlobalKey<FormState>();
   late EntryDto entryDto;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -32,6 +33,7 @@ class _CloseEntryScreenState extends State<CloseEntryScreen> {
     final picked = await showTimePicker(
       context: context,
       initialTime: entryDto.endTime ?? TimeOfDay.now(),
+      initialEntryMode: TimePickerEntryMode.dial,
     );
     if (picked != null) {
       setState(() {
@@ -50,6 +52,8 @@ class _CloseEntryScreenState extends State<CloseEntryScreen> {
     }
 
     try {
+      setState(() => _isLoading = true);
+
       final provider = Provider.of<EntryProvider>(context, listen: false);
       final map = entryDto.toMap();
       map['status'] = EntryStatus.closed.toString().split('.').last;
@@ -67,32 +71,48 @@ class _CloseEntryScreenState extends State<CloseEntryScreen> {
         context: context,
         message: 'Erro ao finalizar: ${e.toString()}',
       );
+    } finally {
+      setState(() => _isLoading = false);
     }
   }
 
-  Widget _amountField({
+  Widget _buildTextField({
     required String label,
     required String initial,
     required ValueChanged<String> onChanged,
     IconData icon = Icons.attach_money,
     String? Function(String?)? validator,
+    List<TextInputFormatter>? inputFormatters,
+    // TextInputType? keyboardType,
   }) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+      padding: const EdgeInsets.only(bottom: 16.0),
       child: TextFormField(
         onChanged: onChanged,
         controller: TextEditingController(text: initial),
         decoration: InputDecoration(
           labelText: label,
           prefixIcon: Icon(icon),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+          filled: true,
+          fillColor: Theme.of(
+            context,
+          ).colorScheme.surfaceVariant.withOpacity(0.1),
         ),
         keyboardType: TextInputType.number,
-        inputFormatters: [
-          FilteringTextInputFormatter.digitsOnly,
-          CurrencyInputFormatter(),
-        ],
-        validator: validator,
+        inputFormatters:
+            inputFormatters ??
+            [FilteringTextInputFormatter.digitsOnly, CurrencyInputFormatter()],
+        validator:
+            validator ??
+            (value) {
+              if (value == null || value.isEmpty) return null;
+              final parsed = double.tryParse(value.replaceAll(',', '.'));
+              if (parsed == null || parsed < 0) {
+                return 'Insira um valor válido maior ou igual a zero.';
+              }
+              return null;
+            },
       ),
     );
   }
@@ -102,105 +122,245 @@ class _CloseEntryScreenState extends State<CloseEntryScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Fechar Jornada'),
-        actions: [IconButton(icon: const Icon(Icons.save), onPressed: _save)],
+        centerTitle:
+            false, // Alinha o título à esquerda para melhor legibilidade
+        elevation: 0, // Visual mais moderno e flat
+        scrolledUnderElevation: 4, // Elevação sutil ao scrollar
+        backgroundColor: Theme.of(
+          context,
+        ).colorScheme.surface, // Integra com o tema
+        foregroundColor: Theme.of(
+          context,
+        ).colorScheme.onSurface, // Garante contraste
+        shape: Border(
+          bottom: BorderSide(
+            color: Theme.of(context).colorScheme.outlineVariant,
+            width: 1,
+          ),
+        ), // Borda inferior sutil para separação
       ),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                vertical: 8.0,
-                horizontal: 16.0,
-              ),
-              child: TextFormField(
-                onChanged: entryDto.setKmEnd,
-                controller: TextEditingController(text: entryDto.getKmEnd),
-                decoration: InputDecoration(
-                  labelText: 'Quilometragem Final (km)',
-                  prefixIcon: const Icon(Icons.directions_car),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
+      body: Stack(
+        children: [
+          Form(
+            key: _formKey,
+            child: ListView(
+              padding: const EdgeInsets.all(16.0),
+              children: [
+                // Quilometragem Final
+                _buildTextField(
+                  initial: entryDto.getKmEnd,
+                  onChanged: entryDto.setKmEnd,
+                  label: 'Quilometragem Final (km)',
+                  icon: Icons.directions_car,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  validator: (value) =>
+                      CloseEntryValidations.validateKmEnd(value, entryDto),
                 ),
-                keyboardType: TextInputType.number,
-                validator: (value) =>
-                    CloseEntryValidations.validateKmEnd(value, entryDto),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                vertical: 8.0,
-                horizontal: 16.0,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ListTile(
-                    title: Text(
-                      entryDto.endTime == null
-                          ? 'Hora Final: Não definida'
-                          : 'Hora Final: ${entryDto.endTime!.format(context)}',
-                    ),
-                    trailing: const Icon(Icons.access_time),
-                    onTap: _selectEndTime,
-                    contentPadding: EdgeInsets.zero,
+
+                // Hora Final
+                ListTile(
+                  title: const Text('Hora Final'),
+                  subtitle: Text(
+                    entryDto.endTime == null
+                        ? 'Não definida'
+                        : entryDto.endTime!.format(context),
                   ),
-                  if (CloseEntryValidations.hasEndTimeError(entryDto))
-                    Padding(
-                      padding: const EdgeInsets.only(left: 16.0, top: 4.0),
-                      child: Text(
-                        CloseEntryValidations.getEndTimeErrorMessage(
-                          entryDto,
-                          context,
-                        )!,
-                        style: const TextStyle(color: Colors.red, fontSize: 12),
+                  trailing: const Icon(Icons.access_time),
+                  onTap: _selectEndTime,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(
+                      color: Theme.of(context).colorScheme.outlineVariant,
+                    ),
+                  ),
+                  tileColor: Theme.of(
+                    context,
+                  ).colorScheme.surfaceVariant.withOpacity(0.1),
+                ),
+                if (CloseEntryValidations.hasEndTimeError(entryDto))
+                  Padding(
+                    padding: const EdgeInsets.only(left: 16.0, top: 4.0),
+                    child: Text(
+                      CloseEntryValidations.getEndTimeErrorMessage(
+                        entryDto,
+                        context,
+                      )!,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                        fontSize: 12,
                       ),
                     ),
-                ],
-              ),
+                  ),
+                const SizedBox(height: 16),
+
+                // Ganhos Uber
+                _buildTextField(
+                  label: 'Ganhos Uber (R\$)',
+                  initial: entryDto.getUberEarnings,
+                  onChanged: entryDto.setUberEarnings,
+                  icon: Icons.payments,
+                  validator: CloseEntryValidations.validateUberEarnings,
+                ),
+
+                // Gorjetas
+                _buildTextField(
+                  label: 'Gorjetas (R\$)',
+                  initial: entryDto.getTips,
+                  onChanged: entryDto.setTips,
+                  icon: Icons.card_giftcard,
+                ),
+
+                // Média de Consumo
+                _buildTextField(
+                  label: 'Média de Consumo (km/l)',
+                  initial: entryDto.getFuelEfficiency,
+                  onChanged: entryDto.setFuelEfficiency,
+                  icon: Icons.speed,
+                  validator: CloseEntryValidations.validateFuelEfficiency,
+                ),
+
+                // Valor do Combustível
+                _buildTextField(
+                  label: 'Valor do Combustível (R\$/l)',
+                  initial: entryDto.getFuelPrice,
+                  onChanged: entryDto.setFuelPrice,
+                  icon: Icons.attach_money,
+                  validator: CloseEntryValidations.validateFuelPrice,
+                ),
+
+                // Resumo da Jornada - Apresentação melhorada com tabela
+                ListenableBuilder(
+                  listenable: entryDto,
+                  builder: (context, child) {
+                    return Card(
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: BorderSide(
+                          color: Theme.of(context).colorScheme.outlineVariant,
+                        ),
+                      ),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.surfaceVariant.withOpacity(0.1),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Fechamento da Jornada',
+                              style: Theme.of(context).textTheme.titleMedium
+                                  ?.copyWith(fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 16),
+                            Table(
+                              columnWidths: const {
+                                0: FlexColumnWidth(3),
+                                1: FlexColumnWidth(2),
+                              },
+                              border: TableBorder(
+                                horizontalInside: BorderSide(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.outlineVariant,
+                                  width: 1,
+                                ),
+                                bottom: BorderSide(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.outlineVariant,
+                                  width: 1,
+                                ),
+                              ),
+                              children: [
+                                _buildTableRow(
+                                  'Total de Horas Trabalhadas',
+                                  '${entryDto.totalHoursWorked?.format(context).toString() ?? '00:00'} horas',
+                                ),
+                                _buildTableRow(
+                                  'KM Total',
+                                  entryDto.totalKm.toString(),
+                                ),
+                                _buildTableRow(
+                                  'Combustível (Calculado)',
+                                  'R\$ ${entryDto.fuelCost.toStringAsFixed(2).replaceAll('.', ',')}',
+                                ),
+                                _buildTableRow(
+                                  'Total de Gastos',
+                                  'R\$ ${(entryDto.totalCosts - entryDto.fuelCost).toStringAsFixed(2).replaceAll('.', ',')}',
+                                ),
+                                _buildTableRow(
+                                  'Ganhos',
+                                  'R\$ ${entryDto.totalEarnings.toStringAsFixed(2).replaceAll('.', ',')}',
+                                ),
+                                TableRow(
+                                  children: [
+                                    const Padding(
+                                      padding: EdgeInsets.symmetric(
+                                        vertical: 8.0,
+                                      ),
+                                      child: Text('Lucro Líquido'),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 8.0,
+                                      ),
+                                      child: Text(
+                                        'R\$ ${entryDto.netEarnings.toStringAsFixed(2).replaceAll('.', ',')}',
+                                        textAlign: TextAlign.right,
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: entryDto.netEarnings >= 0
+                                              ? Colors.green
+                                              : Colors.red,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 32),
+
+                // Botão principal para salvar
+                FilledButton(
+                  onPressed: _isLoading ? null : _save,
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size.fromHeight(50),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text('Fechar Jornada'),
+                ),
+              ],
             ),
-            _amountField(
-              label: 'Ganhos Uber',
-              initial: entryDto.getUberEarnings,
-              onChanged: entryDto.setUberEarnings,
-              icon: Icons.payments,
-              validator: CloseEntryValidations.validateUberEarnings,
-            ),
-            _amountField(
-              label: 'Gorjetas',
-              initial: entryDto.getTips,
-              onChanged: entryDto.setTips,
-              icon: Icons.card_giftcard,
-            ),
-            _amountField(
-              label: 'Combustível',
-              initial: entryDto.getFuelCost,
-              onChanged: entryDto.setFuelCost,
-              icon: Icons.local_gas_station,
-            ),
-            _amountField(
-              label: 'Alimentação',
-              initial: entryDto.getFoodCost,
-              onChanged: entryDto.setFoodCost,
-              icon: Icons.restaurant,
-            ),
-            _amountField(
-              label: 'Lavagem/Limpeza',
-              initial: entryDto.getCleaningCost,
-              onChanged: entryDto.setCleaningCost,
-              icon: Icons.local_laundry_service,
-            ),
-            _amountField(
-              label: 'Outros Gastos',
-              initial: entryDto.getOtherCosts,
-              onChanged: entryDto.setOtherCosts,
-              icon: Icons.more_horiz,
-            ),
-            const SizedBox(height: 16),
-          ],
-        ),
+          ),
+          if (_isLoading) const Center(child: CircularProgressIndicator()),
+        ],
       ),
+    );
+  }
+
+  TableRow _buildTableRow(String label, String value) {
+    return TableRow(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: Text(label),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: Text(value, textAlign: TextAlign.right),
+        ),
+      ],
     );
   }
 }

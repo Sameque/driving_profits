@@ -16,6 +16,8 @@ class EntryDto extends ChangeNotifier {
   late double cleaningCost;
   late double otherCosts;
   late EntryStatus status;
+  late double fuelEfficiency;
+  late double fuelPrice;
 
   EntryDto({String? id}) : id = id ?? const Uuid().v4();
 
@@ -32,6 +34,8 @@ class EntryDto extends ChangeNotifier {
     foodCost = map['foodCost'];
     cleaningCost = map['cleaningCost'];
     otherCosts = map['otherCosts'];
+    fuelEfficiency = map['fuelEfficiency'] ?? 0.0;
+    fuelPrice = map['fuelPrice'] ?? 0.0;
     status = map['status'] != null
         ? EntryStatus.values.firstWhere(
             (e) => e.toString().split('.').last == map['status'],
@@ -54,11 +58,27 @@ class EntryDto extends ChangeNotifier {
       'foodCost': foodCost,
       'cleaningCost': cleaningCost,
       'otherCosts': otherCosts,
+      'fuelEfficiency': fuelEfficiency,
+      'fuelPrice': fuelPrice,
       'status': getStatus,
     };
   }
 
   //Setters with parsing and validation
+
+  void _calculateFuelCost() {
+    if ((kmStart == null || kmStart == 0) ||
+        (kmEnd == null || kmEnd == 0) ||
+        fuelEfficiency <= 0 ||
+        fuelPrice <= 0) {
+      return;
+    }
+
+    final totalKm = kmEnd! - kmStart!;
+    final litersUsed = totalKm / fuelEfficiency;
+    fuelCost = litersUsed * fuelPrice;
+  }
+
   void setDate(String value) {
     date = DateTime.tryParse(value) ?? DateTime.now();
   }
@@ -117,11 +137,6 @@ class EntryDto extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setFuelCost(String value) {
-    fuelCost = double.tryParse(value.replaceAll(',', '.')) ?? 0.0;
-    notifyListeners();
-  }
-
   void setFoodCost(String value) {
     foodCost = double.tryParse(value.replaceAll(',', '.')) ?? 0.0;
     notifyListeners();
@@ -143,6 +158,7 @@ class EntryDto extends ChangeNotifier {
     } else {
       kmStart = int.tryParse(value.replaceAll(',', '.'));
     }
+    _calculateFuelCost();
     notifyListeners();
   }
 
@@ -152,6 +168,19 @@ class EntryDto extends ChangeNotifier {
     } else {
       kmEnd = int.tryParse(value.replaceAll(',', '.'));
     }
+    _calculateFuelCost();
+    notifyListeners();
+  }
+
+  void setFuelPrice(String value) {
+    fuelPrice = double.tryParse(value.replaceAll(',', '.')) ?? 0.0;
+    _calculateFuelCost();
+    notifyListeners();
+  }
+
+  void setFuelEfficiency(String value) {
+    fuelEfficiency = double.tryParse(value.replaceAll(',', '.')) ?? 0.0;
+    _calculateFuelCost();
     notifyListeners();
   }
 
@@ -171,11 +200,14 @@ class EntryDto extends ChangeNotifier {
       ? '${endTime!.hour.toString().padLeft(2, '0')}:${endTime!.minute.toString().padLeft(2, '0')}'
       : '';
   String get getKmStart => kmStart?.toString() ?? '';
-  String get getKmEnd => kmEnd?.toString() ?? '';
+  String get getKmEnd => kmEnd == null || kmEnd! <= 0 ? '' : kmEnd.toString();
   String get getUberEarnings =>
       uberEarnings.toStringAsFixed(2).replaceAll('.', ',');
   String get getTips => tips.toStringAsFixed(2).replaceAll('.', ',');
   String get getFuelCost => fuelCost.toStringAsFixed(2).replaceAll('.', ',');
+  String get getFuelPrice => fuelPrice.toStringAsFixed(2).replaceAll('.', ',');
+  String get getFuelEfficiency =>
+      fuelEfficiency.toStringAsFixed(2).replaceAll('.', ',');
   String get getFoodCost => foodCost.toStringAsFixed(2).replaceAll('.', ',');
   String get getCleaningCost => cleaningCost.toString().replaceAll('.', ',');
   String get getOtherCosts =>
@@ -187,7 +219,9 @@ class EntryDto extends ChangeNotifier {
   double get totalCosts => fuelCost + foodCost + cleaningCost + otherCosts;
   double get netEarnings => totalEarnings - totalCosts;
   int get totalKm =>
-      (kmStart != null && kmEnd != null) ? (kmEnd! - kmStart!) : 0;
+      ((kmStart == null || kmStart! <= 0) || (kmEnd == null || kmEnd! <= 0))
+      ? 0
+      : (kmEnd! - kmStart!);
   double get earningsPerKm => totalKm > 0 ? netEarnings / totalKm : 0.0;
 
   //total hours worked
