@@ -28,7 +28,6 @@ class DailyListScreen extends StatelessWidget {
           }
 
           final allEntries = [...entryProvider.entries];
-          allEntries.sort((a, b) => b.date.compareTo(a.date));
 
           if (allEntries.isEmpty) {
             return Center(

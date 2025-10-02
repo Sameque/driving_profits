@@ -23,26 +23,6 @@ class EntryRepository {
       onCreate: _createDb,
       onUpgrade: (db, oldVersion, newVersion) async {
         log('Upgrading database from version $oldVersion to $newVersion');
-
-        // if (newVersion <= 6) {
-        //   await db.execute('ALTER TABLE daily_entries ADD COLUMN kmEnd REAL;');
-
-        //   await db.execute(
-        //     'ALTER TABLE daily_entries ADD COLUMN startTime TEXT;',
-        //   );
-
-        //   await db.execute(
-        //     'ALTER TABLE daily_entries ADD COLUMN endTime TEXT;',
-        //   );
-
-        //   await db.execute(
-        //     'ALTER TABLE daily_entries ADD COLUMN status TEXT NULL ',
-        //   );
-        // }
-
-        // if (newVersion >= 7) {
-        //   await db.execute('ALTER TABLE daily_entries DROP COLUMN kmDriven;');
-        // }
       },
     );
   }
@@ -74,7 +54,10 @@ class EntryRepository {
 
   Future<List<DailyEntry>> getAllEntries() async {
     final db = await database;
-    final maps = await db.query('daily_entries', orderBy: 'date DESC');
+    final maps = await db.query(
+      'daily_entries',
+      orderBy: 'date DESC, startTime DESC ',
+    );
     return List.generate(maps.length, (i) => DailyEntry.fromMap(maps[i]));
   }
 
