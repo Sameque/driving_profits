@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:uber_tracker/ui/feature/summary/widget/period.dart';
 
-/// Chips para seleção de período (semanal, mensal, anual).
 class FilterChips extends StatelessWidget {
   final Period selectedPeriod;
   final ValueChanged<Period?> onPeriodChanged;

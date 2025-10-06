@@ -3,7 +3,7 @@ import 'dart:developer';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
-import '../models/daily_entry.dart';
+import 'package:uber_tracker/models/daily_entry.dart';
 
 class EntryRepository {
   static Database? _database;
