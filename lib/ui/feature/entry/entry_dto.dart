@@ -5,6 +5,7 @@ import 'package:uuid/uuid.dart';
 class EntryDto extends ChangeNotifier {
   final String id;
   late DateTime date;
+  late DateTime? endDate;
   late TimeOfDay? startTime;
   late TimeOfDay? endTime;
   late int? kmStart;
@@ -24,6 +25,7 @@ class EntryDto extends ChangeNotifier {
   EntryDto.fromMap(Map<String, dynamic> map)
     : id = (map['id'] as String?) ?? const Uuid().v4() {
     date = DateTime.tryParse(map['date']) ?? DateTime.now();
+    endDate = DateTime.tryParse(map['endDate'] ?? '');
     startTime = parseTime(map['startTime']);
     endTime = parseTime(map['endTime']);
     kmStart = map['kmStart']?.toInt();
@@ -48,6 +50,7 @@ class EntryDto extends ChangeNotifier {
     return {
       'id': id,
       'date': getDateStr,
+      'endDate': getEndDateStr,
       'startTime': getStartTimeStr,
       'endTime': getEndTimeStr,
       'kmStart': kmStart,
@@ -77,11 +80,6 @@ class EntryDto extends ChangeNotifier {
     final totalKm = kmEnd! - kmStart!;
     final litersUsed = totalKm / fuelEfficiency;
     fuelCost = litersUsed * fuelPrice;
-  }
-
-  void setDateStr(String value) {
-    date = DateTime.tryParse(value) ?? DateTime.now();
-    notifyListeners();
   }
 
   void setDate(DateTime value) {
@@ -203,6 +201,8 @@ class EntryDto extends ChangeNotifier {
 
   //getters in string format
   String get getDateStr => date.toIso8601String().split('T').first;
+  String get getEndDateStr =>
+      endDate == null ? '' : endDate!.toIso8601String().split('T').first;
   String get getStartTimeStr => startTime != null
       ? '${startTime!.hour.toString().padLeft(2, '0')}:${startTime!.minute.toString().padLeft(2, '0')}'
       : '';
@@ -225,9 +225,10 @@ class EntryDto extends ChangeNotifier {
   String get getStatus => status.toString().split('.').last;
 
   //computed properties
+  DateTime get getDate => date;
+  DateTime? get getEndDate => endDate;
   TimeOfDay? get getEndTime => endTime;
   TimeOfDay? get getStartTime => startTime;
-  DateTime get getDate => date;
   double get totalEarnings => uberEarnings + tips;
   double get totalCosts => fuelCost + foodCost + cleaningCost + otherCosts;
   double get netEarnings => totalEarnings - totalCosts;
@@ -260,7 +261,7 @@ class EntryDto extends ChangeNotifier {
 
   @override
   String toString() {
-    return 'EntryDto{date: $date, startTime: $startTime, endTime: $endTime, kmStart: $kmStart, kmEnd: $kmEnd, uberEarnings: $uberEarnings, tips: $tips, fuelCost: $fuelCost, foodCost: $foodCost, cleaningCost: $cleaningCost, otherCosts: $otherCosts, status: $status}';
+    return 'EntryDto{date: $date, endDate: $endDate, startTime: $startTime, endTime: $endTime, kmStart: $kmStart, kmEnd: $kmEnd, uberEarnings: $uberEarnings, tips: $tips, fuelCost: $fuelCost, foodCost: $foodCost, cleaningCost: $cleaningCost, otherCosts: $otherCosts, status: $status}';
   }
 
   TimeOfDay? parseTime(String? value) {
@@ -274,5 +275,10 @@ class EntryDto extends ChangeNotifier {
       }
     }
     return null;
+  }
+
+  void setEndDate(DateTime picked) {
+    endDate = picked;
+    notifyListeners();
   }
 }

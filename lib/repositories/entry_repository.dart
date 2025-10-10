@@ -19,10 +19,13 @@ class EntryRepository {
     final path = join(documentsDirectory.path, 'trackerDb.db');
     return await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: _createDb,
       onUpgrade: (db, oldVersion, newVersion) async {
         log('Upgrading database from version $oldVersion to $newVersion');
+        if (oldVersion <= 2) {
+          await db.execute('ALTER TABLE daily_entries ADD COLUMN endDate TEXT');
+        }
       },
     );
   }

@@ -266,8 +266,8 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
                   ),
                   _buildTextField(
                     label: 'Outros Gastos (R\$)',
-                    initial: entryDto.getCleaningCost,
-                    onChanged: entryDto.setCleaningCost,
+                    initial: entryDto.getOtherCosts,
+                    onChanged: entryDto.setOtherCosts,
                     icon: Icons.more_horiz,
                   ),
                   const SizedBox(height: 24),

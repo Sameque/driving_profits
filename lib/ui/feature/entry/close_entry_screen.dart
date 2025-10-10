@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:uber_tracker/models/daily_entry.dart';
 import 'package:uber_tracker/models/entry_status.dart';
@@ -27,6 +28,21 @@ class _CloseEntryScreenState extends State<CloseEntryScreen> {
   void initState() {
     super.initState();
     entryDto = EntryDto.fromMap(widget.entry.toMap());
+    entryDto.setEndTime(TimeOfDay.now());
+    entryDto.setEndDate(DateTime.now());
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: entryDto.getEndDate,
+      firstDate: DateTime(2020),
+      lastDate: DateTime.now(),
+      locale: const Locale('pt', 'BR'),
+    );
+    if (picked != null && picked != entryDto.getEndDate) {
+      entryDto.setEndDate(picked);
+    }
   }
 
   Future<void> _selectEndTime() async {
@@ -36,9 +52,7 @@ class _CloseEntryScreenState extends State<CloseEntryScreen> {
       initialEntryMode: TimePickerEntryMode.dial,
     );
     if (picked != null) {
-      setState(() {
-        entryDto.setEndTime(picked);
-      });
+      entryDto.setEndTime(picked);
     }
   }
 
@@ -156,6 +170,25 @@ class _CloseEntryScreenState extends State<CloseEntryScreen> {
                   validator: (value) =>
                       CloseEntryValidations.validateKmEnd(value, entryDto),
                 ),
+                // Data Final
+                ListTile(
+                  title: const Text('Data Final'),
+                  subtitle: Text(
+                    DateFormat('dd/MM/yyyy').format(entryDto.getEndDate!),
+                  ),
+                  trailing: const Icon(Icons.calendar_today),
+                  onTap: () => _selectDate(context),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(
+                      color: Theme.of(context).colorScheme.outlineVariant,
+                    ),
+                  ),
+                  tileColor: Theme.of(
+                    context,
+                  ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.1),
+                ),
+                const SizedBox(height: 16),
 
                 // Hora Final
                 ListTile(
@@ -175,7 +208,7 @@ class _CloseEntryScreenState extends State<CloseEntryScreen> {
                   ),
                   tileColor: Theme.of(
                     context,
-                  ).colorScheme.surfaceVariant.withOpacity(0.1),
+                  ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.1),
                 ),
                 if (CloseEntryValidations.hasEndTimeError(entryDto))
                   Padding(
@@ -240,9 +273,10 @@ class _CloseEntryScreenState extends State<CloseEntryScreen> {
                           color: Theme.of(context).colorScheme.outlineVariant,
                         ),
                       ),
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.surfaceVariant.withOpacity(0.1),
+                      color: Theme.of(context)
+                          .colorScheme
+                          .surfaceContainerHighest
+                          .withValues(alpha: 0.1),
                       child: Padding(
                         padding: const EdgeInsets.all(16),
                         child: Column(
