@@ -1,11 +1,11 @@
 
-# Driving Profits (driving_profits)
+# Driving Profits
 
-Driving Profits é um aplicativo móvel criado em Flutter para motoristas que desejam controlar ganhos, despesas e calcular o lucro líquido por dia e por mês. O projeto usa um banco local (SQLite via sqflite) para persistência, adota o padrão Provider para gerenciamento de estado e oferece visualizações simples de resumo financeiro.
+Driving Profits é um aplicativo móvel criado em Flutter para motoristas que desejam controlar ganhos, despesas e calcular o lucro líquido. O projeto usa um banco local (SQLite via sqflite) para persistência, adota o padrão Provider para gerenciamento de estado e oferece visualizações simples de resumo financeiro.
 
 ## Visão de negócio
 
-Controle Uber é destinado a motoristas de aplicativos que precisam registrar rapidamente o início e fim de jornadas, acompanhar ganhos (corridas + gorjetas), registrar despesas (combustível, alimentação, higienização, outros) e obter métricas úteis como lucro líquido diário, total mensal, média por km e quilometragem total.
+Driving Profits é destinado a motoristas de aplicativos que precisam registrar rapidamente o início e fim de jornadas, acompanhar ganhos (corridas + gorjetas), registrar despesas (combustível, alimentação, higienização, outros) e obter métricas úteis como lucro líquido diário, total mensal, média por km e quilometragem total.
 
 Problema que resolve:
 - Evita perda de controle financeiro manual em anotações físicas;
@@ -17,13 +17,11 @@ Público-alvo: motoristas de apps de transporte/entregas que buscam controle fin
 ## Principais features
 
 - Iniciar e encerrar sessão de trabalho (registro de horário e quilometragem);
-- Registrar ganhos da plataforma (uberEarnings) e gorjetas (tips);
+- Registrar ganhos da plataforma e gorjetas;
 - Registrar despesas: combustível, alimentação, limpeza e outros custos;
-- Cálculo automático de: total de ganhos, total de despesas e lucro líquido (netProfit);
+- Cálculo automático de: total de ganhos, total de despesas e lucro líquido;
 - Listagem por dia e filtros por mês;
 - Métricas agregadas: total de km percorridos, média de ganho por km, lucro mensal;
-- Internacionalização (português PT-BR e inglês) usando gen_l10n;
-- Visualizações gráficas (biblioteca fl_chart) para resumo (quando presente na UI).
 
 ## Arquitetura e organização do código
 
