@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:uber_tracker/models/daily_entry.dart';
-import 'package:uber_tracker/models/entry_status.dart';
+import 'package:driving_profits/models/entry_status.dart';
 
 class EntrySummaryModel {
   late String id;

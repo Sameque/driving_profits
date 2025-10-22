@@ -1,5 +1,5 @@
-import 'package:uber_tracker/data/services/expense_service.dart';
-import 'package:uber_tracker/domain/expense/entities/expense_month_entity.dart';
+import 'package:driving_profits/data/services/expense_service.dart';
+import 'package:driving_profits/domain/expense/entities/expense_month_entity.dart';
 
 class ExpenseRepository {
   final ExpenseService _service;

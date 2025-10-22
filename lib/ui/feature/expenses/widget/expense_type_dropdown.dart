@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:uber_tracker/domain/expense/expense_month_type.dart';
+import 'package:driving_profits/domain/expense/expense_month_type.dart';
 
 class ExpenseTypeDropdown extends StatelessWidget {
   final ExpenseMonthType? value;

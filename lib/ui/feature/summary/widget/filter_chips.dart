@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:uber_tracker/ui/feature/summary/widget/period.dart';
+import 'package:driving_profits/ui/feature/summary/widget/period.dart';
 
 class FilterChips extends StatelessWidget {
   final Period selectedPeriod;

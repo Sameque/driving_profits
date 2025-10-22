@@ -1,4 +1,4 @@
-import 'package:uber_tracker/data/services/database_service.dart';
+import 'package:driving_profits/data/services/database_service.dart';
 
 class EntryService {
   final DatabaseService _dbService;

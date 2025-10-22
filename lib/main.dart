@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:uber_tracker/data/repositories/entry_repository.dart';
-import 'package:uber_tracker/data/repositories/expense_repository.dart';
-import 'package:uber_tracker/data/services/entry_service.dart';
-import 'package:uber_tracker/data/services/expense_service.dart';
-import 'package:uber_tracker/data/services/database_service.dart';
-import 'package:uber_tracker/ui/feature/expenses/expense_viewmodel.dart';
-import 'package:uber_tracker/ui/feature/list/daily_list_viewmodel.dart';
-import 'package:uber_tracker/ui/theme/app_theme_alt_soft.dart';
-import 'package:uber_tracker/ui/theme/app_theme_alt_soft_dark.dart';
-import 'package:uber_tracker/ui/feature/summary/summary_viewmodel.dart';
-import 'providers/entry_provider.dart';
+import 'package:driving_profits/data/repositories/entry_repository.dart';
+import 'package:driving_profits/data/repositories/expense_repository.dart';
+import 'package:driving_profits/data/services/entry_service.dart';
+import 'package:driving_profits/data/services/expense_service.dart';
+import 'package:driving_profits/data/services/database_service.dart';
+import 'package:driving_profits/ui/feature/expenses/expense_viewmodel.dart';
+import 'package:driving_profits/ui/feature/list/daily_list_viewmodel.dart';
+import 'package:driving_profits/ui/theme/app_theme_alt_soft.dart';
+import 'package:driving_profits/ui/theme/app_theme_alt_soft_dark.dart';
+import 'package:driving_profits/ui/feature/summary/summary_viewmodel.dart';
 import 'ui/feature/home/home_screen.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:uber_tracker/l10n/app_localizations.dart';
+import 'package:driving_profits/l10n/app_localizations.dart';
 
 void main() {
   runApp(
@@ -68,7 +67,7 @@ class MyApp extends StatelessWidget {
         AppLocalizations.delegate,
       ],
       supportedLocales: const [Locale('pt', 'BR'), Locale('en', 'US')],
-      title: 'Controle Uber',
+      title: 'Driving Profits',
       theme: AltSoftTheme.theme(),
       darkTheme: AltSoftDarkTheme.theme(),
       themeMode: ThemeMode.light,

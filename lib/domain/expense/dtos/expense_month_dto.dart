@@ -1,4 +1,4 @@
-import 'package:uber_tracker/domain/expense/expense_month_type.dart';
+import 'package:driving_profits/domain/expense/expense_month_type.dart';
 
 class ExpenseMonthDto {
   final int? _id;
