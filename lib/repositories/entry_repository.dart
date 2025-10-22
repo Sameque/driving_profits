@@ -23,7 +23,7 @@ class EntryRepository {
       onCreate: _createDb,
       onUpgrade: (db, oldVersion, newVersion) async {
         log('Upgrading database from version $oldVersion to $newVersion');
-        if (oldVersion <= 2) {
+        if (newVersion >= 2) {
           await db.execute('ALTER TABLE daily_entries ADD COLUMN endDate TEXT');
         }
       },
