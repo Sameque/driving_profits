@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:uber_tracker/models/entry_status.dart';
+import 'package:driving_profits/models/entry_status.dart';
 import 'package:uuid/uuid.dart';
 
 class EntryDto extends ChangeNotifier {
   final String id;
   late DateTime date;
+  late DateTime? endDate;
   late TimeOfDay? startTime;
   late TimeOfDay? endTime;
   late int? kmStart;
@@ -24,6 +25,7 @@ class EntryDto extends ChangeNotifier {
   EntryDto.fromMap(Map<String, dynamic> map)
     : id = (map['id'] as String?) ?? const Uuid().v4() {
     date = DateTime.tryParse(map['date']) ?? DateTime.now();
+    endDate = DateTime.tryParse(map['endDate'] ?? '');
     startTime = parseTime(map['startTime']);
     endTime = parseTime(map['endTime']);
     kmStart = map['kmStart']?.toInt();
@@ -48,6 +50,7 @@ class EntryDto extends ChangeNotifier {
     return {
       'id': id,
       'date': getDateStr,
+      'endDate': getEndDateStr,
       'startTime': getStartTimeStr,
       'endTime': getEndTimeStr,
       'kmStart': kmStart,
@@ -77,11 +80,6 @@ class EntryDto extends ChangeNotifier {
     final totalKm = kmEnd! - kmStart!;
     final litersUsed = totalKm / fuelEfficiency;
     fuelCost = litersUsed * fuelPrice;
-  }
-
-  void setDateStr(String value) {
-    date = DateTime.tryParse(value) ?? DateTime.now();
-    notifyListeners();
   }
 
   void setDate(DateTime value) {
@@ -203,6 +201,8 @@ class EntryDto extends ChangeNotifier {
 
   //getters in string format
   String get getDateStr => date.toIso8601String().split('T').first;
+  String get getEndDateStr =>
+      endDate == null ? '' : endDate!.toIso8601String().split('T').first;
   String get getStartTimeStr => startTime != null
       ? '${startTime!.hour.toString().padLeft(2, '0')}:${startTime!.minute.toString().padLeft(2, '0')}'
       : '';
@@ -225,9 +225,10 @@ class EntryDto extends ChangeNotifier {
   String get getStatus => status.toString().split('.').last;
 
   //computed properties
+  DateTime get getDate => date;
+  DateTime? get getEndDate => endDate;
   TimeOfDay? get getEndTime => endTime;
   TimeOfDay? get getStartTime => startTime;
-  DateTime get getDate => date;
   double get totalEarnings => uberEarnings + tips;
   double get totalCosts => fuelCost + foodCost + cleaningCost + otherCosts;
   double get netEarnings => totalEarnings - totalCosts;
@@ -236,6 +237,32 @@ class EntryDto extends ChangeNotifier {
       ? 0
       : (kmEnd! - kmStart!);
   double get earningsPerKm => totalKm > 0 ? netEarnings / totalKm : 0.0;
+
+  TimeOfDay? _calculateTotalWorkingHoursTimeOfDay() {
+    if (endDate == null || startTime == null || endTime == null) {
+      return null;
+    }
+
+    final start = DateTime(
+      date.year,
+      date.month,
+      date.day,
+      startTime!.hour,
+      startTime!.minute,
+    );
+    final end = DateTime(
+      endDate!.year,
+      endDate!.month,
+      endDate!.day,
+      endTime!.hour,
+      endTime!.minute,
+    );
+    final difference = end.difference(start).inMinutes;
+    if (difference <= 0) return null;
+    final hours = difference ~/ 60;
+    final minutes = difference % 60;
+    return TimeOfDay(hour: hours, minute: minutes);
+  }
 
   //total hours worked
   double get totalHoursWorkedDob {
@@ -247,20 +274,17 @@ class EntryDto extends ChangeNotifier {
   }
 
   // total horas em formato de tempo (HH:MM)
-  TimeOfDay? get totalHoursWorked {
-    if (endTime == null || startTime == null) {
-      return null;
-    }
-    final totalHours = TimeOfDay(
-      hour: endTime!.hour - startTime!.hour,
-      minute: endTime!.minute - startTime!.minute,
-    );
-    return totalHours;
+  TimeOfDay? get totalHoursWorked => _calculateTotalWorkingHoursTimeOfDay();
+
+  String get totalHoursWorkedStr {
+    final totalHours = totalHoursWorked;
+    if (totalHours == null) return '';
+    return '${totalHours.hour.toString().padLeft(2, '0')}:${totalHours.minute.toString().padLeft(2, '0')}';
   }
 
   @override
   String toString() {
-    return 'EntryDto{date: $date, startTime: $startTime, endTime: $endTime, kmStart: $kmStart, kmEnd: $kmEnd, uberEarnings: $uberEarnings, tips: $tips, fuelCost: $fuelCost, foodCost: $foodCost, cleaningCost: $cleaningCost, otherCosts: $otherCosts, status: $status}';
+    return 'EntryDto{date: $date, endDate: $endDate, startTime: $startTime, endTime: $endTime, kmStart: $kmStart, kmEnd: $kmEnd, uberEarnings: $uberEarnings, tips: $tips, fuelCost: $fuelCost, foodCost: $foodCost, cleaningCost: $cleaningCost, otherCosts: $otherCosts, status: $status}';
   }
 
   TimeOfDay? parseTime(String? value) {
@@ -274,5 +298,10 @@ class EntryDto extends ChangeNotifier {
       }
     }
     return null;
+  }
+
+  void setEndDate(DateTime picked) {
+    endDate = picked;
+    notifyListeners();
   }
 }

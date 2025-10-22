@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
-import 'package:uber_tracker/ui/widget/custom_snackbar.dart';
+import 'package:driving_profits/ui/widget/custom_snackbar.dart';
 import '../../../models/daily_entry.dart';
 import '../../../providers/entry_provider.dart';
 
@@ -97,7 +97,7 @@ class _StartEntryScreenState extends State<StartEntryScreen> {
         filled: true,
         fillColor: Theme.of(
           context,
-        ).colorScheme.surfaceVariant.withOpacity(0.1),
+        ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.1),
       ),
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
       inputFormatters: [
@@ -184,7 +184,7 @@ class _StartEntryScreenState extends State<StartEntryScreen> {
                   ),
                   tileColor: Theme.of(
                     context,
-                  ).colorScheme.surfaceVariant.withOpacity(0.1),
+                  ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.1),
                 ),
                 const SizedBox(height: 16),
                 _buildTextField(

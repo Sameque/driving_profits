@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:uber_tracker/models/entry_status.dart';
+import 'package:driving_profits/models/entry_status.dart';
 import 'package:uuid/uuid.dart';
 
 class DailyEntry {
   final String id;
   final DateTime date;
+  final DateTime? endDate;
   late TimeOfDay? startTime;
   late TimeOfDay? endTime;
   final double uberEarnings;
@@ -22,6 +23,7 @@ class DailyEntry {
     required this.kmStart,
     required this.kmEnd,
     required this.date,
+    required this.endDate,
     required this.startTime,
     required this.endTime,
     required this.uberEarnings,
@@ -38,6 +40,7 @@ class DailyEntry {
     required TimeOfDay this.startTime,
     required int this.kmStart,
   }) : id = const Uuid().v4(),
+       endDate = null,
        endTime = null,
        uberEarnings = 0.0,
        tips = 0.0,
@@ -56,6 +59,7 @@ class DailyEntry {
     return {
       'id': id,
       'date': date.toIso8601String(),
+      'endDate': endDate?.toIso8601String(),
       'uberEarnings': uberEarnings,
       'tips': tips,
       'fuelCost': fuelCost,
@@ -87,6 +91,9 @@ class DailyEntry {
     return DailyEntry(
       id: map['id'] == null ? null : map['id'] as String,
       date: DateTime.parse(map['date']),
+      endDate: map['endDate'] == null || map['endDate'].isEmpty
+          ? null
+          : DateTime.parse(map['endDate'] ?? ''),
       startTime: parseTime(startTimeStr),
       endTime: parseTime(endTimeStr),
       uberEarnings: map['uberEarnings'] ?? 0.0,

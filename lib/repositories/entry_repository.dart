@@ -3,7 +3,7 @@ import 'dart:developer';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
-import '../models/daily_entry.dart';
+import 'package:driving_profits/models/daily_entry.dart';
 
 class EntryRepository {
   static Database? _database;
@@ -19,10 +19,13 @@ class EntryRepository {
     final path = join(documentsDirectory.path, 'trackerDb.db');
     return await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: _createDb,
       onUpgrade: (db, oldVersion, newVersion) async {
         log('Upgrading database from version $oldVersion to $newVersion');
+        if (newVersion >= 2) {
+          await db.execute('ALTER TABLE daily_entries ADD COLUMN endDate TEXT');
+        }
       },
     );
   }

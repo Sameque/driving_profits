@@ -1,6 +1,6 @@
 {
-    "name": "uber_tracker",
-    "short_name": "uber_tracker",
+    "name": "Driving Profits",
+    "short_name": "driving_profits",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

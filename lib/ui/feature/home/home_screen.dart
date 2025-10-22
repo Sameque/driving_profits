@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import '../list/daily_list_screen.dart';
-import '../summary/summary_screen.dart';
+import 'package:driving_profits/ui/feature/expenses/expense_screen.dart';
+import 'package:driving_profits/ui/feature/list/daily_list_screen.dart';
+import 'package:driving_profits/ui/feature/summary/summary_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -15,6 +16,7 @@ class _HomeScreenState extends State<HomeScreen> {
   static final List<Widget> _widgetOptions = <Widget>[
     const DailyListScreen(),
     const SummaryScreen(),
+    const ExpenseScreen(),
     // Placeholder para tela futura
     _buildPlaceholder(),
   ];
@@ -83,6 +85,11 @@ class _HomeScreenState extends State<HomeScreen> {
               icon: Icon(Icons.bar_chart),
               activeIcon: Icon(Icons.bar_chart_rounded),
               label: 'Resumo',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.attach_money),
+              activeIcon: Icon(Icons.attach_money_rounded),
+              label: 'Gastos',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.build),
