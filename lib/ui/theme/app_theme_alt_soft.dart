@@ -19,7 +19,6 @@ class AltSoftTheme {
       colorScheme: ColorScheme.light(
         primary: AltSoftColors.primary,
         secondary: AltSoftColors.accent,
-        background: AltSoftColors.background,
         surface: AltSoftColors.surface,
         error: AltSoftColors.error,
       ),

@@ -33,7 +33,7 @@ class DailyEntry {
     required this.cleaningCost,
     required this.otherCosts,
     required this.status,
-  }) : this.id = id ?? const Uuid().v4();
+  }) : id = id ?? const Uuid().v4();
 
   DailyEntry.start({
     required this.date,

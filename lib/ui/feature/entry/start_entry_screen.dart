@@ -168,7 +168,7 @@ class _StartEntryScreenState extends State<StartEntryScreen> {
                   ),
                   tileColor: Theme.of(
                     context,
-                  ).colorScheme.surfaceVariant.withOpacity(0.1),
+                  ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.1),
                 ),
                 const SizedBox(height: 16),
                 ListTile(

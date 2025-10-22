@@ -19,7 +19,6 @@ class AltSoftDarkTheme {
       colorScheme: ColorScheme.dark(
         primary: AltSoftDarkColors.primary,
         secondary: AltSoftDarkColors.accent,
-        background: AltSoftDarkColors.background,
         surface: AltSoftDarkColors.surface,
         error: AltSoftDarkColors.error,
       ),

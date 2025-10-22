@@ -73,7 +73,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
           filled: true,
           fillColor: Theme.of(
             context,
-          ).colorScheme.surfaceVariant.withOpacity(0.1),
+          ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.1),
         ),
         keyboardType: const TextInputType.numberWithOptions(decimal: true),
         inputFormatters: [
@@ -82,8 +82,9 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
         ],
 
         validator: (value) {
-          if (value == null || value.isEmpty)
-            return null; // Opcional, mas permite zero
+          if (value == null || value.isEmpty) {
+            return null;
+          }
           final parsed = double.tryParse(
             value.replaceAll(',', '.').replaceAll('R\$ ', ''),
           );
@@ -92,7 +93,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
           }
           return null;
         },
-        autofocus: true, // Focar no primeiro campo para melhor UX
+        autofocus: true,
       ),
     );
   }
@@ -137,7 +138,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                   ),
                   color: Theme.of(
                     context,
-                  ).colorScheme.surfaceVariant.withOpacity(0.1),
+                  ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.1),
                   child: Padding(
                     padding: const EdgeInsets.all(16),
                     child: Column(
@@ -193,7 +194,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                   ),
                   color: Theme.of(
                     context,
-                  ).colorScheme.surfaceVariant.withOpacity(0.1),
+                  ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.1),
                   child: Padding(
                     padding: const EdgeInsets.all(16),
                     child: ListenableBuilder(

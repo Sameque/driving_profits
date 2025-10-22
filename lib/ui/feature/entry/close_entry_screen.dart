@@ -111,7 +111,7 @@ class _CloseEntryScreenState extends State<CloseEntryScreen> {
           filled: true,
           fillColor: Theme.of(
             context,
-          ).colorScheme.surfaceVariant.withOpacity(0.1),
+          ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.1),
         ),
         keyboardType: TextInputType.number,
         inputFormatters:

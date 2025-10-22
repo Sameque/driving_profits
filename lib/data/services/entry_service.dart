@@ -4,7 +4,7 @@ class EntryService {
   final DatabaseService _dbService;
   static const String _tableName = 'daily_entries';
 
-  EntryService(this._dbService) {}
+  EntryService(this._dbService);
 
   Future<List<dynamic>> getAllEntries() async {
     final data = await _dbService.query(
