@@ -1,9 +1,9 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:uber_tracker/data/repositories/expense_repository.dart';
-import 'package:uber_tracker/domain/expense/dtos/expense_month_dto.dart';
-import 'package:uber_tracker/domain/expense/entities/expense_month_entity.dart';
+import 'package:driving_profits/data/repositories/expense_repository.dart';
+import 'package:driving_profits/domain/expense/dtos/expense_month_dto.dart';
+import 'package:driving_profits/domain/expense/entities/expense_month_entity.dart';
 
 class ExpenseViewModel extends ChangeNotifier {
   final ExpenseRepository _repository;

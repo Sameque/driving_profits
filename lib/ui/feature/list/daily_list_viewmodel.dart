@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:uber_tracker/data/repositories/entry_repository.dart';
-import 'package:uber_tracker/ui/feature/entry/entry_dto.dart';
+import 'package:driving_profits/data/repositories/entry_repository.dart';
+import 'package:driving_profits/ui/feature/entry/entry_dto.dart';
 
 class DailyListViewmodel extends ChangeNotifier {
   final EntryRepository _repository;

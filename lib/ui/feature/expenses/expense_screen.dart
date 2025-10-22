@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
-import 'package:uber_tracker/domain/expense/dtos/expense_month_dto.dart';
-import 'package:uber_tracker/domain/expense/expense_month_type.dart';
-import 'package:uber_tracker/ui/feature/expenses/widget/expense_type_dropdown.dart';
-import 'package:uber_tracker/ui/widget/currency_input_formatter.dart';
-import 'package:uber_tracker/ui/widget/custom_snackbar.dart';
+import 'package:driving_profits/domain/expense/dtos/expense_month_dto.dart';
+import 'package:driving_profits/domain/expense/expense_month_type.dart';
+import 'package:driving_profits/ui/feature/expenses/widget/expense_type_dropdown.dart';
+import 'package:driving_profits/ui/widget/currency_input_formatter.dart';
+import 'package:driving_profits/ui/widget/custom_snackbar.dart';
 import 'expense_viewmodel.dart';
 
 class ExpenseScreen extends StatefulWidget {

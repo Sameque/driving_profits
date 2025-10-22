@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:uber_tracker/ui/feature/entry/entry_dto.dart';
+import 'package:driving_profits/ui/feature/entry/entry_dto.dart';
 
 class CloseEntryValidations {
   /// Valida se os ganhos do Uber foram preenchidos e são maiores que zero

@@ -10,18 +10,18 @@
             "request": "attach"
         },
         {
-            "name": "uber_tracker",
+            "name": "driving_profits",
             "request": "launch",
             "type": "dart"
         },
         {
-            "name": "uber_tracker (profile mode)",
+            "name": "driving_profits (profile mode)",
             "request": "launch",
             "type": "dart",
             "flutterMode": "profile"
         },
         {
-            "name": "uber_tracker (release mode)",
+            "name": "driving_profits (release mode)",
             "request": "launch",
             "type": "dart",
             "flutterMode": "release"

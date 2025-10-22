@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:uber_tracker/models/daily_entry.dart';
-import 'package:uber_tracker/models/entry_status.dart';
-import 'package:uber_tracker/providers/entry_provider.dart';
-import 'package:uber_tracker/ui/feature/entry/entry_dto.dart';
-import 'package:uber_tracker/ui/feature/entry/close_entry_validations.dart';
-import 'package:uber_tracker/ui/widget/currency_input_formatter.dart';
-import 'package:uber_tracker/ui/widget/custom_snackbar.dart';
+import 'package:driving_profits/models/daily_entry.dart';
+import 'package:driving_profits/models/entry_status.dart';
+import 'package:driving_profits/providers/entry_provider.dart';
+import 'package:driving_profits/ui/feature/entry/entry_dto.dart';
+import 'package:driving_profits/ui/feature/entry/close_entry_validations.dart';
+import 'package:driving_profits/ui/widget/currency_input_formatter.dart';
+import 'package:driving_profits/ui/widget/custom_snackbar.dart';
 
 class CloseEntryScreen extends StatefulWidget {
   final DailyEntry entry;

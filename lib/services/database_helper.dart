@@ -1,7 +1,7 @@
 // import 'package:sqflite/sqflite.dart';
 // import 'package:path/path.dart';
 // import 'package:path_provider/path_provider.dart';
-// import 'package:uber_tracker/models/daily_entry.dart';
+// import 'package:driving_profits/models/daily_entry.dart';
 
 // class DatabaseHelper {
 //   static const _databaseName = "UberFinance.db";

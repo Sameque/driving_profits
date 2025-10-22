@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:uber_tracker/models/daily_entry.dart';
-import 'package:uber_tracker/models/entry_status.dart';
-import 'package:uber_tracker/ui/feature/entry/edit_entry_screen.dart';
-import 'package:uber_tracker/ui/feature/entry/close_entry_screen.dart';
-import 'package:uber_tracker/ui/feature/entry/expenses_screen.dart';
-import 'package:uber_tracker/ui/feature/entry/start_entry_screen.dart';
-import 'package:uber_tracker/ui/feature/list/daily_list_viewmodel.dart';
-import 'package:uber_tracker/ui/widget/custom_snackbar.dart';
+import 'package:driving_profits/models/daily_entry.dart';
+import 'package:driving_profits/models/entry_status.dart';
+import 'package:driving_profits/ui/feature/entry/edit_entry_screen.dart';
+import 'package:driving_profits/ui/feature/entry/close_entry_screen.dart';
+import 'package:driving_profits/ui/feature/entry/expenses_screen.dart';
+import 'package:driving_profits/ui/feature/entry/start_entry_screen.dart';
+import 'package:driving_profits/ui/feature/list/daily_list_viewmodel.dart';
+import 'package:driving_profits/ui/widget/custom_snackbar.dart';
 
 class DailyListScreen extends StatelessWidget {
   const DailyListScreen({super.key});

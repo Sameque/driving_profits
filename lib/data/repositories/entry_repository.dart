@@ -1,5 +1,5 @@
-import 'package:uber_tracker/data/services/entry_service.dart';
-import 'package:uber_tracker/models/daily_entry.dart';
+import 'package:driving_profits/data/services/entry_service.dart';
+import 'package:driving_profits/models/daily_entry.dart';
 
 class EntryRepository {
   final EntryService _service;

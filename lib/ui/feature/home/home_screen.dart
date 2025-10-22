@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:uber_tracker/ui/feature/expenses/expense_screen.dart';
-import 'package:uber_tracker/ui/feature/list/daily_list_screen.dart';
-import 'package:uber_tracker/ui/feature/summary/summary_screen.dart';
+import 'package:driving_profits/ui/feature/expenses/expense_screen.dart';
+import 'package:driving_profits/ui/feature/list/daily_list_screen.dart';
+import 'package:driving_profits/ui/feature/summary/summary_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});

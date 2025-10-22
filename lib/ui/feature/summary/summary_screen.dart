@@ -3,13 +3,13 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:uber_tracker/ui/feature/summary/summary_viewmodel.dart';
+import 'package:driving_profits/ui/feature/summary/summary_viewmodel.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:uber_tracker/ui/feature/summary/widget/filter_chips.dart';
-import 'package:uber_tracker/ui/feature/summary/widget/info_list_tile.dart';
-import 'package:uber_tracker/ui/feature/summary/widget/loading_state.dart';
-import 'package:uber_tracker/ui/feature/summary/widget/primary_metric_card.dart';
-import 'package:uber_tracker/ui/feature/summary/widget/secondary_metric_card.dart';
+import 'package:driving_profits/ui/feature/summary/widget/filter_chips.dart';
+import 'package:driving_profits/ui/feature/summary/widget/info_list_tile.dart';
+import 'package:driving_profits/ui/feature/summary/widget/loading_state.dart';
+import 'package:driving_profits/ui/feature/summary/widget/primary_metric_card.dart';
+import 'package:driving_profits/ui/feature/summary/widget/secondary_metric_card.dart';
 
 class SummaryScreen extends StatefulWidget {
   const SummaryScreen({super.key});

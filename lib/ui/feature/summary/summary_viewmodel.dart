@@ -1,8 +1,8 @@
 import 'package:flutter/cupertino.dart';
-import 'package:uber_tracker/data/repositories/entry_repository.dart';
-import 'package:uber_tracker/models/entry_status.dart';
-import 'package:uber_tracker/ui/feature/summary/entry_summary_model.dart';
-import 'package:uber_tracker/ui/feature/summary/widget/period.dart';
+import 'package:driving_profits/data/repositories/entry_repository.dart';
+import 'package:driving_profits/models/entry_status.dart';
+import 'package:driving_profits/ui/feature/summary/entry_summary_model.dart';
+import 'package:driving_profits/ui/feature/summary/widget/period.dart';
 
 class SummaryViewmodel extends ChangeNotifier {
   final EntryRepository _repository;

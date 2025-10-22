@@ -1,4 +1,4 @@
-package com.example.uber_tracker
+package com.example.driving_profits
 
 import io.flutter.embedding.android.FlutterActivity
 

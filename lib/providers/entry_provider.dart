@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:uber_tracker/data/repositories/entry_repository.dart';
-import 'package:uber_tracker/models/daily_entry.dart';
+import 'package:driving_profits/data/repositories/entry_repository.dart';
+import 'package:driving_profits/models/daily_entry.dart';
 
 class EntryProvider with ChangeNotifier {
   final EntryRepository _repository;

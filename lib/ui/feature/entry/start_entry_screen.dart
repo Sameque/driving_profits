@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
-import 'package:uber_tracker/ui/widget/custom_snackbar.dart';
+import 'package:driving_profits/ui/widget/custom_snackbar.dart';
 import '../../../models/daily_entry.dart';
 import '../../../providers/entry_provider.dart';
 
