@@ -53,7 +53,7 @@ class DailyListScreen extends StatelessWidget {
                 );
               },
               onDismissed: (direction) {
-                viewModel.deleteEntry(entry.id!);
+                viewModel.deleteEntry(entry.id);
 
                 CustomSnackBar.success(
                   context: context,

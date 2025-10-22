@@ -49,7 +49,9 @@ class PrimaryMetricCard extends StatelessWidget {
               Text(
                 description,
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onPrimaryContainer.withOpacity(0.8),
+                  color: theme.colorScheme.onPrimaryContainer.withValues(
+                    alpha: 0.8,
+                  ),
                 ),
               ),
             ],

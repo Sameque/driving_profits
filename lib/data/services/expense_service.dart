@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:driving_profits/data/services/database_service.dart';
 
 class ExpenseService {

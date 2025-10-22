@@ -121,7 +121,7 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
           filled: true,
           fillColor: Theme.of(
             context,
-          ).colorScheme.surfaceVariant.withOpacity(0.1),
+          ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.1),
         ),
         keyboardType: TextInputType.number,
         inputFormatters:
@@ -153,10 +153,11 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
       symbol: 'R\$',
     );
 
-    return WillPopScope(
-      onWillPop: () async {
+    return PopScope(
+      onPopInvokedWithResult: (didPop, result) => () async {
         if (_hasUnsavedChanges) {
-          return await showDialog(
+          didPop =
+              await showDialog(
                 context: context,
                 builder: (context) => AlertDialog(
                   title: const Text('Descartar alterações?'),
@@ -215,9 +216,10 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
                         color: Theme.of(context).colorScheme.outlineVariant,
                       ),
                     ),
-                    tileColor: Theme.of(
-                      context,
-                    ).colorScheme.surfaceVariant.withOpacity(0.1),
+                    tileColor: Theme.of(context)
+                        .colorScheme
+                        .surfaceContainerHighest
+                        .withValues(alpha: 0.1),
                   ),
                   const SizedBox(height: 24),
 
@@ -307,9 +309,10 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
                         color: Theme.of(context).colorScheme.outlineVariant,
                       ),
                     ),
-                    tileColor: Theme.of(
-                      context,
-                    ).colorScheme.surfaceVariant.withOpacity(0.1),
+                    tileColor: Theme.of(context)
+                        .colorScheme
+                        .surfaceContainerHighest
+                        .withValues(alpha: 0.1),
                   ),
                   const SizedBox(height: 16),
                   ListTile(
@@ -325,26 +328,29 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
                         color: Theme.of(context).colorScheme.outlineVariant,
                       ),
                     ),
-                    tileColor: Theme.of(
-                      context,
-                    ).colorScheme.surfaceVariant.withOpacity(0.1),
+                    tileColor: Theme.of(context)
+                        .colorScheme
+                        .surfaceContainerHighest
+                        .withValues(alpha: 0.1),
                   ),
                   const SizedBox(height: 16),
                   ListTile(
                     title: const Text('KM Rodados (calculado)'),
                     trailing: Text(entryDto.totalKm.toString()),
-                    tileColor: Theme.of(
-                      context,
-                    ).colorScheme.surfaceVariant.withOpacity(0.1),
+                    tileColor: Theme.of(context)
+                        .colorScheme
+                        .surfaceContainerHighest
+                        .withValues(alpha: 0.1),
                   ),
                   ListTile(
                     title: const Text('Horas Trabalhadas (calculado)'),
                     trailing: Text(
                       entryDto.totalHoursWorked?.format(context) ?? '',
                     ),
-                    tileColor: Theme.of(
-                      context,
-                    ).colorScheme.surfaceVariant.withOpacity(0.1),
+                    tileColor: Theme.of(context)
+                        .colorScheme
+                        .surfaceContainerHighest
+                        .withValues(alpha: 0.1),
                   ),
                   const SizedBox(height: 32),
 
@@ -377,7 +383,7 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
                   color: Theme.of(context).scaffoldBackgroundColor,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withValues(alpha: 0.1),
                       spreadRadius: 1,
                       blurRadius: 5,
                       offset: const Offset(0, -3),

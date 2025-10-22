@@ -6,6 +6,7 @@ class FilterChips extends StatelessWidget {
   final ValueChanged<Period?> onPeriodChanged;
 
   const FilterChips({
+    super.key,
     required this.selectedPeriod,
     required this.onPeriodChanged,
   });
