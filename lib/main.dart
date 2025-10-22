@@ -4,7 +4,9 @@ import 'package:uber_tracker/data/repositories/entry_repository.dart';
 import 'package:uber_tracker/data/repositories/expense_repository.dart';
 import 'package:uber_tracker/data/services/entry_service.dart';
 import 'package:uber_tracker/data/services/expense_service.dart';
+import 'package:uber_tracker/data/services/database_service.dart';
 import 'package:uber_tracker/ui/feature/expenses/expense_viewmodel.dart';
+import 'package:uber_tracker/ui/feature/list/daily_list_viewmodel.dart';
 import 'package:uber_tracker/ui/theme/app_theme_alt_soft.dart';
 import 'package:uber_tracker/ui/theme/app_theme_alt_soft_dark.dart';
 import 'package:uber_tracker/ui/feature/summary/summary_viewmodel.dart';
@@ -17,24 +19,35 @@ void main() {
   runApp(
     MultiProvider(
       providers: [
-        //Entry
-        Provider(create: (context) => EntryProvider()),
-        Provider(create: (_) => EntryService()),
+        // Shared DatabaseService
+        Provider<DatabaseService>(create: (_) => DatabaseService.instance),
+
+        // Entry
+        ProxyProvider<DatabaseService, EntryService>(
+          update: (_, db, __) => EntryService(db),
+        ),
         ProxyProvider<EntryService, EntryRepository>(
           update: (_, service, __) => EntryRepository(service),
         ),
-        ChangeNotifierProxyProvider<EntryRepository, SummaryViewmodel>(
-          create: (_) => SummaryViewmodel(EntryRepository(EntryService())),
-          update: (_, repo, __) => SummaryViewmodel(repo),
+
+        ChangeNotifierProvider(
+          create: (ctx) => SummaryViewmodel(ctx.read<EntryRepository>()),
         ),
-        //Expense
-        Provider(create: (_) => ExpenseService()),
+
+        // Entry List
+        ChangeNotifierProvider(
+          create: (ctx) => DailyListViewmodel(ctx.read<EntryRepository>()),
+        ),
+
+        // Expense
+        ProxyProvider<DatabaseService, ExpenseService>(
+          update: (_, db, __) => ExpenseService(db),
+        ),
         ProxyProvider<ExpenseService, ExpenseRepository>(
           update: (_, service, __) => ExpenseRepository(service),
         ),
-        ChangeNotifierProxyProvider<ExpenseRepository, ExpenseViewModel>(
-          create: (_) => ExpenseViewModel(ExpenseRepository(ExpenseService())),
-          update: (_, repo, __) => ExpenseViewModel(repo),
+        ChangeNotifierProvider(
+          create: (ctx) => ExpenseViewModel(ctx.read<ExpenseRepository>()),
         ),
       ],
       child: const MyApp(),
@@ -47,23 +60,20 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (ctx) => EntryProvider(),
-      child: MaterialApp(
-        localizationsDelegates: const [
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-          AppLocalizations.delegate,
-        ],
-        supportedLocales: const [Locale('pt', 'BR'), Locale('en', 'US')],
-        title: 'Controle Uber',
-        theme: AltSoftTheme.theme(),
-        darkTheme: AltSoftDarkTheme.theme(),
-        themeMode: ThemeMode.light,
-        home: HomeScreen(),
-        debugShowCheckedModeBanner: false,
-      ),
+    return MaterialApp(
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        AppLocalizations.delegate,
+      ],
+      supportedLocales: const [Locale('pt', 'BR'), Locale('en', 'US')],
+      title: 'Controle Uber',
+      theme: AltSoftTheme.theme(),
+      darkTheme: AltSoftDarkTheme.theme(),
+      themeMode: ThemeMode.light,
+      home: HomeScreen(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }

@@ -34,4 +34,14 @@ class EntryRepository {
       (list) => List.generate(list.length, (i) => DailyEntry.fromMap(list[i])),
     );
   }
+
+  Future<List<DailyEntry>> getEntriesByMonth(int year, int month) async {
+    final data = await _service.getEntriesByFilter(
+      'strftime("%Y-%m", date) = ?',
+      ['${year.toString().padLeft(4, '0')}-${month.toString().padLeft(2, '0')}'],
+      null,
+    );
+
+    return List.generate(data.length, (i) => DailyEntry.fromMap(data[i]));
+  }
 }

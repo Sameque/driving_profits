@@ -238,6 +238,32 @@ class EntryDto extends ChangeNotifier {
       : (kmEnd! - kmStart!);
   double get earningsPerKm => totalKm > 0 ? netEarnings / totalKm : 0.0;
 
+  TimeOfDay? _calculateTotalWorkingHoursTimeOfDay() {
+    if (endDate == null || startTime == null || endTime == null) {
+      return null;
+    }
+
+    final start = DateTime(
+      date.year,
+      date.month,
+      date.day,
+      startTime!.hour,
+      startTime!.minute,
+    );
+    final end = DateTime(
+      endDate!.year,
+      endDate!.month,
+      endDate!.day,
+      endTime!.hour,
+      endTime!.minute,
+    );
+    final difference = end.difference(start).inMinutes;
+    if (difference <= 0) return null;
+    final hours = difference ~/ 60;
+    final minutes = difference % 60;
+    return TimeOfDay(hour: hours, minute: minutes);
+  }
+
   //total hours worked
   double get totalHoursWorkedDob {
     if (startTime == null || endTime == null) return 0.0;
@@ -248,15 +274,12 @@ class EntryDto extends ChangeNotifier {
   }
 
   // total horas em formato de tempo (HH:MM)
-  TimeOfDay? get totalHoursWorked {
-    if (endTime == null || startTime == null) {
-      return null;
-    }
-    final totalHours = TimeOfDay(
-      hour: endTime!.hour - startTime!.hour,
-      minute: endTime!.minute - startTime!.minute,
-    );
-    return totalHours;
+  TimeOfDay? get totalHoursWorked => _calculateTotalWorkingHoursTimeOfDay();
+
+  String get totalHoursWorkedStr {
+    final totalHours = totalHoursWorked;
+    if (totalHours == null) return '';
+    return '${totalHours.hour.toString().padLeft(2, '0')}:${totalHours.minute.toString().padLeft(2, '0')}';
   }
 
   @override

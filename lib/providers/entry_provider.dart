@@ -1,37 +1,37 @@
 import 'package:flutter/material.dart';
+import 'package:uber_tracker/data/repositories/entry_repository.dart';
 import 'package:uber_tracker/models/daily_entry.dart';
-import 'package:uber_tracker/repositories/entry_repository.dart';
 
 class EntryProvider with ChangeNotifier {
-  final EntryRepository _repository = EntryRepository();
+  final EntryRepository _repository;
   List<DailyEntry> _entries = [];
   bool _isLoading = false;
 
   List<DailyEntry> get entries => _entries;
   bool get isLoading => _isLoading;
 
-  EntryProvider() {
+  EntryProvider(this._repository) {
     fetchEntries();
   }
 
   Future<void> fetchEntries() async {
-    _entries = await _repository.getAllEntries();
+    _entries = await _repository.getEntries();
     _isLoading = false;
     notifyListeners();
   }
 
   void startWorkSession(DailyEntry entry) {
-    _repository.insertEntry(entry);
+    _repository.addEntry(entry.toMap());
     fetchEntries();
   }
 
   Future<void> closeWorkSession(DailyEntry entry) async {
-    await _repository.updateEntry(entry);
+    await _repository.updateEntry(entry.id, entry.toMap());
     await fetchEntries();
   }
 
   Future<void> updateEntry(DailyEntry entry) async {
-    await _repository.updateEntry(entry);
+    await _repository.updateEntry(entry.id, entry.toMap());
     await fetchEntries();
   }
 
