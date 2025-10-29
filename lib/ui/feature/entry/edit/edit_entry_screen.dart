@@ -3,8 +3,8 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
 import 'package:driving_profits/l10n/app_localizations.dart';
-import 'package:driving_profits/models/daily_entry.dart';
-import 'package:driving_profits/providers/entry_provider.dart';
+import 'package:driving_profits/domain/entry/daily_entry.dart';
+import 'package:driving_profits/ui/feature/entry/edit/edit_entry_viewmodel.dart';
 import 'package:driving_profits/ui/feature/entry/entry_dto.dart';
 import 'package:driving_profits/ui/widget/currency_input_formatter.dart';
 import 'package:driving_profits/ui/widget/custom_snackbar.dart';
@@ -20,17 +20,14 @@ class EditEntryScreen extends StatefulWidget {
 
 class _EditEntryScreenState extends State<EditEntryScreen> {
   final _formKey = GlobalKey<FormState>();
-
   late EntryDto entryDto;
-
-  bool _isLoading = false;
-  bool _hasUnsavedChanges = false;
 
   @override
   void initState() {
     super.initState();
     entryDto = EntryDto.fromMap(widget.entry.toMap());
-    entryDto.addListener(() => _hasUnsavedChanges = true);
+    final viewModel = Provider.of<EditEntryViewModel>(context, listen: false);
+    entryDto.addListener(() => viewModel.markAsUnsaved());
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -74,13 +71,9 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
     }
 
     try {
-      setState(() => _isLoading = true);
+      final viewModel = Provider.of<EditEntryViewModel>(context, listen: false);
 
-      final provider = Provider.of<EntryProvider>(context, listen: false);
-
-      final data = DailyEntry.fromMap(entryDto.toMap());
-
-      provider.updateEntry(data);
+      await viewModel.updateEntry(entryDto);
 
       CustomSnackBar.success(
         context: context,
@@ -88,14 +81,13 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
       );
 
       await Future.delayed(const Duration(milliseconds: 400));
-      Navigator.of(context).pop();
+
+      if (mounted) Navigator.of(context).pop();
     } catch (e) {
       CustomSnackBar.error(
         context: context,
         message: 'Erro ao salvar: ${e.toString()}',
       );
-    } finally {
-      setState(() => _isLoading = false);
     }
   }
 
@@ -155,7 +147,11 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
 
     return PopScope(
       onPopInvokedWithResult: (didPop, result) => () async {
-        if (_hasUnsavedChanges) {
+        final viewModel = Provider.of<EditEntryViewModel>(
+          context,
+          listen: false,
+        );
+        if (viewModel.hasUnsavedChanges) {
           didPop =
               await showDialog(
                 context: context,
@@ -355,20 +351,26 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
                   const SizedBox(height: 32),
 
                   // Botão para salvar
-                  FilledButton(
-                    onPressed: _isLoading ? null : _saveForm,
-                    style: FilledButton.styleFrom(
-                      minimumSize: const Size.fromHeight(50),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                  Consumer<EditEntryViewModel>(
+                    builder: (context, viewModel, _) => FilledButton(
+                      onPressed: viewModel.isLoading ? null : _saveForm,
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size.fromHeight(50),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
+                      child: const Text('Salvar Alterações'),
                     ),
-                    child: const Text('Salvar Alterações'),
                   ),
                 ],
               ),
             ),
-            if (_isLoading) const Center(child: CircularProgressIndicator()),
+            Consumer<EditEntryViewModel>(
+              builder: (context, viewModel, _) => viewModel.isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : const SizedBox(),
+            ),
           ],
         ),
         bottomNavigationBar: SafeArea(

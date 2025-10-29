@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:driving_profits/models/entry_status.dart';
+import 'package:driving_profits/domain/entry/entry_status.dart';
 
 class EntrySummaryModel {
   late String id;

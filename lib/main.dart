@@ -1,3 +1,7 @@
+import 'package:driving_profits/ui/feature/entry/close/close_entry_viewmodel.dart';
+import 'package:driving_profits/ui/feature/entry/edit/edit_entry_viewmodel.dart';
+import 'package:driving_profits/ui/feature/entry/expenses/expenses_viewmodel.dart';
+import 'package:driving_profits/ui/feature/entry/start/start_entry_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:driving_profits/data/repositories/entry_repository.dart';
@@ -31,6 +35,26 @@ void main() {
 
         ChangeNotifierProvider(
           create: (ctx) => SummaryViewmodel(ctx.read<EntryRepository>()),
+        ),
+
+        // Start Entry
+        ChangeNotifierProvider(
+          create: (ctx) => StartEntryViewmodel(ctx.read<EntryRepository>()),
+        ),
+
+        // Edit Entry
+        ChangeNotifierProvider(
+          create: (ctx) => EditEntryViewModel(ctx.read<EntryRepository>()),
+        ),
+
+        // Expenses Entry
+        ChangeNotifierProvider(
+          create: (ctx) => ExpensesViewmodel(ctx.read<EntryRepository>()),
+        ),
+
+        // Close Entry
+        ChangeNotifierProvider(
+          create: (ctx) => CloseEntryViewModel(ctx.read<EntryRepository>()),
         ),
 
         // Entry List

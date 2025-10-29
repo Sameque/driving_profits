@@ -29,7 +29,7 @@ class DatabaseService {
     return await openDatabase(
       path,
       version: _dbVersion,
-      onCreate: (db, version) => _createDb,
+      onCreate: _createDb,
       onUpgrade: _upgrade,
     );
   }
@@ -74,13 +74,13 @@ class DatabaseService {
     );
   }
 
-  void _upgrade(db, int oldVersion, int newVersion) async {
+  Future _upgrade(db, int oldVersion, int newVersion) async {
     log(
       'EntryService: Upgrading database from version $oldVersion to $newVersion',
     );
   }
 
-  void _createDb(db, int version) async {
+  Future _createDb(db, int version) async {
     await db.execute('''
       CREATE TABLE IF NOT EXISTS daily_entries (
         id TEXT PRIMARY KEY,
@@ -95,6 +95,7 @@ class DatabaseService {
         kmStart INT NOT NULL,
         startTime TEXT,
         endTime TEXT,
+        endDate TEXT NULL,
         status TEXT NULL
       )
     ''');

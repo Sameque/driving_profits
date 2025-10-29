@@ -14,6 +14,8 @@ class EntryService {
     return data;
   }
 
+  //TODO: Implement getEntryById
+
   Future<int> insertEntry(dynamic data) async {
     return await _dbService.insert(_tableName, data);
   }

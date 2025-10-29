@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:driving_profits/ui/feature/entry/entry_dto.dart';
 
 class CloseEntryValidations {
-  /// Valida se os ganhos do Uber foram preenchidos e são maiores que zero
   static String? validateUberEarnings(String? value) {
     if (value == null || value.isEmpty) {
       return 'Informe os ganhos do Uber';
@@ -14,7 +13,6 @@ class CloseEntryValidations {
     return null;
   }
 
-  /// Valida se a quilometragem final foi preenchida, é maior que zero e maior que a inicial
   static String? validateKmEnd(String? value, EntryDto entryDto) {
     if (value == null || value.isEmpty) {
       return 'Informe a quilometragem final';
@@ -29,7 +27,6 @@ class CloseEntryValidations {
     return null;
   }
 
-  /// Valida se a hora final foi selecionada
   static String? validateEndTime(EntryDto entryDto) {
     if (entryDto.endTime == null) {
       return 'Selecione a hora final';
@@ -46,7 +43,6 @@ class CloseEntryValidations {
     return null;
   }
 
-  /// Verifica se a hora final é anterior à hora inicial
   static bool _isEndTimeBeforeStartTime(
     TimeOfDay startTime,
     TimeOfDay endTime,
@@ -78,7 +74,6 @@ class CloseEntryValidations {
         validateEndTimeAfterStartTime(entryDto) != null;
   }
 
-  /// Valida se a eficiência de combustível é válida
   static String? validateFuelEfficiency(String? value) {
     if (value == null || value.isEmpty) {
       return 'Informe a média de consumo';
@@ -90,7 +85,6 @@ class CloseEntryValidations {
     return null;
   }
 
-  /// Valida se o preço do combustível é válido
   static String? validateFuelPrice(String? value) {
     if (value == null || value.isEmpty) {
       return 'Informe o valor do combustível';
@@ -102,17 +96,14 @@ class CloseEntryValidations {
     return null;
   }
 
-  /// Validação completa para salvar a jornada
   static List<String> validateForSave(EntryDto entryDto) {
     final errors = <String>[];
 
-    // Validar hora final
     final endTimeError = validateEndTime(entryDto);
     if (endTimeError != null) {
       errors.add(endTimeError);
     }
 
-    // Validar se hora final é maior que inicial
     final timeComparisonError = validateEndTimeAfterStartTime(entryDto);
     if (timeComparisonError != null) {
       errors.add(timeComparisonError);

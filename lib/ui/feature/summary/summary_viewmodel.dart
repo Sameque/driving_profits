@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:driving_profits/data/repositories/entry_repository.dart';
-import 'package:driving_profits/models/entry_status.dart';
+import 'package:driving_profits/domain/entry/entry_status.dart';
 import 'package:driving_profits/ui/feature/summary/entry_summary_model.dart';
 import 'package:driving_profits/ui/feature/summary/widget/period.dart';
 

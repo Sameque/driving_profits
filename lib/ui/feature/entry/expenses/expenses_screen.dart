@@ -1,8 +1,8 @@
+import 'package:driving_profits/ui/feature/entry/expenses/expenses_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:driving_profits/models/daily_entry.dart';
-import 'package:driving_profits/providers/entry_provider.dart';
+import 'package:driving_profits/domain/entry/daily_entry.dart';
 import 'package:driving_profits/ui/feature/entry/entry_dto.dart';
 import 'package:driving_profits/ui/widget/currency_input_formatter.dart';
 import 'package:driving_profits/ui/widget/custom_snackbar.dart';
@@ -32,12 +32,12 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
     if (!_formKey.currentState!.validate()) return;
     try {
       setState(() => _isLoading = true);
+      final viewModel = Provider.of<ExpensesViewmodel>(context, listen: false);
 
-      final provider = Provider.of<EntryProvider>(context, listen: false);
       final map = entryDto.toMap();
       final updated = DailyEntry.fromMap(map);
 
-      provider.updateEntry(updated);
+      viewModel.updateEntry(updated);
 
       CustomSnackBar.success(
         context: context,
@@ -103,22 +103,17 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Lançar Gastos'),
-        centerTitle:
-            false, // Alinha o título à esquerda para melhor legibilidade
-        elevation: 0, // Visual mais moderno e flat
-        scrolledUnderElevation: 4, // Elevação sutil ao scrollar
-        backgroundColor: Theme.of(
-          context,
-        ).colorScheme.surface, // Integra com o tema
-        foregroundColor: Theme.of(
-          context,
-        ).colorScheme.onSurface, // Garante contraste
+        centerTitle: false,
+        elevation: 0,
+        scrolledUnderElevation: 4,
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        foregroundColor: Theme.of(context).colorScheme.onSurface,
         shape: Border(
           bottom: BorderSide(
             color: Theme.of(context).colorScheme.outlineVariant,
             width: 1,
           ),
-        ), // Borda inferior sutil para separação
+        ),
       ),
       body: Stack(
         children: [

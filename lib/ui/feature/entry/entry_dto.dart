@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:driving_profits/models/entry_status.dart';
+import 'package:driving_profits/domain/entry/entry_status.dart';
 import 'package:uuid/uuid.dart';
 
 class EntryDto extends ChangeNotifier {
@@ -19,6 +19,24 @@ class EntryDto extends ChangeNotifier {
   late EntryStatus status;
   late double fuelEfficiency;
   late double fuelPrice;
+
+  EntryDto.start({
+    required this.date,
+    required TimeOfDay this.startTime,
+    required int this.kmStart,
+  }) : id = const Uuid().v4(),
+       endDate = null,
+       endTime = null,
+       uberEarnings = 0.0,
+       tips = 0.0,
+       fuelCost = 0.0,
+       foodCost = 0.0,
+       cleaningCost = 0.0,
+       otherCosts = 0.0,
+       kmEnd = null,
+       fuelEfficiency = 0.0,
+       fuelPrice = 0.0,
+       status = EntryStatus.open;
 
   EntryDto({String? id}) : id = id ?? const Uuid().v4();
 

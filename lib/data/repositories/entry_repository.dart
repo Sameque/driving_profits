@@ -1,23 +1,24 @@
 import 'package:driving_profits/data/services/entry_service.dart';
-import 'package:driving_profits/models/daily_entry.dart';
+import 'package:driving_profits/domain/entry/daily_entry.dart';
 
 class EntryRepository {
   final EntryService _service;
 
   EntryRepository(this._service);
 
-  Future<void> addEntry(Map<String, dynamic> entryData) async {
-    await _service.insertEntry(entryData);
+  Future<void> addEntry(DailyEntry dailyEntry) async {
+    await _service.insertEntry(dailyEntry.toMap());
   }
 
-  Future<void> updateEntry(String id, Map<String, dynamic> entryData) async {
-    await _service.updateEntry(id, entryData);
+  Future<void> updateEntry(String id, DailyEntry dailyEntry) async {
+    await _service.updateEntry(id, dailyEntry.toMap());
   }
 
   Future<void> deleteEntry(String id) async {
     await _service.deleteEntry(id);
   }
 
+  //TODO: Implement getEntryById in EntryService
   Future<DailyEntry> getEntryById(String id) {
     final data = _service.getAllEntries();
     return data.then(

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:driving_profits/models/daily_entry.dart';
-import 'package:driving_profits/models/entry_status.dart';
-import 'package:driving_profits/ui/feature/entry/edit_entry_screen.dart';
-import 'package:driving_profits/ui/feature/entry/close_entry_screen.dart';
-import 'package:driving_profits/ui/feature/entry/expenses_screen.dart';
-import 'package:driving_profits/ui/feature/entry/start_entry_screen.dart';
+import 'package:driving_profits/domain/entry/daily_entry.dart';
+import 'package:driving_profits/domain/entry/entry_status.dart';
+import 'package:driving_profits/ui/feature/entry/edit/edit_entry_screen.dart';
+import 'package:driving_profits/ui/feature/entry/close/close_entry_screen.dart';
+import 'package:driving_profits/ui/feature/entry/expenses/expenses_screen.dart';
+import 'package:driving_profits/ui/feature/entry/start/start_entry_screen.dart';
 import 'package:driving_profits/ui/feature/list/daily_list_viewmodel.dart';
 import 'package:driving_profits/ui/widget/custom_snackbar.dart';
 
@@ -366,6 +366,7 @@ class DailyListScreen extends StatelessWidget {
                                         entry: DailyEntry.fromMap(
                                           entry.toMap(),
                                         ),
+                                        onSave: viewModel.fetchEntries,
                                       ),
                                     ),
                                   );
@@ -386,9 +387,13 @@ class DailyListScreen extends StatelessWidget {
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add),
         onPressed: () {
-          Navigator.of(
-            context,
-          ).push(MaterialPageRoute(builder: (ctx) => StartEntryScreen()));
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => StartEntryScreen(
+                onSave: viewModel.fetchEntries, // Passa a função fetchEntries
+              ),
+            ),
+          );
         },
       ),
     );

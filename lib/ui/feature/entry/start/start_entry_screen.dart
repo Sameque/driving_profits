@@ -1,13 +1,15 @@
+import 'package:driving_profits/ui/feature/entry/entry_dto.dart';
+import 'package:driving_profits/ui/feature/entry/start/start_entry_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
 import 'package:driving_profits/ui/widget/custom_snackbar.dart';
-import '../../../models/daily_entry.dart';
-import '../../../providers/entry_provider.dart';
 
 class StartEntryScreen extends StatefulWidget {
-  const StartEntryScreen({super.key});
+  final VoidCallback? onSave;
+
+  const StartEntryScreen({super.key, this.onSave});
 
   @override
   _StartEntryScreenState createState() => _StartEntryScreenState();
@@ -27,7 +29,7 @@ class _StartEntryScreenState extends State<StartEntryScreen> {
       initialDate: _selectedDate,
       firstDate: DateTime(2020),
       lastDate: DateTime.now(),
-      locale: const Locale('pt', 'BR'), // Para consistência com formato de data
+      locale: const Locale('pt', 'BR'),
     );
     if (picked != null && picked != _selectedDate) {
       setState(() {
@@ -54,21 +56,26 @@ class _StartEntryScreenState extends State<StartEntryScreen> {
       try {
         setState(() => _isLoading = true);
 
-        final provider = Provider.of<EntryProvider>(context, listen: false);
+        final viewmodel = Provider.of<StartEntryViewmodel>(
+          context,
+          listen: false,
+        );
 
         final int kmStart = int.parse(_kmStartController.text);
 
-        final data = DailyEntry.start(
+        final data = EntryDto.start(
           date: _selectedDate,
           startTime: _startTime,
           kmStart: kmStart,
         );
 
-        provider.startWorkSession(data);
+        await viewmodel.startWorkSession(data);
         CustomSnackBar.success(
           context: context,
           message: 'Jornada iniciada com sucesso!',
         );
+
+        widget.onSave?.call();
 
         await Future.delayed(const Duration(milliseconds: 400));
         Navigator.of(context).pop();
@@ -113,7 +120,7 @@ class _StartEntryScreenState extends State<StartEntryScreen> {
         }
         return null;
       },
-      autofocus: true, // Focar automaticamente no campo para melhor UX
+      autofocus: true,
     );
   }
 
@@ -128,22 +135,17 @@ class _StartEntryScreenState extends State<StartEntryScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Iniciar Jornada'),
-        centerTitle:
-            false, // Alinha o título à esquerda para melhor legibilidade em telas maiores
-        elevation: 0, // Remove sombra para um visual mais moderno e flat
-        scrolledUnderElevation: 4, // Adiciona elevação sutil ao scrollar
-        backgroundColor: Theme.of(
-          context,
-        ).colorScheme.surface, // Integra com o tema
-        foregroundColor: Theme.of(
-          context,
-        ).colorScheme.onSurface, // Garante contraste
+        centerTitle: false,
+        elevation: 0,
+        scrolledUnderElevation: 4,
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        foregroundColor: Theme.of(context).colorScheme.onSurface,
         shape: Border(
           bottom: BorderSide(
             color: Theme.of(context).colorScheme.outlineVariant,
             width: 1,
           ),
-        ), // Adiciona uma borda inferior sutil para separação
+        ),
       ),
       body: Stack(
         children: [
@@ -152,7 +154,6 @@ class _StartEntryScreenState extends State<StartEntryScreen> {
             child: ListView(
               padding: const EdgeInsets.all(16.0),
               children: [
-                // Usando ListTile para consistência e tappable
                 ListTile(
                   title: const Text('Data'),
                   subtitle: Text(
@@ -193,7 +194,6 @@ class _StartEntryScreenState extends State<StartEntryScreen> {
                   Icons.directions_car,
                 ),
                 const SizedBox(height: 32),
-                // Botão principal para salvar, melhor UX que ícone no appBar
                 FilledButton(
                   onPressed: _isLoading ? null : _saveForm,
                   style: FilledButton.styleFrom(

@@ -2,18 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:driving_profits/models/daily_entry.dart';
-import 'package:driving_profits/models/entry_status.dart';
-import 'package:driving_profits/providers/entry_provider.dart';
+import 'package:driving_profits/domain/entry/daily_entry.dart';
+import 'package:driving_profits/domain/entry/entry_status.dart';
+import 'package:driving_profits/ui/feature/entry/close/close_entry_viewmodel.dart';
 import 'package:driving_profits/ui/feature/entry/entry_dto.dart';
-import 'package:driving_profits/ui/feature/entry/close_entry_validations.dart';
+import 'package:driving_profits/domain/entry/validations/close_entry_validations.dart';
 import 'package:driving_profits/ui/widget/currency_input_formatter.dart';
 import 'package:driving_profits/ui/widget/custom_snackbar.dart';
 
 class CloseEntryScreen extends StatefulWidget {
   final DailyEntry entry;
+  final VoidCallback? onSave;
 
-  const CloseEntryScreen({super.key, required this.entry});
+  const CloseEntryScreen({super.key, required this.entry, this.onSave});
 
   @override
   State<CloseEntryScreen> createState() => _CloseEntryScreenState();
@@ -22,7 +23,6 @@ class CloseEntryScreen extends StatefulWidget {
 class _CloseEntryScreenState extends State<CloseEntryScreen> {
   final _formKey = GlobalKey<FormState>();
   late EntryDto entryDto;
-  bool _isLoading = false;
 
   @override
   void initState() {
@@ -66,18 +66,21 @@ class _CloseEntryScreenState extends State<CloseEntryScreen> {
     }
 
     try {
-      setState(() => _isLoading = true);
-
-      final provider = Provider.of<EntryProvider>(context, listen: false);
+      final viewModel = Provider.of<CloseEntryViewModel>(
+        context,
+        listen: false,
+      );
       final map = entryDto.toMap();
       map['status'] = EntryStatus.closed.toString().split('.').last;
       final closed = DailyEntry.fromMap(map);
-      await provider.closeWorkSession(closed);
+
+      await viewModel.closeWorkSession(closed);
 
       CustomSnackBar.success(
         context: context,
         message: 'Jornada finalizada com sucesso!',
       );
+      widget.onSave?.call();
       await Future.delayed(const Duration(milliseconds: 300));
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
@@ -85,8 +88,6 @@ class _CloseEntryScreenState extends State<CloseEntryScreen> {
         context: context,
         message: 'Erro ao finalizar: ${e.toString()}',
       );
-    } finally {
-      setState(() => _isLoading = false);
     }
   }
 
@@ -97,7 +98,6 @@ class _CloseEntryScreenState extends State<CloseEntryScreen> {
     IconData icon = Icons.attach_money,
     String? Function(String?)? validator,
     List<TextInputFormatter>? inputFormatters,
-    // TextInputType? keyboardType,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
@@ -364,20 +364,26 @@ class _CloseEntryScreenState extends State<CloseEntryScreen> {
                 const SizedBox(height: 32),
 
                 // Botão principal para salvar
-                FilledButton(
-                  onPressed: _isLoading ? null : _save,
-                  style: FilledButton.styleFrom(
-                    minimumSize: const Size.fromHeight(50),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                Consumer<CloseEntryViewModel>(
+                  builder: (context, viewModel, _) => FilledButton(
+                    onPressed: viewModel.isLoading ? null : _save,
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size.fromHeight(50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
+                    child: const Text('Fechar Jornada'),
                   ),
-                  child: const Text('Fechar Jornada'),
                 ),
               ],
             ),
           ),
-          if (_isLoading) const Center(child: CircularProgressIndicator()),
+          Consumer<CloseEntryViewModel>(
+            builder: (context, viewModel, _) => viewModel.isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : const SizedBox(),
+          ),
         ],
       ),
     );
