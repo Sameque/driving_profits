@@ -1,3 +1,4 @@
+import 'package:driving_profits/domain/entry/validations/close_entry_validations.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -11,8 +12,9 @@ import 'package:driving_profits/ui/widget/custom_snackbar.dart';
 
 class EditEntryScreen extends StatefulWidget {
   final DailyEntry entry;
+  final VoidCallback? onSave;
 
-  const EditEntryScreen({super.key, required this.entry});
+  const EditEntryScreen({super.key, required this.entry, this.onSave});
 
   @override
   _EditEntryScreenState createState() => _EditEntryScreenState();
@@ -79,6 +81,8 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
         context: context,
         message: 'Jornada atualizada com sucesso!',
       );
+
+      widget.onSave?.call();
 
       await Future.delayed(const Duration(milliseconds: 400));
 
@@ -217,6 +221,7 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
                         .surfaceContainerHighest
                         .withValues(alpha: 0.1),
                   ),
+
                   const SizedBox(height: 24),
 
                   // Ganhos
@@ -234,6 +239,7 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
                     icon: Icons.attach_money,
                     autofocus: true,
                   ),
+
                   _buildTextField(
                     label: 'Gorjetas (R\$)',
                     initial: entryDto.getTips,
@@ -268,6 +274,34 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
                     onChanged: entryDto.setOtherCosts,
                     icon: Icons.more_horiz,
                   ),
+
+                  const SizedBox(height: 24),
+
+                  Text(
+                    'Calculo Combustível',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  _buildTextField(
+                    label: 'Média de Consumo (km/l)',
+                    initial: entryDto.getFuelEfficiency,
+                    onChanged: entryDto.setFuelEfficiency,
+                    icon: Icons.speed,
+                    validator: CloseEntryValidations.validateFuelEfficiency,
+                  ),
+                  // Valor do Combustível
+                  _buildTextField(
+                    label: 'Valor do Combustível (R\$/l)',
+                    initial: entryDto.getFuelPrice,
+                    onChanged: entryDto.setFuelPrice,
+                    icon: Icons.attach_money,
+                    validator: CloseEntryValidations.validateFuelPrice,
+                  ),
+
                   const SizedBox(height: 24),
 
                   // Métricas de Trabalho

@@ -9,8 +9,9 @@ import 'package:driving_profits/ui/widget/custom_snackbar.dart';
 
 class ExpensesScreen extends StatefulWidget {
   final DailyEntry entry;
+  final VoidCallback? onSave;
 
-  const ExpensesScreen({super.key, required this.entry});
+  const ExpensesScreen({super.key, required this.entry, this.onSave});
 
   @override
   State<ExpensesScreen> createState() => _ExpensesScreenState();
@@ -43,6 +44,9 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
         context: context,
         message: 'Gastos atualizados com sucesso!',
       );
+
+      widget.onSave?.call();
+
       await Future.delayed(const Duration(milliseconds: 300));
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
