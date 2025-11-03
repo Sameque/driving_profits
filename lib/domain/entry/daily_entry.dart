@@ -17,9 +17,13 @@ class DailyEntry {
   final int? kmStart;
   final int? kmEnd;
   final EntryStatus status;
+  final double? fuelEfficiency;
+  final double? fuelPrice;
 
   DailyEntry({
     String? id,
+    required this.fuelEfficiency,
+    required this.fuelPrice,
     required this.kmStart,
     required this.kmEnd,
     required this.date,
@@ -49,7 +53,9 @@ class DailyEntry {
        cleaningCost = 0.0,
        otherCosts = 0.0,
        kmEnd = null,
-       status = EntryStatus.open;
+       status = EntryStatus.open,
+       fuelEfficiency = 0.0,
+       fuelPrice = 0.0;
 
   double get totalGains => uberEarnings + tips;
   double get totalExpenses => fuelCost + foodCost + cleaningCost + otherCosts;
@@ -75,6 +81,8 @@ class DailyEntry {
           ? '${endTime!.hour.toString().padLeft(2, '0')}:${endTime!.minute.toString().padLeft(2, '0')}'
           : null,
       'status': status.name,
+      'fuelEfficiency': fuelEfficiency ?? 0.0,
+      'fuelPrice': fuelPrice ?? 0.0,
     };
   }
 
@@ -105,6 +113,8 @@ class DailyEntry {
       kmStart: map['kmStart'],
       kmEnd: map['kmEnd'],
       status: EntryStatus.values.byName(map['status'] ?? 'none'),
+      fuelEfficiency: map['fuelEfficiency'] ?? 0.0,
+      fuelPrice: map['fuelPrice'] ?? 0.0,
     );
   }
 }
