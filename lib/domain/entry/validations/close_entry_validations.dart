@@ -34,22 +34,48 @@ class CloseEntryValidations {
     return null;
   }
 
-  /// Valida se a hora final é maior que a hora inicial
+  /// Valida se a hora final é maior que a hora inicial considerando as datas
   static String? validateEndTimeAfterStartTime(EntryDto entryDto) {
     if (entryDto.startTime != null &&
-        _isEndTimeBeforeStartTime(entryDto.startTime!, entryDto.endTime!)) {
-      return 'Hora final deve ser maior que a hora inicial';
+        entryDto.endTime != null &&
+        entryDto.date != null &&
+        entryDto.endDate != null) {
+      if (_isEndDateTimeBeforeStartDateTime(
+        startDate: entryDto.date!,
+        startTime: entryDto.startTime!,
+        endDate: entryDto.endDate!,
+        endTime: entryDto.endTime!,
+      )) {
+        return 'Data/hora final deve ser maior que a data/hora inicial';
+      }
     }
     return null;
   }
 
-  static bool _isEndTimeBeforeStartTime(
-    TimeOfDay startTime,
-    TimeOfDay endTime,
-  ) {
-    final startMinutes = startTime.hour * 60 + startTime.minute;
-    final endMinutes = endTime.hour * 60 + endTime.minute;
-    return endMinutes <= startMinutes;
+  static bool _isEndDateTimeBeforeStartDateTime({
+    required DateTime startDate,
+    required TimeOfDay startTime,
+    required DateTime endDate,
+    required TimeOfDay endTime,
+  }) {
+    final startDateTime = DateTime(
+      startDate.year,
+      startDate.month,
+      startDate.day,
+      startTime.hour,
+      startTime.minute,
+    );
+
+    final endDateTime = DateTime(
+      endDate.year,
+      endDate.month,
+      endDate.day,
+      endTime.hour,
+      endTime.minute,
+    );
+
+    return endDateTime.isBefore(startDateTime) ||
+        endDateTime.isAtSameMomentAs(startDateTime);
   }
 
   static String? getEndTimeErrorMessage(
@@ -63,10 +89,18 @@ class CloseEntryValidations {
 
     final timeComparisonError = validateEndTimeAfterStartTime(entryDto);
     if (timeComparisonError != null) {
-      return 'Hora final deve ser maior que a inicial (${entryDto.startTime!.format(context)})';
+      return 'Data/hora final deve ser maior que a inicial (${_formatDateTime(entryDto.date!, entryDto.startTime!, context)})';
     }
 
     return null;
+  }
+
+  static String _formatDateTime(
+    DateTime date,
+    TimeOfDay time,
+    BuildContext context,
+  ) {
+    return '${date.day}/${date.month}/${date.year} ${time.format(context)}';
   }
 
   static bool hasEndTimeError(EntryDto entryDto) {
