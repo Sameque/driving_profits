@@ -129,10 +129,14 @@ class DailyListScreen extends StatelessWidget {
                                                   .toString(),
                                       ),
                                       _buildTableRow(
+                                        'Qtd. Viagens',
+                                        entry.numberOfTrips == null
+                                            ? '-'
+                                            : entry.numberOfTrips!.toString(),
+                                      ),
+                                      _buildTableRow(
                                         'Hora Inicial',
-                                        entry.startTime != null
-                                            ? entry.startTime!.format(context)
-                                            : '-',
+                                        entry.startTime.format(context),
                                       ),
                                       _buildTableRow(
                                         'Hora Final',

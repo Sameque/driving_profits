@@ -326,6 +326,18 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
                     icon: Icons.directions_car,
                     isCurrency: false,
                   ),
+                  const SizedBox(height: 8),
+
+                  _buildTextField(
+                    initial: entryDto.getNumberOfTrips,
+                    onChanged: entryDto.setNumberOfTrips,
+                    label: 'Quantidade de viagens',
+                    icon: Icons.route,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    validator: (value) =>
+                        CloseEntryValidations.validateNumberOfTrips(entryDto),
+                  ),
+
                   ListTile(
                     title: const Text('Hora Inicial'),
                     subtitle: Text(
