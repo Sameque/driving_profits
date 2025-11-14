@@ -6,7 +6,7 @@ class EntryDto extends ChangeNotifier {
   final String id;
   late DateTime date;
   late DateTime? endDate;
-  late TimeOfDay? startTime;
+  late TimeOfDay startTime;
   late TimeOfDay? endTime;
   late int? kmStart;
   late int? kmEnd;
@@ -19,10 +19,11 @@ class EntryDto extends ChangeNotifier {
   late EntryStatus status;
   late double fuelEfficiency;
   late double fuelPrice;
+  late int? numberOfTrips;
 
   EntryDto.start({
     required this.date,
-    required TimeOfDay this.startTime,
+    required this.startTime,
     required int this.kmStart,
   }) : id = const Uuid().v4(),
        endDate = null,
@@ -36,7 +37,8 @@ class EntryDto extends ChangeNotifier {
        kmEnd = null,
        fuelEfficiency = 0.0,
        fuelPrice = 0.0,
-       status = EntryStatus.open;
+       status = EntryStatus.open,
+       numberOfTrips = 0;
 
   EntryDto({String? id}) : id = id ?? const Uuid().v4();
 
@@ -44,7 +46,9 @@ class EntryDto extends ChangeNotifier {
     : id = (map['id'] as String?) ?? const Uuid().v4() {
     date = DateTime.tryParse(map['date']) ?? DateTime.now();
     endDate = DateTime.tryParse(map['endDate'] ?? '');
-    startTime = parseTime(map['startTime']);
+    startTime =
+        parseTime(map['startTime']) ??
+        TimeOfDay(hour: DateTime.now().hour, minute: DateTime.now().minute);
     endTime = parseTime(map['endTime']);
     kmStart = map['kmStart']?.toInt();
     kmEnd = map['kmEnd']?.toInt();
@@ -62,6 +66,7 @@ class EntryDto extends ChangeNotifier {
             orElse: () => EntryStatus.none,
           )
         : EntryStatus.none;
+    numberOfTrips = map['numberOfTrips'] ?? 0;
   }
 
   Map<String, dynamic> toMap() {
@@ -82,10 +87,9 @@ class EntryDto extends ChangeNotifier {
       'fuelEfficiency': fuelEfficiency,
       'fuelPrice': fuelPrice,
       'status': getStatus,
+      'numberOfTrips': numberOfTrips,
     };
   }
-
-  //Setters with parsing and validation
 
   void _calculateFuelCost() {
     if ((kmStart == null || kmStart == 0) ||
@@ -106,25 +110,28 @@ class EntryDto extends ChangeNotifier {
   }
 
   void setStartTime(TimeOfDay? value) {
+    if (value == null) return;
     startTime = value;
     notifyListeners();
   }
 
   void setStartTimeStr(String? value) {
     if (value == null || value.isEmpty) {
-      startTime = null;
       return;
     }
 
     final parts = value.split(':');
+
     if (parts.length == 2) {
       final hour = int.tryParse(parts[0]);
       final minute = int.tryParse(parts[1]);
-      if (hour != null && minute != null) {
-        startTime = TimeOfDay(hour: hour, minute: minute);
-      } else {
-        startTime = null;
+
+      if (hour == null || minute == null) {
+        return;
       }
+
+      startTime = TimeOfDay(hour: hour, minute: minute);
+
       notifyListeners();
     }
   }
@@ -188,6 +195,15 @@ class EntryDto extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setNumberOfTrips(String? value) {
+    if (value == null || value.isEmpty) {
+      numberOfTrips = 0;
+    } else {
+      numberOfTrips = int.tryParse(value.replaceAll(',', '.'));
+    }
+    notifyListeners();
+  }
+
   void setKmEnd(String? value) {
     if (value == null || value.isEmpty) {
       kmEnd = null;
@@ -221,12 +237,13 @@ class EntryDto extends ChangeNotifier {
   String get getDateStr => date.toIso8601String().split('T').first;
   String get getEndDateStr =>
       endDate == null ? '' : endDate!.toIso8601String().split('T').first;
-  String get getStartTimeStr => startTime != null
-      ? '${startTime!.hour.toString().padLeft(2, '0')}:${startTime!.minute.toString().padLeft(2, '0')}'
-      : '';
+  String get getStartTimeStr =>
+      '${startTime.hour.toString().padLeft(2, '0')}:${startTime.minute.toString().padLeft(2, '0')}';
+
   String get getEndTimeStr => endTime != null
       ? '${endTime!.hour.toString().padLeft(2, '0')}:${endTime!.minute.toString().padLeft(2, '0')}'
       : '';
+
   String get getKmStart => kmStart?.toString() ?? '';
   String get getKmEnd => kmEnd == null || kmEnd! <= 0 ? '' : kmEnd.toString();
   String get getUberEarnings =>
@@ -241,6 +258,7 @@ class EntryDto extends ChangeNotifier {
   String get getOtherCosts =>
       otherCosts.toStringAsFixed(2).replaceAll('.', ',');
   String get getStatus => status.toString().split('.').last;
+  String get getNumberOfTrips => numberOfTrips?.toString() ?? '';
 
   //computed properties
   DateTime get getDate => date;
@@ -256,39 +274,35 @@ class EntryDto extends ChangeNotifier {
       : (kmEnd! - kmStart!);
   double get earningsPerKm => totalKm > 0 ? netEarnings / totalKm : 0.0;
 
-  TimeOfDay? _calculateTotalWorkingHoursTimeOfDay() {
-    if (endDate == null || startTime == null || endTime == null) {
-      return null;
-    }
+  DateTime get getStartDateTime => DateTime(
+    date.year,
+    date.month,
+    date.day,
+    startTime.hour,
+    startTime.minute,
+  );
 
-    final start = DateTime(
-      date.year,
-      date.month,
-      date.day,
-      startTime!.hour,
-      startTime!.minute,
-    );
-    final end = DateTime(
+  DateTime? get getEndDateTime {
+    if (endDate == null || endTime == null) return null;
+    return DateTime(
       endDate!.year,
       endDate!.month,
       endDate!.day,
       endTime!.hour,
       endTime!.minute,
     );
-    final difference = end.difference(start).inMinutes;
+  }
+
+  TimeOfDay? _calculateTotalWorkingHoursTimeOfDay() {
+    if (getEndDateTime == null) {
+      return null;
+    }
+
+    final difference = getEndDateTime!.difference(getStartDateTime!).inMinutes;
     if (difference <= 0) return null;
     final hours = difference ~/ 60;
     final minutes = difference % 60;
     return TimeOfDay(hour: hours, minute: minutes);
-  }
-
-  //total hours worked
-  double get totalHoursWorkedDob {
-    if (startTime == null || endTime == null) return 0.0;
-    final startMinutes = (startTime!.hour * 60) + startTime!.minute;
-    final endMinutes = (endTime!.hour * 60) + endTime!.minute;
-    final diffMinutes = endMinutes - startMinutes;
-    return diffMinutes > 0 ? diffMinutes / 60.0 : 0.0;
   }
 
   // total horas em formato de tempo (HH:MM)
@@ -302,7 +316,7 @@ class EntryDto extends ChangeNotifier {
 
   @override
   String toString() {
-    return 'EntryDto{date: $date, endDate: $endDate, startTime: $startTime, endTime: $endTime, kmStart: $kmStart, kmEnd: $kmEnd, uberEarnings: $uberEarnings, tips: $tips, fuelCost: $fuelCost, foodCost: $foodCost, cleaningCost: $cleaningCost, otherCosts: $otherCosts, status: $status}';
+    return 'EntryDto{date: $date, endDate: $endDate, startTime: $startTime, endTime: $endTime, kmStart: $kmStart, kmEnd: $kmEnd, uberEarnings: $uberEarnings, tips: $tips, fuelCost: $fuelCost, foodCost: $foodCost, cleaningCost: $cleaningCost, otherCosts: $otherCosts, status: $status, numberOfTrips: $numberOfTrips ,fuelEfficiency: $fuelEfficiency, fuelPrice: $fuelPrice }';
   }
 
   TimeOfDay? parseTime(String? value) {
