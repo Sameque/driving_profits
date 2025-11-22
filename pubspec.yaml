@@ -20,9 +20,9 @@ dependencies:
   uuid: ^3.0.7
   flutter_animate: ^4.5.2
   shimmer: ^3.0.0
-  supabase_flutter: ^1.10.0
-  supabase: ^1.10.0
   flutter_dotenv: ^5.0.2
+  supabase_flutter: ^2.10.3
+  supabase: ^2.10.0
 
 dev_dependencies:
   # flutter_test:
