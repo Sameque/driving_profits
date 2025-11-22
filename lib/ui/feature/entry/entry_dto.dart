@@ -67,21 +67,23 @@ class EntryDto extends ChangeNotifier {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-      'date': getDateStr,
-      'endDate': getEndDateStr,
-      'startTime': getStartTimeStr,
-      'endTime': getEndTimeStr,
-      'kmStart': kmStart,
-      'kmEnd': kmEnd,
-      'uberEarnings': uberEarnings,
+      'start_date': getDateStr,
+      'end_date': getEndDateStr,
+      'start_time': getStartTimeStr,
+      'end_time': getEndTimeStr,
+      'km_start': kmStart,
+      'km_end': kmEnd,
+      'uber_earnings': uberEarnings,
       'tips': tips,
-      'fuelCost': fuelCost,
-      'foodCost': foodCost,
-      'cleaningCost': cleaningCost,
-      'otherCosts': otherCosts,
-      'fuelEfficiency': fuelEfficiency,
-      'fuelPrice': fuelPrice,
-      'status': getStatus,
+      'fuel_cost': fuelCost,
+      'food_cost': foodCost,
+      'cleaning_cost': cleaningCost,
+      'other_costs': otherCosts,
+      'fuel_efficiency': fuelEfficiency,
+      'fuel_price': fuelPrice,
+      'status_id':
+          EntryStatus.values.asNameMap()[getStatus]?.index ??
+          EntryStatus.none.index,
     };
   }
 

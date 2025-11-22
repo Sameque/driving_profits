@@ -1,32 +1,28 @@
-//TODO: camada desnecessária remover
-import 'package:driving_profits/data/services/database_service.dart';
+import 'package:driving_profits/data/services/supabase_service.dart';
 
 class EntryService {
-  final DatabaseService _dbService;
-  static const String _tableName = 'daily_entries';
+  final SupabaseService _supabaseService;
+  // static const String _tableName = 'daily_entries';
 
-  EntryService(this._dbService);
+  EntryService(this._supabaseService);
 
   Future<List<dynamic>> getAllEntries() async {
-    final data = await _dbService.query(
-      _tableName,
+    final data = await _supabaseService.query(
       orderBy: 'date DESC, startTime DESC',
     );
     return data;
   }
 
-  //TODO: Implement getEntryById
-
   Future<int> insertEntry(dynamic data) async {
-    return await _dbService.insert(_tableName, data);
+    return await _supabaseService.insert(data);
   }
 
   Future<int> updateEntry(String id, dynamic data) async {
-    return await _dbService.update(_tableName, data, 'id = ?', [id]);
+    return await _supabaseService.update(data, 'id = ?', [id]);
   }
 
   Future<int> deleteEntry(String id) async {
-    return await _dbService.delete(_tableName, 'id = ?', [id]);
+    return await _supabaseService.delete('id = ?', [id]);
   }
 
   Future<List<dynamic>> getEntriesByFilter(
@@ -34,12 +30,10 @@ class EntryService {
     List<dynamic> whereArgs,
     String? orderBy,
   ) async {
-    final data = await _dbService.query(
-      _tableName,
+    return await _supabaseService.query(
       where: where,
       whereArgs: whereArgs,
       orderBy: orderBy,
     );
-    return data;
   }
 }
