@@ -41,6 +41,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.13.0"
+  auto_injector:
+    dependency: "direct main"
+    description:
+      name: auto_injector
+      sha256: "2952a4d4339ed3b65e8e54765ec68ee6ada5cb21d83cb8d39e3f6b4e690ab5ca"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.2"
   characters:
     dependency: transitive
     description:
@@ -360,6 +368,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.6.0"
+  result_command:
+    dependency: "direct main"
+    description:
+      name: result_command
+      sha256: "629917f2f492bd9ceb3178868d393e7d5ff9fb6c8fc20f3de5e16ec013bc331d"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.2.0"
+  result_dart:
+    dependency: "direct main"
+    description:
+      name: result_dart
+      sha256: "0666b21fbdf697b3bdd9986348a380aa204b3ebe7c146d8e4cdaa7ce735e6054"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.1.1"
   retry:
     dependency: transitive
     description:

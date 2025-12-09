@@ -64,25 +64,25 @@ class DailyEntry {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-      'date': startDate.toIso8601String(),
-      'endDate': endDate?.toIso8601String(),
-      'uberEarnings': uberEarnings,
+      'start_date': startDate.toIso8601String(),
+      'end_date': endDate?.toIso8601String(),
+      'uber_earnings': uberEarnings,
       'tips': tips,
-      'fuelCost': fuelCost,
-      'foodCost': foodCost,
-      'cleaningCost': cleaningCost,
-      'otherCosts': otherCosts,
-      'kmStart': kmStart,
-      'kmEnd': kmEnd ?? 0,
-      'startTime': startTime != null
+      'fuel_cost': fuelCost,
+      'food_cost': foodCost,
+      'cleaning_cost': cleaningCost,
+      'other_costs': otherCosts,
+      'km_start': kmStart,
+      'km_end': kmEnd ?? 0,
+      'start_time': startTime != null
           ? '${startTime!.hour.toString().padLeft(2, '0')}:${startTime!.minute.toString().padLeft(2, '0')}'
           : null,
-      'endTime': endTime != null
+      'end_time': endTime != null
           ? '${endTime!.hour.toString().padLeft(2, '0')}:${endTime!.minute.toString().padLeft(2, '0')}'
           : null,
-      'status': status.name,
-      'fuelEfficiency': fuelEfficiency ?? 0.0,
-      'fuelPrice': fuelPrice ?? 0.0,
+      'status_id': EntryStatus.values.byName(status.name).index,
+      'fuel_efficiency': fuelEfficiency ?? 0.0,
+      'fuel_price': fuelPrice ?? 0.0,
     };
   }
 

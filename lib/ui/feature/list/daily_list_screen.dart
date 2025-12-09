@@ -1,6 +1,6 @@
+import 'package:driving_profits/configuration/dependecies.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
 import 'package:driving_profits/domain/entry/daily_entry.dart';
 import 'package:driving_profits/domain/entry/entry_status.dart';
 import 'package:driving_profits/ui/feature/entry/edit/edit_entry_screen.dart';
@@ -9,9 +9,62 @@ import 'package:driving_profits/ui/feature/entry/expenses/expenses_screen.dart';
 import 'package:driving_profits/ui/feature/entry/start/start_entry_screen.dart';
 import 'package:driving_profits/ui/feature/list/daily_list_viewmodel.dart';
 import 'package:driving_profits/ui/widget/custom_snackbar.dart';
+import 'package:result_command/result_command.dart';
 
-class DailyListScreen extends StatelessWidget {
+class DailyListScreen extends StatefulWidget {
   const DailyListScreen({super.key});
+
+  @override
+  State<DailyListScreen> createState() => _DailyListScreenState();
+}
+
+class _DailyListScreenState extends State<DailyListScreen> {
+  final viewmodel = injector.get<DailyListViewmodel>();
+
+  @override
+  void initState() {
+    super.initState();
+    viewmodel.fetchCommand.addListener(_fetchListener);
+    viewmodel.deleteCommand.addListener(_deleteListener);
+  }
+
+  void _fetchListener() {
+    if (viewmodel.fetchCommand.value.isRunning) return;
+
+    if (viewmodel.fetchCommand.value.isFailure) {
+      final failure = viewmodel.fetchCommand.value as FailureCommand<Object>;
+
+      CustomSnackBar.error(
+        context: context,
+        //TODO: colocar o texto em um arquivo de localização
+        message: "Erro ao consultar registros:\n - ${failure.error.toString()}",
+      );
+      return;
+    }
+  }
+
+  void _deleteListener() {
+    if (viewmodel.deleteCommand.value.isRunning) return;
+
+    if (viewmodel.deleteCommand.value.isFailure) {
+      final failure = viewmodel.deleteCommand.value as FailureCommand<Object>;
+
+      CustomSnackBar.error(
+        context: context,
+        //TODO: colocar o texto em um arquivo de localização
+        message: "Erro ao apagar registro:\n - ${failure.error.toString()}",
+      );
+      return;
+    }
+
+    if (viewmodel.deleteCommand.value.isSuccess) {
+      CustomSnackBar.success(
+        context: context,
+        //TODO: colocar o texto em um arquivo de localização
+        message: 'Lançamento excluido!',
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,26 +73,26 @@ class DailyListScreen extends StatelessWidget {
       symbol: 'R\$',
     );
 
-    final viewModel = context.watch<DailyListViewmodel>();
-
     return Scaffold(
+      //TODO: colocar o texto em um arquivo de localização
       appBar: AppBar(title: Text('Lançamentos Diários')),
       body: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8.0),
         child: ListenableBuilder(
-          listenable: viewModel,
+          listenable: viewmodel,
           builder: (context, _) {
             return ListView.builder(
-              itemCount: viewModel.entries.length,
+              itemCount: viewmodel.entries.length,
               itemBuilder: (ctx, i) {
-                final entry = viewModel.entries[i];
+                final entryDto = viewmodel.entries[i];
                 return Dismissible(
-                  key: Key(entry.id.toString()),
+                  key: Key(entryDto.id.toString()),
                   direction: DismissDirection.endToStart,
                   confirmDismiss: (direction) async {
                     return await showDialog(
                       context: context,
                       builder: (ctx) => AlertDialog(
+                        //TODO: colocar o texto em um arquivo de localização
                         title: Text('Tem certeza?'),
                         content: Text('Deseja apagar este lançamento?'),
                         actions: [
@@ -49,6 +102,8 @@ class DailyListScreen extends StatelessWidget {
                           ),
                           TextButton(
                             onPressed: () => Navigator.of(ctx).pop(true),
+
+                            //TODO: colocar o texto em um arquivo de localização
                             child: Text('Sim'),
                           ),
                         ],
@@ -56,12 +111,7 @@ class DailyListScreen extends StatelessWidget {
                     );
                   },
                   onDismissed: (direction) {
-                    viewModel.deleteEntry(entry.id);
-
-                    CustomSnackBar.success(
-                      context: context,
-                      message: 'Lançamento apagado!',
-                    );
+                    viewmodel.deleteCommand.execute(entryDto.id);
                   },
                   background: Container(
                     color: Colors.red,
@@ -76,6 +126,7 @@ class DailyListScreen extends StatelessWidget {
                         context: context,
                         builder: (ctx) {
                           return AlertDialog(
+                            //TODO: colocar o texto em um arquivo de localização
                             title: Text('Resumo da Jornada'),
                             contentPadding: EdgeInsets.all(8),
                             actionsPadding: EdgeInsets.symmetric(
@@ -113,51 +164,66 @@ class DailyListScreen extends StatelessWidget {
                                     ),
                                     children: [
                                       _buildTableRow(
+                                        //TODO: colocar o texto em um arquivo de localização
                                         'KM Inicial',
-                                        '${entry.kmStart ?? "-"}',
+                                        '${entryDto.kmStart ?? "-"}',
                                       ),
                                       _buildTableRow(
+                                        //TODO: colocar o texto em um arquivo de localização
                                         'KM Final',
-                                        '${entry.kmEnd ?? "-"}',
+                                        '${entryDto.kmEnd ?? "-"}',
                                       ),
                                       _buildTableRow(
+                                        //TODO: colocar o texto em um arquivo de localização
                                         'KM Total',
-                                        entry.kmStart == null ||
-                                                entry.kmEnd == null
+                                        entryDto.kmStart == null ||
+                                                entryDto.kmEnd == null
                                             ? '-'
-                                            : (entry.kmEnd! - entry.kmStart!)
+                                            : (entryDto.kmEnd! -
+                                                      entryDto.kmStart!)
                                                   .toString(),
                                       ),
                                       _buildTableRow(
+                                        //TODO: colocar o texto em um arquivo de localização
                                         'Hora Inicial',
-                                        entry.startTime != null
-                                            ? entry.startTime!.format(context)
+                                        entryDto.startTime != null
+                                            ? entryDto.startTime!.format(
+                                                context,
+                                              )
                                             : '-',
                                       ),
                                       _buildTableRow(
+                                        //TODO: colocar o texto em um arquivo de localização
                                         'Hora Final',
-                                        entry.endTime != null
-                                            ? entry.endTime!.format(context)
+                                        entryDto.endTime != null
+                                            ? entryDto.endTime!.format(context)
                                             : '-',
                                       ),
                                       _buildTableRow(
+                                        //TODO: colocar o texto em um arquivo de localização
                                         'Hora Total',
-                                        entry.totalHoursWorkedStr,
+                                        entryDto.totalHoursWorkedStr,
                                       ),
                                       _buildTableRow(
+                                        //TODO: colocar o texto em um arquivo de localização
                                         'Combustível',
-                                        currencyFormat.format(entry.fuelCost),
-                                      ),
-                                      _buildTableRow(
-                                        'Gastos (Outros)',
                                         currencyFormat.format(
-                                          entry.totalCosts - entry.fuelCost,
+                                          entryDto.fuelCost,
                                         ),
                                       ),
                                       _buildTableRow(
+                                        //TODO: colocar o texto em um arquivo de localização
+                                        'Gastos (Outros)',
+                                        currencyFormat.format(
+                                          entryDto.totalCosts -
+                                              entryDto.fuelCost,
+                                        ),
+                                      ),
+                                      _buildTableRow(
+                                        //TODO: colocar o texto em um arquivo de localização
                                         'Ganhos ',
                                         currencyFormat.format(
-                                          entry.totalEarnings,
+                                          entryDto.totalEarnings,
                                         ),
                                       ),
                                       TableRow(
@@ -166,6 +232,8 @@ class DailyListScreen extends StatelessWidget {
                                             padding: EdgeInsets.symmetric(
                                               vertical: 0.0,
                                             ),
+
+                                            //TODO: colocar o texto em um arquivo de localização
                                             child: Text('Lucro Líquido'),
                                           ),
                                           Padding(
@@ -174,12 +242,12 @@ class DailyListScreen extends StatelessWidget {
                                             ),
                                             child: Text(
                                               currencyFormat.format(
-                                                entry.netEarnings,
+                                                entryDto.netEarnings,
                                               ),
                                               textAlign: TextAlign.right,
                                               style: TextStyle(
                                                 fontWeight: FontWeight.bold,
-                                                color: entry.netEarnings >= 0
+                                                color: entryDto.netEarnings >= 0
                                                     ? Colors.green
                                                     : Colors.red,
                                               ),
@@ -195,6 +263,8 @@ class DailyListScreen extends StatelessWidget {
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.of(ctx).pop(),
+
+                                //TODO: colocar o texto em um arquivo de localização
                                 child: Text('Fechar'),
                               ),
                             ],
@@ -203,7 +273,7 @@ class DailyListScreen extends StatelessWidget {
                       );
                     },
                     child: Card(
-                      color: entry.status == EntryStatus.open
+                      color: entryDto.status == EntryStatus.open
                           ? Colors.amber[50]
                           : Colors.grey[100],
                       margin: EdgeInsets.symmetric(horizontal: 15, vertical: 7),
@@ -217,14 +287,15 @@ class DailyListScreen extends StatelessWidget {
                           children: [
                             CircleAvatar(
                               radius: 28,
-                              backgroundColor: entry.status == EntryStatus.open
+                              backgroundColor:
+                                  entryDto.status == EntryStatus.open
                                   ? Colors.amber[200]
                                   : Colors.grey[400],
                               child: Text(
                                 DateFormat(
                                   'dd\nMMM',
                                   'pt_BR',
-                                ).format(entry.date),
+                                ).format(entryDto.date),
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
@@ -240,7 +311,7 @@ class DailyListScreen extends StatelessWidget {
                                 children: [
                                   Row(
                                     children: [
-                                      if (entry.status == EntryStatus.open)
+                                      if (entryDto.status == EntryStatus.open)
                                         Container(
                                           margin: EdgeInsets.only(right: 8),
                                           padding: EdgeInsets.symmetric(
@@ -254,6 +325,7 @@ class DailyListScreen extends StatelessWidget {
                                             ),
                                           ),
                                           child: Text(
+                                            //TODO: colocar o texto em um arquivo de localização
                                             'ABERTO',
                                             style: TextStyle(
                                               fontWeight: FontWeight.bold,
@@ -276,6 +348,7 @@ class DailyListScreen extends StatelessWidget {
                                             ),
                                           ),
                                           child: Text(
+                                            //TODO: colocar o texto em um arquivo de localização
                                             'FECHADO',
                                             style: TextStyle(
                                               fontWeight: FontWeight.bold,
@@ -285,10 +358,11 @@ class DailyListScreen extends StatelessWidget {
                                           ),
                                         ),
                                       Text(
-                                        'Lucro: ${currencyFormat.format(entry.netEarnings)}',
+                                        //TODO: colocar o texto em um arquivo de localização
+                                        'Lucro: ${currencyFormat.format(entryDto.netEarnings)}',
                                         style: TextStyle(
                                           fontWeight: FontWeight.bold,
-                                          color: entry.netEarnings >= 0
+                                          color: entryDto.netEarnings >= 0
                                               ? Colors.green
                                               : Colors.red,
                                           fontSize: 15,
@@ -307,7 +381,7 @@ class DailyListScreen extends StatelessWidget {
                                       SizedBox(width: 2),
                                       Text(
                                         currencyFormat.format(
-                                          entry.totalEarnings,
+                                          entryDto.totalEarnings,
                                         ),
                                         style: TextStyle(
                                           color: Colors.green[800],
@@ -322,7 +396,9 @@ class DailyListScreen extends StatelessWidget {
                                       ),
                                       SizedBox(width: 2),
                                       Text(
-                                        currencyFormat.format(entry.totalCosts),
+                                        currencyFormat.format(
+                                          entryDto.totalCosts,
+                                        ),
                                         style: TextStyle(
                                           color: Colors.red[800],
                                           fontSize: 13,
@@ -341,35 +417,33 @@ class DailyListScreen extends StatelessWidget {
                                     Icons.edit,
                                     color: Colors.blueGrey,
                                   ),
+                                  //TODO: colocar o texto em um arquivo de localização
                                   tooltip: 'Editar',
                                   onPressed: () {
                                     Navigator.of(context).push(
                                       MaterialPageRoute(
                                         builder: (ctx) => EditEntryScreen(
-                                          entry: DailyEntry.fromMap(
-                                            entry.toMap(),
-                                          ),
-                                          onSave: viewModel.fetchEntries,
+                                          entryDto: entryDto,
+                                          onSave: viewmodel.updateEntryLocal,
                                         ),
                                       ),
                                     );
                                   },
                                 ),
-                                if (entry.status == EntryStatus.open) ...[
+                                if (entryDto.status == EntryStatus.open) ...[
                                   IconButton(
                                     icon: Icon(
                                       Icons.receipt,
                                       color: Colors.deepPurple,
                                     ),
+                                    //TODO: colocar o texto em um arquivo de localização
                                     tooltip: 'Gastos',
                                     onPressed: () {
                                       Navigator.of(context).push(
                                         MaterialPageRoute(
                                           builder: (ctx) => ExpensesScreen(
-                                            entry: DailyEntry.fromMap(
-                                              entry.toMap(),
-                                            ),
-                                            onSave: viewModel.fetchEntries,
+                                            entryDto: entryDto,
+                                            onSave: viewmodel.updateEntryLocal,
                                           ),
                                         ),
                                       );
@@ -380,15 +454,16 @@ class DailyListScreen extends StatelessWidget {
                                       Icons.check_circle_outline,
                                       color: Colors.green,
                                     ),
+                                    //TODO: colocar o texto em um arquivo de localização
                                     tooltip: 'Fechar',
                                     onPressed: () {
                                       Navigator.of(context).push(
                                         MaterialPageRoute(
                                           builder: (ctx) => CloseEntryScreen(
                                             entry: DailyEntry.fromMap(
-                                              entry.toMap(),
+                                              entryDto.toMap(),
                                             ),
-                                            onSave: viewModel.fetchEntries,
+                                            onSave: viewmodel.updateEntryLocal,
                                           ),
                                         ),
                                       );
@@ -413,9 +488,8 @@ class DailyListScreen extends StatelessWidget {
         onPressed: () {
           Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (context) => StartEntryScreen(
-                onSave: viewModel.fetchEntries, // Passa a função fetchEntries
-              ),
+              builder: (context) =>
+                  StartEntryScreen(onSave: viewmodel.addEntryLocal),
             ),
           );
         },

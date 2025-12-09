@@ -1,3 +1,4 @@
+import 'package:driving_profits/domain/entry/daily_entry.dart';
 import 'package:flutter/material.dart';
 import 'package:driving_profits/domain/entry/entry_status.dart';
 import 'package:uuid/uuid.dart';
@@ -42,7 +43,7 @@ class EntryDto extends ChangeNotifier {
 
   EntryDto.fromMap(Map<String, dynamic> map)
     : id = (map['id'] as String?) ?? const Uuid().v4() {
-    date = DateTime.tryParse(map['date']) ?? DateTime.now();
+    date = DateTime.tryParse(map['start_date'] ?? '') ?? DateTime.now();
     endDate = DateTime.tryParse(map['endDate'] ?? '');
     startTime = parseTime(map['startTime']);
     endTime = parseTime(map['endTime']);
@@ -62,6 +63,24 @@ class EntryDto extends ChangeNotifier {
             orElse: () => EntryStatus.none,
           )
         : EntryStatus.none;
+  }
+
+  EntryDto.fromDailyEntry(DailyEntry entry) : id = entry.id {
+    date = entry.startDate;
+    endDate = entry.endDate;
+    startTime = entry.startTime;
+    endTime = entry.endTime;
+    kmStart = entry.kmStart;
+    kmEnd = entry.kmEnd;
+    uberEarnings = entry.uberEarnings;
+    tips = entry.tips;
+    fuelCost = entry.fuelCost;
+    foodCost = entry.foodCost;
+    cleaningCost = entry.cleaningCost;
+    otherCosts = entry.otherCosts;
+    fuelEfficiency = entry.fuelEfficiency ?? 0.0;
+    fuelPrice = entry.fuelPrice ?? 0.0;
+    status = entry.status;
   }
 
   Map<String, dynamic> toMap() {

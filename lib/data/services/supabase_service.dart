@@ -9,76 +9,64 @@ class SupabaseService {
   }
 
   Future<List<Map<String, dynamic>>> query({
+    Map<String, dynamic>? filters,
     String? orderBy,
-    String? where,
-    List<dynamic>? whereArgs,
+    bool ascending = false,
+    int? limit,
+    int? offset,
   }) async {
     var query = _client.from(_tableName).select();
 
-    if (where != null && whereArgs != null) {
-      // Construir filtros específicos conforme necessário
-      query = query.eq('status', whereArgs[0]);
+    if (filters != null) {
+      filters.forEach((key, value) {
+        if (value == null) {
+          // busca onde coluna IS NULL
+          query = query.filter(key, 'is', value);
+          // is_(key, 'null');
+        } else if (value is List) {
+          // IN (val1, val2, ...)
+          query = query.filter(key, 'eq', value);
+        } else {
+          // igualdade simples
+          query = query.eq(key, value);
+        }
+      });
     }
 
-    // if (orderBy != null) {
-    //   query = query.order(orderBy.split(',')[0], ascending: false);
-    // }
+    late PostgrestTransformBuilder<PostgrestList> transformBuilder;
 
-    final res = await query;
-    final data = res;
-    // TODO: Fazer tradução de chaves, lowercas/underscore to camelCase se necessário
+    if (orderBy != null && orderBy.isNotEmpty) {
+      transformBuilder = query.order(
+        orderBy,
+        ascending: ascending,
+        nullsFirst: false,
+      );
+    } else {
+      transformBuilder = query;
+    }
+
+    if (limit != null) {
+      if (offset != null) {
+        transformBuilder = transformBuilder.range(offset, offset + limit - 1);
+      } else {
+        transformBuilder = transformBuilder.limit(limit);
+      }
+    }
+
+    final res = await transformBuilder;
+    // final data = res;
     final response = List<Map<String, dynamic>>.from(
-      (data as List).map((e) => Map<String, dynamic>.from(e as Map)),
+      (res as List).map((e) => Map<String, dynamic>.from(e as Map)),
     );
     return response;
-    // return data.data as List<Map<String, dynamic>>;
   }
 
-  /*
-  Future<List<Map<String, DailyEntry>>> query({
-    String? orderBy,
-    String? where,
-    List<dynamic>? whereArgs,
-  }) async {
-    var query = _client.from(_tableName).select<DailyEntry>();
+  Future<dynamic> insert(Map<String, dynamic> data) async =>
+      await _client.from(_tableName).insert([data]).select();
 
-    if (where != null && whereArgs != null) {
-      // Construir filtros específicos conforme necessário
-      query = query.filter('status', 'eq', whereArgs[0]);
-    }
+  Future<dynamic> update(Map<String, dynamic> data, String id) async =>
+      await _client.from(_tableName).update(data).eq('id', id).select();
 
-    // if (orderBy != null && orderBy.contains(',') && query is PostgrestFilterBuilder ) {
-    //   query = query?.order(orderBy.split(',')[0], ascending: false);
-    // }
-
-    return await query.execute() as List<Map<String, DailyEntry>>;
-  }
-
-*/
-  Future<int> insert(Map<String, dynamic> data) async {
-    final result = await _client.from(_tableName).insert([data]).select();
-    return result.length;
-  }
-
-  Future<int> update(
-    Map<String, dynamic> data,
-    String where,
-    List<dynamic> whereArgs,
-  ) async {
-    final result = await _client
-        .from(_tableName)
-        .update(data)
-        .eq('id', whereArgs[0])
-        .select();
-    return result.length;
-  }
-
-  Future<int> delete(String where, List<dynamic> whereArgs) async {
-    final result = await _client
-        .from(_tableName)
-        .delete()
-        .eq('id', whereArgs[0])
-        .select();
-    return result.length;
-  }
+  Future<dynamic> delete(String id) async =>
+      await _client.from(_tableName).delete().eq('id', id).select();
 }

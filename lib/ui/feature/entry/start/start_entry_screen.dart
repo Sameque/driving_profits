@@ -1,13 +1,14 @@
+import 'package:driving_profits/configuration/dependecies.dart';
 import 'package:driving_profits/ui/feature/entry/entry_dto.dart';
 import 'package:driving_profits/ui/feature/entry/start/start_entry_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
 import 'package:driving_profits/ui/widget/custom_snackbar.dart';
+import 'package:result_command/result_command.dart';
 
 class StartEntryScreen extends StatefulWidget {
-  final VoidCallback? onSave;
+  final Function(EntryDto)? onSave;
 
   const StartEntryScreen({super.key, this.onSave});
 
@@ -18,10 +19,41 @@ class StartEntryScreen extends StatefulWidget {
 class _StartEntryScreenState extends State<StartEntryScreen> {
   final _formKey = GlobalKey<FormState>();
   final _kmStartController = TextEditingController();
+  final viewmodel = injector.get<StartEntryViewmodel>();
 
   DateTime _selectedDate = DateTime.now();
   TimeOfDay _startTime = TimeOfDay.now();
   bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    viewmodel.startWorkSessionCommand.addListener(_listanable);
+  }
+
+  void _listanable() {
+    if (viewmodel.startWorkSessionCommand.value.isRunning) return;
+
+    if (viewmodel.startWorkSessionCommand.value.isFailure) {
+      final failure =
+          viewmodel.startWorkSessionCommand.value as FailureCommand<Object>;
+
+      CustomSnackBar.error(
+        context: context,
+        //TODO: Localizar
+        message: "Erro ao iniciar jornada:\n - ${failure.error.toString()}",
+      );
+      return;
+    }
+
+    if (viewmodel.startWorkSessionCommand.value.isSuccess) {
+      CustomSnackBar.success(
+        context: context,
+        //TODO: Localizar
+        message: 'Jornada Iniciada!',
+      );
+    }
+  }
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -53,40 +85,23 @@ class _StartEntryScreenState extends State<StartEntryScreen> {
 
   void _saveForm() async {
     if (_formKey.currentState!.validate()) {
-      try {
-        setState(() => _isLoading = true);
+      setState(() => _isLoading = true);
 
-        final viewmodel = Provider.of<StartEntryViewmodel>(
-          context,
-          listen: false,
-        );
+      final int kmStart = int.parse(_kmStartController.text);
 
-        final int kmStart = int.parse(_kmStartController.text);
+      final entryStart = EntryDto.start(
+        date: _selectedDate,
+        startTime: _startTime,
+        kmStart: kmStart,
+      );
 
-        final data = EntryDto.start(
-          date: _selectedDate,
-          startTime: _startTime,
-          kmStart: kmStart,
-        );
+      await viewmodel.startWorkSessionCommand.execute(entryStart);
 
-        await viewmodel.startWorkSession(data);
-        CustomSnackBar.success(
-          context: context,
-          message: 'Jornada iniciada com sucesso!',
-        );
+      widget.onSave?.call(entryStart);
 
-        widget.onSave?.call();
-
-        await Future.delayed(const Duration(milliseconds: 400));
-        Navigator.of(context).pop();
-      } catch (e) {
-        CustomSnackBar.error(
-          context: context,
-          message: 'Erro ao salvar: ${e.toString()}',
-        );
-      } finally {
-        setState(() => _isLoading = false);
-      }
+      //TODO: millisecondsClosedScreen em arquivo de configuração, statico
+      await Future.delayed(const Duration(milliseconds: 400));
+      if (mounted) Navigator.of(context).pop();
     }
   }
 

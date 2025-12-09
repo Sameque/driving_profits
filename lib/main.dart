@@ -1,5 +1,6 @@
+import 'package:driving_profits/configuration/dependecies.dart';
 import 'package:driving_profits/data/services/supabase_initializer.dart';
-import 'package:driving_profits/app/app_providers.dart';
+import 'package:driving_profits/configuration/app_providers.dart';
 import 'package:driving_profits/core/app_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:driving_profits/ui/theme/app_theme_alt_soft.dart';
@@ -9,6 +10,8 @@ import 'ui/feature/home/home_screen.dart';
 Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SupabaseInitializer.initialize();
+
+  setupDependencies();
 
   runApp(AppProviders.build(child: const MyApp()));
 }

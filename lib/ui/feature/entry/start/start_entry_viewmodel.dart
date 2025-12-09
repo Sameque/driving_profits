@@ -1,39 +1,30 @@
+import 'dart:developer';
+
 import 'package:driving_profits/data/repositories/entry_repository.dart';
 import 'package:driving_profits/domain/entry/daily_entry.dart';
 import 'package:driving_profits/ui/feature/entry/entry_dto.dart';
 import 'package:flutter/material.dart';
+import 'package:result_command/result_command.dart';
+import 'package:result_dart/result_dart.dart';
 
 class StartEntryViewmodel with ChangeNotifier {
   final EntryRepository _repository;
   StartEntryViewmodel(this._repository);
 
-  bool _isLoading = false;
-  String? _error;
+  late final startWorkSessionCommand = Command1(_startWorkSession);
 
-  bool get isLoading => _isLoading;
-  String? get error => _error;
-
-  void _setLoading(bool value) {
-    _isLoading = value;
-    notifyListeners();
-  }
-
-  void _setError(String? message) {
-    _error = message;
-    notifyListeners();
-  }
-
-  Future startWorkSession(EntryDto entry) async {
+  AsyncResult _startWorkSession(EntryDto entry) async {
     try {
-      _setError(null);
-      _setLoading(true);
+      final newEntry = DailyEntry.fromMap(entry.toMap());
 
-      _repository.addEntry(DailyEntry.fromMap(entry.toMap()));
-    } catch (e) {
-      _setError(e.toString());
-      rethrow;
-    } finally {
-      _setLoading(false);
+      _repository.addEntry(newEntry);
+
+      return Success(unit);
+    } on Exception catch (e) {
+      return Failure(e);
+    } catch (e, s) {
+      log('Erro desconhecido ao atualizar entrada', error: e, stackTrace: s);
+      return Failure(Exception('Erro desconhecido'));
     }
   }
 }

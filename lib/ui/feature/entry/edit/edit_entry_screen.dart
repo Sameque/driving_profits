@@ -1,3 +1,4 @@
+import 'package:driving_profits/configuration/dependecies.dart';
 import 'package:driving_profits/domain/entry/validations/close_entry_validations.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -9,12 +10,13 @@ import 'package:driving_profits/ui/feature/entry/edit/edit_entry_viewmodel.dart'
 import 'package:driving_profits/ui/feature/entry/entry_dto.dart';
 import 'package:driving_profits/ui/widget/currency_input_formatter.dart';
 import 'package:driving_profits/ui/widget/custom_snackbar.dart';
+import 'package:result_command/result_command.dart';
 
 class EditEntryScreen extends StatefulWidget {
-  final DailyEntry entry;
-  final VoidCallback? onSave;
+  final EntryDto entryDto;
+  final Function(EntryDto)? onSave;
 
-  const EditEntryScreen({super.key, required this.entry, this.onSave});
+  const EditEntryScreen({super.key, required this.entryDto, this.onSave});
 
   @override
   _EditEntryScreenState createState() => _EditEntryScreenState();
@@ -22,77 +24,80 @@ class EditEntryScreen extends StatefulWidget {
 
 class _EditEntryScreenState extends State<EditEntryScreen> {
   final _formKey = GlobalKey<FormState>();
-  late EntryDto entryDto;
+  final viewmodel = injector.get<EditEntryViewModel>();
 
   @override
   void initState() {
     super.initState();
-    entryDto = EntryDto.fromMap(widget.entry.toMap());
-    final viewModel = Provider.of<EditEntryViewModel>(context, listen: false);
-    entryDto.addListener(() => viewModel.markAsUnsaved());
+    viewmodel.updateCommand.addListener(_listanable);
+
+    widget.entryDto.addListener(() => viewmodel.markAsUnsaved());
+  }
+
+  void _listanable() {
+    if (viewmodel.updateCommand.value.isFailure) {
+      final failure = viewmodel.updateCommand.value as FailureCommand<Object>;
+
+      CustomSnackBar.error(
+        context: context,
+        message: "Erro ao salvar:\n - ${failure.error.toString()}",
+      );
+    }
+    if (viewmodel.updateCommand.value.isSuccess) {
+      CustomSnackBar.success(
+        context: context,
+        message: 'Jornada atualizada com sucesso!',
+      );
+    }
   }
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: entryDto.getDate,
+      initialDate: widget.entryDto.getDate,
       firstDate: DateTime(2020),
       lastDate: DateTime.now(),
       locale: const Locale('pt', 'BR'),
     );
-    if (picked != null && picked != entryDto.date) {
-      entryDto.setDate(picked);
+    if (picked != null && picked != widget.entryDto.date) {
+      widget.entryDto.setDate(picked);
     }
   }
 
   Future<void> _selectStartTime() async {
     final TimeOfDay? picked = await showTimePicker(
       context: context,
-      initialTime: entryDto.getStartTime ?? TimeOfDay.now(),
+      initialTime: widget.entryDto.getStartTime ?? TimeOfDay.now(),
       initialEntryMode: TimePickerEntryMode.dial,
     );
     if (picked != null) {
-      entryDto.setStartTime(picked);
+      widget.entryDto.setStartTime(picked);
     }
   }
 
   Future<void> _selectEndTime() async {
     final TimeOfDay? picked = await showTimePicker(
       context: context,
-      initialTime: entryDto.getEndTime ?? TimeOfDay.now(),
+      initialTime: widget.entryDto.getEndTime ?? TimeOfDay.now(),
       initialEntryMode: TimePickerEntryMode.dial,
     );
     if (picked != null) {
-      entryDto.setEndTime(picked);
+      widget.entryDto.setEndTime(picked);
     }
   }
 
   void _saveForm() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
+    if (!_formKey.currentState!.validate()) return;
 
-    try {
-      final viewModel = Provider.of<EditEntryViewModel>(context, listen: false);
+    await viewmodel.updateCommand.execute(widget.entryDto);
 
-      await viewModel.updateEntry(entryDto);
+    if (viewmodel.updateCommand.value.isFailure) return;
 
-      CustomSnackBar.success(
-        context: context,
-        message: 'Jornada atualizada com sucesso!',
-      );
+    widget.onSave?.call(widget.entryDto);
 
-      widget.onSave?.call();
+    await Future.delayed(const Duration(milliseconds: 400));
 
-      await Future.delayed(const Duration(milliseconds: 400));
-
-      if (mounted) Navigator.of(context).pop();
-    } catch (e) {
-      CustomSnackBar.error(
-        context: context,
-        message: 'Erro ao salvar: ${e.toString()}',
-      );
-    }
+    if (mounted) Navigator.of(context).pop();
   }
 
   Widget _buildTextField({
@@ -128,6 +133,7 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
                     CurrencyInputFormatter(),
                   ]
                 : [FilteringTextInputFormatter.digitsOnly]),
+        //TODO: criar um validator
         validator:
             validator ??
             (value) {
@@ -161,16 +167,19 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
                 context: context,
                 builder: (context) => AlertDialog(
                   title: const Text('Descartar alterações?'),
+                  //TODO: colocar o texto em um arquivo de localização
                   content: const Text(
                     'Você tem alterações não salvas. Deseja descartá-las?',
                   ),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.of(context).pop(false),
+                      //TODO: colocar o texto em um arquivo de localização
                       child: const Text('Cancelar'),
                     ),
                     TextButton(
                       onPressed: () => Navigator.of(context).pop(true),
+                      //TODO: colocar o texto em um arquivo de localização
                       child: const Text('Descartar'),
                     ),
                   ],
@@ -182,6 +191,7 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
+          //TODO: colocar o texto em um arquivo de localização
           title: const Text('Editar Lançamento'),
           centerTitle: false,
           elevation: 0,
@@ -206,7 +216,7 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
                   ListTile(
                     title: const Text('Data'),
                     subtitle: Text(
-                      DateFormat('dd/MM/yyyy').format(entryDto.date),
+                      DateFormat('dd/MM/yyyy').format(widget.entryDto.date),
                     ),
                     trailing: const Icon(Icons.calendar_today),
                     onTap: () => _selectDate(context),
@@ -226,6 +236,7 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
 
                   // Ganhos
                   Text(
+                    //TODO: colocar o texto em um arquivo de localização
                     'Ganhos',
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
@@ -233,23 +244,26 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
                   ),
                   const SizedBox(height: 8),
                   _buildTextField(
-                    label: 'Repasse Uber (R\$)',
-                    initial: entryDto.getUberEarnings,
-                    onChanged: entryDto.setUberEarnings,
+                    //TODO: colocar o texto em um arquivo de localização
+                    label: 'Repasse (R\$)',
+                    initial: widget.entryDto.getUberEarnings,
+                    onChanged: widget.entryDto.setUberEarnings,
                     icon: Icons.attach_money,
                     autofocus: true,
                   ),
 
                   _buildTextField(
+                    //TODO: colocar o texto em um arquivo de localização
                     label: 'Gorjetas (R\$)',
-                    initial: entryDto.getTips,
-                    onChanged: entryDto.setTips,
+                    initial: widget.entryDto.getTips,
+                    onChanged: widget.entryDto.setTips,
                     icon: Icons.card_giftcard,
                   ),
                   const SizedBox(height: 24),
 
                   // Gastos do Dia
                   Text(
+                    //TODO: colocar o texto em um arquivo de localização
                     'Gastos do Dia',
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
@@ -257,27 +271,31 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
                   ),
                   const SizedBox(height: 8),
                   _buildTextField(
+                    //TODO: colocar o texto em um arquivo de localização
                     label: 'Alimentação (R\$)',
-                    initial: entryDto.getFoodCost,
-                    onChanged: entryDto.setFoodCost,
+                    initial: widget.entryDto.getFoodCost,
+                    onChanged: widget.entryDto.setFoodCost,
                     icon: Icons.restaurant,
                   ),
                   _buildTextField(
+                    //TODO: colocar o texto em um arquivo de localização
                     label: 'Limpeza (R\$)',
-                    initial: entryDto.getCleaningCost,
-                    onChanged: entryDto.setCleaningCost,
+                    initial: widget.entryDto.getCleaningCost,
+                    onChanged: widget.entryDto.setCleaningCost,
                     icon: Icons.wash,
                   ),
                   _buildTextField(
+                    //TODO: colocar o texto em um arquivo de localização
                     label: 'Outros Gastos (R\$)',
-                    initial: entryDto.getOtherCosts,
-                    onChanged: entryDto.setOtherCosts,
+                    initial: widget.entryDto.getOtherCosts,
+                    onChanged: widget.entryDto.setOtherCosts,
                     icon: Icons.more_horiz,
                   ),
 
                   const SizedBox(height: 24),
 
                   Text(
+                    //TODO: colocar o texto em um arquivo de localização
                     'Calculo Combustível',
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
@@ -287,17 +305,19 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
                   const SizedBox(height: 8),
 
                   _buildTextField(
-                    label: 'Média de Consumo (km/l)',
-                    initial: entryDto.getFuelEfficiency,
-                    onChanged: entryDto.setFuelEfficiency,
+                    //TODO: colocar o texto em um arquivo de localização
+                    label: 'Média de Consumo (km/L)',
+                    initial: widget.entryDto.getFuelEfficiency,
+                    onChanged: widget.entryDto.setFuelEfficiency,
                     icon: Icons.speed,
                     validator: CloseEntryValidations.validateFuelEfficiency,
                   ),
                   // Valor do Combustível
                   _buildTextField(
+                    //TODO: colocar o texto em um arquivo de localização
                     label: 'Valor do Combustível (R\$/l)',
-                    initial: entryDto.getFuelPrice,
-                    onChanged: entryDto.setFuelPrice,
+                    initial: widget.entryDto.getFuelPrice,
+                    onChanged: widget.entryDto.setFuelPrice,
                     icon: Icons.attach_money,
                     validator: CloseEntryValidations.validateFuelPrice,
                   ),
@@ -306,6 +326,7 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
 
                   // Métricas de Trabalho
                   Text(
+                    //TODO: colocar o texto em um arquivo de localização
                     'Métricas de Trabalho',
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
@@ -313,23 +334,28 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
                   ),
                   const SizedBox(height: 8),
                   _buildTextField(
-                    label: 'Quilometragem Inicial (km)',
-                    initial: entryDto.getKmStart,
-                    onChanged: entryDto.setKmStart,
+                    //TODO: colocar o texto em um arquivo de localização
+                    label: 'Km Inicial',
+                    initial: widget.entryDto.getKmStart,
+                    onChanged: widget.entryDto.setKmStart,
                     icon: Icons.directions_car,
                     isCurrency: false,
                   ),
                   _buildTextField(
-                    label: 'Quilometragem Final (km)',
-                    initial: entryDto.getKmEnd,
-                    onChanged: entryDto.setKmEnd,
+                    //TODO: colocar o texto em um arquivo de localização
+                    label: 'Km Final',
+                    initial: widget.entryDto.getKmEnd,
+                    onChanged: widget.entryDto.setKmEnd,
                     icon: Icons.directions_car,
                     isCurrency: false,
                   ),
                   ListTile(
+                    //TODO: colocar o texto em um arquivo de localização
                     title: const Text('Hora Inicial'),
                     subtitle: Text(
-                      entryDto.startTime?.format(context) ?? 'Não definida',
+                      widget.entryDto.startTime?.format(context) ??
+                          //TODO: colocar o texto em um arquivo de localização
+                          'Não definida',
                     ),
                     trailing: const Icon(Icons.access_time),
                     onTap: _selectStartTime,
@@ -346,9 +372,12 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
                   ),
                   const SizedBox(height: 16),
                   ListTile(
+                    //TODO: colocar o texto em um arquivo de localização
                     title: const Text('Hora Final'),
                     subtitle: Text(
-                      entryDto.endTime?.format(context) ?? 'Não definida',
+                      widget.entryDto.endTime?.format(context) ??
+                          //TODO: colocar o texto em um arquivo de localização
+                          'Não definida',
                     ),
                     trailing: const Icon(Icons.access_time),
                     onTap: _selectEndTime,
@@ -365,17 +394,19 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
                   ),
                   const SizedBox(height: 16),
                   ListTile(
-                    title: const Text('KM Rodados (calculado)'),
-                    trailing: Text(entryDto.totalKm.toString()),
+                    //TODO: colocar o texto em um arquivo de localização
+                    title: const Text('Km Rodados (calculado)'),
+                    trailing: Text(widget.entryDto.totalKm.toString()),
                     tileColor: Theme.of(context)
                         .colorScheme
                         .surfaceContainerHighest
                         .withValues(alpha: 0.1),
                   ),
                   ListTile(
+                    //TODO: colocar o texto em um arquivo de localização
                     title: const Text('Horas Trabalhadas (calculado)'),
                     trailing: Text(
-                      entryDto.totalHoursWorked?.format(context) ?? '',
+                      widget.entryDto.totalHoursWorked?.format(context) ?? '',
                     ),
                     tileColor: Theme.of(context)
                         .colorScheme
@@ -387,13 +418,16 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
                   // Botão para salvar
                   Consumer<EditEntryViewModel>(
                     builder: (context, viewModel, _) => FilledButton(
-                      onPressed: viewModel.isLoading ? null : _saveForm,
+                      onPressed: viewModel.updateCommand.value.isRunning
+                          ? null
+                          : _saveForm,
                       style: FilledButton.styleFrom(
                         minimumSize: const Size.fromHeight(50),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
+                      //TODO: colocar o texto em um arquivo de localização
                       child: const Text('Salvar Alterações'),
                     ),
                   ),
@@ -401,7 +435,8 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
               ),
             ),
             Consumer<EditEntryViewModel>(
-              builder: (context, viewModel, _) => viewModel.isLoading
+              builder: (context, viewModel, _) =>
+                  viewModel.updateCommand.value.isRunning
                   ? const Center(child: CircularProgressIndicator())
                   : const SizedBox(),
             ),
@@ -410,7 +445,7 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
         bottomNavigationBar: SafeArea(
           top: false,
           child: ListenableBuilder(
-            listenable: entryDto,
+            listenable: widget.entryDto,
             builder: (context, child) {
               return Container(
                 padding: const EdgeInsets.all(16.0),
@@ -434,11 +469,11 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                     Text(
-                      currencyFormat.format(entryDto.netEarnings),
+                      currencyFormat.format(widget.entryDto.netEarnings),
                       style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
-                        color: entryDto.netEarnings >= 0
+                        color: widget.entryDto.netEarnings >= 0
                             ? Colors.green.shade700
                             : Colors.red.shade700,
                       ),
