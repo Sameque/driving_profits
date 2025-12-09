@@ -1,20 +1,20 @@
+import 'dart:developer';
+
 import 'package:driving_profits/ui/feature/entry/entry_dto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:driving_profits/data/repositories/entry_repository.dart';
 import 'package:driving_profits/domain/entry/daily_entry.dart';
+import 'package:result_command/result_command.dart';
+import 'package:result_dart/result_dart.dart';
 
 class EditEntryViewModel with ChangeNotifier {
   final EntryRepository _repository;
 
   EditEntryViewModel(this._repository);
 
-  bool _isLoading = false;
-  String? _error;
+  late final updateCommand = Command1(_updateEntry);
+
   bool _hasUnsavedChanges = false;
-
-  bool get isLoading => _isLoading;
-
-  String? get error => _error;
 
   bool get hasUnsavedChanges => _hasUnsavedChanges;
 
@@ -28,35 +28,24 @@ class EditEntryViewModel with ChangeNotifier {
     notifyListeners();
   }
 
-  void _setLoading(bool value) {
-    _isLoading = value;
-    notifyListeners();
-  }
-
-  void _setError(String? message) {
-    _error = message;
-    notifyListeners();
-  }
-
   /// Atualiza uma entrada existente no repositório.
   ///
   /// Recebe uma [DailyEntry] com os campos atualizados e salva no repositório.
   /// Em caso de erro, a mensagem fica disponível via propriedade [error].
-  Future<void> updateEntry(EntryDto entryDto) async {
+  AsyncResult _updateEntry(EntryDto entryDto) async {
     try {
-      _setError(null);
-      _setLoading(true);
+      final updated = DailyEntry.fromMap(entryDto.toMap());
 
-      await _repository.updateEntry(
-        entryDto.id,
-        DailyEntry.fromMap(entryDto.toMap()),
-      );
+      await _repository.updateEntry(entryDto.id, updated);
+
       markAsSaved();
-    } catch (e) {
-      _setError(e.toString());
-      rethrow;
-    } finally {
-      _setLoading(false);
+      return Success(unit);
+    } on Exception catch (e) {
+      Failure(e);
+      return Failure(e);
+    } catch (e, s) {
+      log('Erro desconhecido ao atualizar entrada', error: e, stackTrace: s);
+      return Failure(Exception('Erro desconhecido'));
     }
   }
 }

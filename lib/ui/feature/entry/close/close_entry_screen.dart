@@ -12,7 +12,7 @@ import 'package:driving_profits/ui/widget/custom_snackbar.dart';
 
 class CloseEntryScreen extends StatefulWidget {
   final DailyEntry entry;
-  final VoidCallback? onSave;
+  final Function(EntryDto)? onSave;
 
   const CloseEntryScreen({super.key, required this.entry, this.onSave});
 
@@ -80,7 +80,9 @@ class _CloseEntryScreenState extends State<CloseEntryScreen> {
         context: context,
         message: 'Jornada finalizada com sucesso!',
       );
-      widget.onSave?.call();
+
+      widget.onSave?.call(entryDto);
+
       await Future.delayed(const Duration(milliseconds: 300));
       if (mounted) Navigator.of(context).pop();
     } catch (e) {

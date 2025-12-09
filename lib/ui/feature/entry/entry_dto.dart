@@ -1,3 +1,4 @@
+import 'package:driving_profits/domain/entry/daily_entry.dart';
 import 'package:flutter/material.dart';
 import 'package:driving_profits/domain/entry/entry_status.dart';
 import 'package:uuid/uuid.dart';
@@ -44,7 +45,7 @@ class EntryDto extends ChangeNotifier {
 
   EntryDto.fromMap(Map<String, dynamic> map)
     : id = (map['id'] as String?) ?? const Uuid().v4() {
-    date = DateTime.tryParse(map['date']) ?? DateTime.now();
+    date = DateTime.tryParse(map['start_date'] ?? '') ?? DateTime.now();
     endDate = DateTime.tryParse(map['endDate'] ?? '');
     startTime =
         parseTime(map['startTime']) ??
@@ -66,28 +67,50 @@ class EntryDto extends ChangeNotifier {
             orElse: () => EntryStatus.none,
           )
         : EntryStatus.none;
-    numberOfTrips = map['numberOfTrips'] ?? 0;
+    numberOfTrips = map['number_of_trips'] ?? 0;
+  }
+
+  EntryDto.fromDailyEntry(DailyEntry entry) : id = entry.id {
+    date = entry.startDate;
+    endDate = entry.endDate;
+    startTime =
+        entry.startTime ??
+        TimeOfDay(hour: DateTime.now().hour, minute: DateTime.now().minute);
+    endTime = entry.endTime;
+    kmStart = entry.kmStart;
+    kmEnd = entry.kmEnd;
+    uberEarnings = entry.uberEarnings;
+    tips = entry.tips;
+    fuelCost = entry.fuelCost;
+    foodCost = entry.foodCost;
+    cleaningCost = entry.cleaningCost;
+    otherCosts = entry.otherCosts;
+    fuelEfficiency = entry.fuelEfficiency ?? 0.0;
+    fuelPrice = entry.fuelPrice ?? 0.0;
+    status = entry.status;
   }
 
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-      'date': getDateStr,
-      'endDate': getEndDateStr,
-      'startTime': getStartTimeStr,
-      'endTime': getEndTimeStr,
-      'kmStart': kmStart,
-      'kmEnd': kmEnd,
-      'uberEarnings': uberEarnings,
+      'start_date': getDateStr,
+      'end_date': getEndDateStr,
+      'start_time': getStartTimeStr,
+      'end_time': getEndTimeStr,
+      'km_start': kmStart,
+      'km_end': kmEnd,
+      'uber_earnings': uberEarnings,
       'tips': tips,
-      'fuelCost': fuelCost,
-      'foodCost': foodCost,
-      'cleaningCost': cleaningCost,
-      'otherCosts': otherCosts,
-      'fuelEfficiency': fuelEfficiency,
-      'fuelPrice': fuelPrice,
-      'status': getStatus,
-      'numberOfTrips': numberOfTrips,
+      'fuel_cost': fuelCost,
+      'food_cost': foodCost,
+      'cleaning_cost': cleaningCost,
+      'other_costs': otherCosts,
+      'fuel_efficiency': fuelEfficiency,
+      'fuel_price': fuelPrice,
+      'status_id':
+          EntryStatus.values.asNameMap()[getStatus]?.index ??
+          EntryStatus.none.index,
+      'number_of_trips': numberOfTrips,
     };
   }
 
