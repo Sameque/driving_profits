@@ -162,7 +162,6 @@ class _CloseEntryScreenState extends State<CloseEntryScreen> {
             child: ListView(
               padding: const EdgeInsets.all(16.0),
               children: [
-                // Quilometragem Final
                 _buildTextField(
                   initial: entryDto.getKmEnd,
                   onChanged: entryDto.setKmEnd,
@@ -172,7 +171,7 @@ class _CloseEntryScreenState extends State<CloseEntryScreen> {
                   validator: (value) =>
                       CloseEntryValidations.validateKmEnd(value, entryDto),
                 ),
-                // Data Final
+
                 ListTile(
                   title: const Text('Data Final'),
                   subtitle: Text(
@@ -228,7 +227,16 @@ class _CloseEntryScreenState extends State<CloseEntryScreen> {
                   ),
                 const SizedBox(height: 16),
 
-                // Ganhos Uber
+                _buildTextField(
+                  initial: entryDto.getNumberOfTrips,
+                  onChanged: entryDto.setNumberOfTrips,
+                  label: 'Quantidade de viagens',
+                  icon: Icons.route,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  validator: (value) =>
+                      CloseEntryValidations.validateNumberOfTrips(entryDto),
+                ),
+
                 _buildTextField(
                   label: 'Ganhos Uber (R\$)',
                   initial: entryDto.getUberEarnings,
@@ -237,7 +245,6 @@ class _CloseEntryScreenState extends State<CloseEntryScreen> {
                   validator: CloseEntryValidations.validateUberEarnings,
                 ),
 
-                // Gorjetas
                 _buildTextField(
                   label: 'Gorjetas (R\$)',
                   initial: entryDto.getTips,

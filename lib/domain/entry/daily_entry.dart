@@ -19,6 +19,7 @@ class DailyEntry {
   final EntryStatus status;
   final double? fuelEfficiency;
   final double? fuelPrice;
+  final int? numberOfTrips;
 
   DailyEntry({
     String? id,
@@ -37,6 +38,7 @@ class DailyEntry {
     required this.cleaningCost,
     required this.otherCosts,
     required this.status,
+    this.numberOfTrips,
   }) : id = id ?? const Uuid().v4();
 
   DailyEntry.start({
@@ -55,7 +57,8 @@ class DailyEntry {
        kmEnd = null,
        status = EntryStatus.open,
        fuelEfficiency = 0.0,
-       fuelPrice = 0.0;
+       fuelPrice = 0.0,
+       numberOfTrips = 0;
 
   double get totalGains => uberEarnings + tips;
   double get totalExpenses => fuelCost + foodCost + cleaningCost + otherCosts;
@@ -83,6 +86,7 @@ class DailyEntry {
       'status_id': EntryStatus.values.byName(status.name).index,
       'fuel_efficiency': fuelEfficiency ?? 0.0,
       'fuel_price': fuelPrice ?? 0.0,
+      'number_of_trips': numberOfTrips ?? 0,
     };
   }
 
@@ -114,6 +118,7 @@ class DailyEntry {
       status: EntryStatus.values[map['status_id'] ?? 0],
       fuelEfficiency: map['fuel_efficiency'] ?? 0.0,
       fuelPrice: map['fuel_price'] ?? 0.0,
+      numberOfTrips: map['number_of_trips'] ?? 0,
     );
   }
 }

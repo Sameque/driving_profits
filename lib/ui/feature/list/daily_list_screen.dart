@@ -184,13 +184,19 @@ class _DailyListScreenState extends State<DailyListScreen> {
                                                   .toString(),
                                       ),
                                       _buildTableRow(
-                                        //TODO: colocar o texto em um arquivo de localização
+                                        'Qtd. Viagens',
+                                        entry.numberOfTrips == null
+                                            ? '-'
+                                            : entry.numberOfTrips!.toString(),
+                                      ),
+                                      _buildTableRow(
                                         'Hora Inicial',
                                         entryDto.startTime != null
                                             ? entryDto.startTime!.format(
                                                 context,
                                               )
                                             : '-',
+                                        entry.startTime.format(context),
                                       ),
                                       _buildTableRow(
                                         //TODO: colocar o texto em um arquivo de localização
