@@ -10,7 +10,7 @@ typedef OnUpgradeCallback =
 
 class DatabaseService {
   static const _dbName = 'trackerDb.db';
-  static const _dbVersion = 12;
+  static const _dbVersion = 13;
 
   DatabaseService._privateConstructor();
   static final DatabaseService instance = DatabaseService._privateConstructor();
@@ -90,6 +90,12 @@ class DatabaseService {
         'ALTER TABLE daily_entries ADD COLUMN fuelPrice REAL NOT NULL DEFAULT 0',
       );
     }
+
+    if (newVersion == 13) {
+      await db.execute(
+        'ALTER TABLE daily_entries ADD COLUMN numberOfTrips INT NULL DEFAULT 0',
+      );
+    }
   }
 
   Future _createDb(db, int version) async {
@@ -110,6 +116,7 @@ class DatabaseService {
         startTime TEXT,
         endTime TEXT,
         endDate TEXT NULL,
+        numberOfTrips INT NULL,
         status TEXT NULL
       )
     ''');
