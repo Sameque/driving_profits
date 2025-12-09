@@ -73,25 +73,9 @@ class EntryDto extends ChangeNotifier {
   EntryDto.fromDailyEntry(DailyEntry entry) : id = entry.id {
     date = entry.startDate;
     endDate = entry.endDate;
-    startTime = entry.startTime;
-    endTime = entry.endTime;
-    kmStart = entry.kmStart;
-    kmEnd = entry.kmEnd;
-    uberEarnings = entry.uberEarnings;
-    tips = entry.tips;
-    fuelCost = entry.fuelCost;
-    foodCost = entry.foodCost;
-    cleaningCost = entry.cleaningCost;
-    otherCosts = entry.otherCosts;
-    fuelEfficiency = entry.fuelEfficiency ?? 0.0;
-    fuelPrice = entry.fuelPrice ?? 0.0;
-    status = entry.status;
-  }
-
-  EntryDto.fromDailyEntry(DailyEntry entry) : id = entry.id {
-    date = entry.startDate;
-    endDate = entry.endDate;
-    startTime = entry.startTime;
+    startTime =
+        entry.startTime ??
+        TimeOfDay(hour: DateTime.now().hour, minute: DateTime.now().minute);
     endTime = entry.endTime;
     kmStart = entry.kmStart;
     kmEnd = entry.kmEnd;

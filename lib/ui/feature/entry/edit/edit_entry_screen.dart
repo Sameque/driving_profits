@@ -352,13 +352,15 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
                   const SizedBox(height: 8),
 
                   _buildTextField(
-                    initial: entryDto.getNumberOfTrips,
-                    onChanged: entryDto.setNumberOfTrips,
+                    initial: widget.entryDto.getNumberOfTrips,
+                    onChanged: widget.entryDto.setNumberOfTrips,
                     label: 'Quantidade de viagens',
                     icon: Icons.route,
                     inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                     validator: (value) =>
-                        CloseEntryValidations.validateNumberOfTrips(entryDto),
+                        CloseEntryValidations.validateNumberOfTrips(
+                          widget.entryDto,
+                        ),
                   ),
 
                   ListTile(
