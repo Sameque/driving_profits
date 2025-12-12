@@ -35,11 +35,7 @@ class CloseEntryValidations {
   }
 
   static String? validateNumberOfTrips(EntryDto entryDto) {
-    if (entryDto.numberOfTrips == null) {
-      return null;
-    }
-
-    if (entryDto.numberOfTrips! <= 0) {
+    if (entryDto.numberOfTrips <= 0) {
       return 'Quantidade de viagens não pode ser negativa';
     }
     return null;
@@ -47,13 +43,10 @@ class CloseEntryValidations {
 
   /// Valida se a hora final é maior que a hora inicial considerando as datas
   static String? validateEndTimeAfterStartTime(EntryDto entryDto) {
-    if (entryDto.startTime != null &&
-        entryDto.endTime != null &&
-        entryDto.date != null &&
-        entryDto.endDate != null) {
+    if (entryDto.endTime != null && entryDto.endDate != null) {
       if (_isEndDateTimeBeforeStartDateTime(
-        startDate: entryDto.date!,
-        startTime: entryDto.startTime!,
+        startDate: entryDto.date,
+        startTime: entryDto.startTime,
         endDate: entryDto.endDate!,
         endTime: entryDto.endTime!,
       )) {
