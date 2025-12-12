@@ -1,3 +1,4 @@
+import 'package:driving_profits/configuration/dependecies.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -11,10 +12,10 @@ import 'package:driving_profits/ui/widget/currency_input_formatter.dart';
 import 'package:driving_profits/ui/widget/custom_snackbar.dart';
 
 class CloseEntryScreen extends StatefulWidget {
-  final DailyEntry entry;
+  final EntryDto entryDto;
   final Function(EntryDto)? onSave;
 
-  const CloseEntryScreen({super.key, required this.entry, this.onSave});
+  const CloseEntryScreen({super.key, required this.entryDto, this.onSave});
 
   @override
   State<CloseEntryScreen> createState() => _CloseEntryScreenState();
@@ -22,75 +23,84 @@ class CloseEntryScreen extends StatefulWidget {
 
 class _CloseEntryScreenState extends State<CloseEntryScreen> {
   final _formKey = GlobalKey<FormState>();
-  late EntryDto entryDto;
+  final viewmodel = injector.get<CloseEntryViewModel>();
 
   @override
   void initState() {
     super.initState();
-    entryDto = EntryDto.fromMap(widget.entry.toMap());
-    entryDto.setEndTime(TimeOfDay.now());
-    entryDto.setEndDate(DateTime.now());
+    widget.entryDto.setEndTime(TimeOfDay.now());
+    widget.entryDto.setEndDate(DateTime.now());
   }
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: entryDto.getEndDate,
+      initialDate: widget.entryDto.getEndDate,
       firstDate: DateTime(2020),
       lastDate: DateTime.now(),
       locale: const Locale('pt', 'BR'),
     );
-    if (picked != null && picked != entryDto.getEndDate) {
-      entryDto.setEndDate(picked);
+    if (picked != null && picked != widget.entryDto.getEndDate) {
+      widget.entryDto.setEndDate(picked);
     }
   }
 
   Future<void> _selectEndTime() async {
     final picked = await showTimePicker(
       context: context,
-      initialTime: entryDto.endTime ?? TimeOfDay.now(),
+      initialTime: widget.entryDto.endTime ?? TimeOfDay.now(),
       initialEntryMode: TimePickerEntryMode.dial,
     );
     if (picked != null) {
-      entryDto.setEndTime(picked);
+      widget.entryDto.setEndTime(picked);
     }
   }
 
   void _save() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final validationErrors = CloseEntryValidations.validateForSave(entryDto);
+    final validationErrors = CloseEntryValidations.validateForSave(
+      widget.entryDto,
+    );
+
     if (validationErrors.isNotEmpty) {
-      CustomSnackBar.error(context: context, message: validationErrors.first);
+      final messages = validationErrors.join('\n');
+      CustomSnackBar.error(context: context, message: messages);
       return;
     }
 
+    /*
+    
     try {
       final viewModel = Provider.of<CloseEntryViewModel>(
         context,
         listen: false,
       );
-      final map = entryDto.toMap();
-      map['status'] = EntryStatus.closed.toString().split('.').last;
-      final closed = DailyEntry.fromMap(map);
+*/
+    widget.entryDto.setStatusEnum(EntryStatus.closed);
+    // final map = widget.entryDto.toMap();
+    // map['status'] = EntryStatus.closed.toString().split('.').last;
+    final closed = DailyEntry.fromMap(widget.entryDto.toMap());
 
-      await viewModel.closeWorkSession(closed);
-
+    await viewmodel.closeWorkSession(closed);
+    /*
       CustomSnackBar.success(
         context: context,
         message: 'Jornada finalizada com sucesso!',
       );
+*/
+    widget.onSave?.call(widget.entryDto);
 
-      widget.onSave?.call(entryDto);
-
-      await Future.delayed(const Duration(milliseconds: 300));
-      if (mounted) Navigator.of(context).pop();
+    await Future.delayed(const Duration(milliseconds: 300));
+    if (mounted) Navigator.of(context).pop();
+    /*
     } catch (e) {
       CustomSnackBar.error(
         context: context,
         message: 'Erro ao finalizar: ${e.toString()}',
       );
     }
+    */
   }
 
   Widget _buildTextField({
@@ -163,60 +173,80 @@ class _CloseEntryScreenState extends State<CloseEntryScreen> {
               padding: const EdgeInsets.all(16.0),
               children: [
                 _buildTextField(
-                  initial: entryDto.getKmEnd,
-                  onChanged: entryDto.setKmEnd,
+                  initial: widget.entryDto.getKmEnd,
+                  onChanged: widget.entryDto.setKmEnd,
                   label: 'Quilometragem Final (km)',
                   icon: Icons.directions_car,
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  validator: (value) =>
-                      CloseEntryValidations.validateKmEnd(value, entryDto),
+                  validator: (value) => CloseEntryValidations.validateKmEnd(
+                    value,
+                    widget.entryDto,
+                  ),
                 ),
 
-                ListTile(
-                  title: const Text('Data Final'),
-                  subtitle: Text(
-                    DateFormat('dd/MM/yyyy').format(entryDto.getEndDate!),
-                  ),
-                  trailing: const Icon(Icons.calendar_today),
-                  onTap: () => _selectDate(context),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(
-                      color: Theme.of(context).colorScheme.outlineVariant,
-                    ),
-                  ),
-                  tileColor: Theme.of(
-                    context,
-                  ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.1),
-                ),
-                const SizedBox(height: 16),
+                ListenableBuilder(
+                  listenable: widget.entryDto,
+                  builder: (context, child) {
+                    return Column(
+                      children: [
+                        ListTile(
+                          title: const Text('Data Final'),
+                          subtitle: Text(
+                            DateFormat(
+                              'dd/MM/yyyy',
+                            ).format(widget.entryDto.getEndDate!),
+                          ),
+                          trailing: const Icon(Icons.calendar_today),
+                          onTap: () => _selectDate(context),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            side: BorderSide(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.outlineVariant,
+                            ),
+                          ),
+                          tileColor: Theme.of(context)
+                              .colorScheme
+                              .surfaceContainerHighest
+                              .withValues(alpha: 0.1),
+                        ),
+                        const SizedBox(height: 16),
 
-                // Hora Final
-                ListTile(
-                  title: const Text('Hora Final'),
-                  subtitle: Text(
-                    entryDto.endTime == null
-                        ? 'Não definida'
-                        : entryDto.endTime!.format(context),
-                  ),
-                  trailing: const Icon(Icons.access_time),
-                  onTap: _selectEndTime,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(
-                      color: Theme.of(context).colorScheme.outlineVariant,
-                    ),
-                  ),
-                  tileColor: Theme.of(
-                    context,
-                  ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.1),
+                        // Hora Final
+                        ListTile(
+                          title: const Text('Hora Final'),
+                          subtitle: Text(
+                            widget.entryDto.endTime == null
+                                ? 'Não definida'
+                                : widget.entryDto.endTime!.format(context),
+                          ),
+                          trailing: const Icon(Icons.access_time),
+                          onTap: _selectEndTime,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            side: BorderSide(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.outlineVariant,
+                            ),
+                          ),
+                          tileColor: Theme.of(context)
+                              .colorScheme
+                              .surfaceContainerHighest
+                              .withValues(alpha: 0.1),
+                        ),
+                      ],
+                    );
+                  },
                 ),
-                if (CloseEntryValidations.hasEndTimeError(entryDto))
+
+                if (CloseEntryValidations.hasEndTimeError(widget.entryDto))
                   Padding(
                     padding: const EdgeInsets.only(left: 16.0, top: 4.0),
                     child: Text(
                       CloseEntryValidations.getEndTimeErrorMessage(
-                        entryDto,
+                        widget.entryDto,
                         context,
                       )!,
                       style: TextStyle(
@@ -226,37 +256,37 @@ class _CloseEntryScreenState extends State<CloseEntryScreen> {
                     ),
                   ),
                 const SizedBox(height: 16),
-
                 _buildTextField(
-                  initial: entryDto.getNumberOfTrips,
-                  onChanged: entryDto.setNumberOfTrips,
+                  initial: widget.entryDto.getNumberOfTrips,
+                  onChanged: widget.entryDto.setNumberOfTrips,
                   label: 'Quantidade de viagens',
                   icon: Icons.route,
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   validator: (value) =>
-                      CloseEntryValidations.validateNumberOfTrips(entryDto),
+                      CloseEntryValidations.validateNumberOfTrips(
+                        widget.entryDto,
+                      ),
                 ),
-
                 _buildTextField(
                   label: 'Ganhos Uber (R\$)',
-                  initial: entryDto.getUberEarnings,
-                  onChanged: entryDto.setUberEarnings,
+                  initial: widget.entryDto.getUberEarnings,
+                  onChanged: widget.entryDto.setUberEarnings,
                   icon: Icons.payments,
                   validator: CloseEntryValidations.validateUberEarnings,
                 ),
 
                 _buildTextField(
                   label: 'Gorjetas (R\$)',
-                  initial: entryDto.getTips,
-                  onChanged: entryDto.setTips,
+                  initial: widget.entryDto.getTips,
+                  onChanged: widget.entryDto.setTips,
                   icon: Icons.card_giftcard,
                 ),
 
                 // Média de Consumo
                 _buildTextField(
                   label: 'Média de Consumo (km/l)',
-                  initial: entryDto.getFuelEfficiency,
-                  onChanged: entryDto.setFuelEfficiency,
+                  initial: widget.entryDto.getFuelEfficiency,
+                  onChanged: widget.entryDto.setFuelEfficiency,
                   icon: Icons.speed,
                   validator: CloseEntryValidations.validateFuelEfficiency,
                 ),
@@ -264,15 +294,15 @@ class _CloseEntryScreenState extends State<CloseEntryScreen> {
                 // Valor do Combustível
                 _buildTextField(
                   label: 'Valor do Combustível (R\$/l)',
-                  initial: entryDto.getFuelPrice,
-                  onChanged: entryDto.setFuelPrice,
+                  initial: widget.entryDto.getFuelPrice,
+                  onChanged: widget.entryDto.setFuelPrice,
                   icon: Icons.attach_money,
                   validator: CloseEntryValidations.validateFuelPrice,
                 ),
 
                 // Resumo da Jornada - Apresentação melhorada com tabela
                 ListenableBuilder(
-                  listenable: entryDto,
+                  listenable: widget.entryDto,
                   builder: (context, child) {
                     return Card(
                       elevation: 0,
@@ -319,23 +349,23 @@ class _CloseEntryScreenState extends State<CloseEntryScreen> {
                               children: [
                                 _buildTableRow(
                                   'Total de Horas Trabalhadas',
-                                  '${entryDto.totalHoursWorked?.format(context).toString() ?? '00:00'} horas',
+                                  '${widget.entryDto.totalHoursWorked?.format(context).toString() ?? '00:00'} horas',
                                 ),
                                 _buildTableRow(
                                   'KM Total',
-                                  entryDto.totalKm.toString(),
+                                  widget.entryDto.totalKm.toString(),
                                 ),
                                 _buildTableRow(
                                   'Combustível (Calculado)',
-                                  'R\$ ${entryDto.fuelCost.toStringAsFixed(2).replaceAll('.', ',')}',
+                                  'R\$ ${widget.entryDto.fuelCost.toStringAsFixed(2).replaceAll('.', ',')}',
                                 ),
                                 _buildTableRow(
                                   'Total de Gastos',
-                                  'R\$ ${(entryDto.totalCosts - entryDto.fuelCost).toStringAsFixed(2).replaceAll('.', ',')}',
+                                  'R\$ ${(widget.entryDto.totalCosts - widget.entryDto.fuelCost).toStringAsFixed(2).replaceAll('.', ',')}',
                                 ),
                                 _buildTableRow(
                                   'Ganhos',
-                                  'R\$ ${entryDto.totalEarnings.toStringAsFixed(2).replaceAll('.', ',')}',
+                                  'R\$ ${widget.entryDto.totalEarnings.toStringAsFixed(2).replaceAll('.', ',')}',
                                 ),
                                 TableRow(
                                   children: [
@@ -350,11 +380,12 @@ class _CloseEntryScreenState extends State<CloseEntryScreen> {
                                         vertical: 8.0,
                                       ),
                                       child: Text(
-                                        'R\$ ${entryDto.netEarnings.toStringAsFixed(2).replaceAll('.', ',')}',
+                                        'R\$ ${widget.entryDto.netEarnings.toStringAsFixed(2).replaceAll('.', ',')}',
                                         textAlign: TextAlign.right,
                                         style: TextStyle(
                                           fontWeight: FontWeight.bold,
-                                          color: entryDto.netEarnings >= 0
+                                          color:
+                                              widget.entryDto.netEarnings >= 0
                                               ? Colors.green
                                               : Colors.red,
                                         ),
