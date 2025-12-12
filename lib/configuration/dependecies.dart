@@ -2,6 +2,7 @@ import 'package:auto_injector/auto_injector.dart';
 import 'package:driving_profits/data/repositories/entry_repository.dart';
 import 'package:driving_profits/data/services/entry_service.dart';
 import 'package:driving_profits/data/services/supabase_service.dart';
+import 'package:driving_profits/ui/feature/entry/close/close_entry_viewmodel.dart';
 import 'package:driving_profits/ui/feature/entry/edit/edit_entry_viewmodel.dart';
 import 'package:driving_profits/ui/feature/entry/expenses/expenses_viewmodel.dart';
 import 'package:driving_profits/ui/feature/entry/start/start_entry_viewmodel.dart';
@@ -15,6 +16,7 @@ void setupDependencies() {
   injector.addSingleton(StartEntryViewmodel.new);
   injector.addSingleton(ExpensesViewmodel.new);
   injector.addSingleton(EditEntryViewModel.new);
+  injector.addSingleton(CloseEntryViewModel.new);
 
   //repositories
   injector.addSingleton(EntryRepository.new);

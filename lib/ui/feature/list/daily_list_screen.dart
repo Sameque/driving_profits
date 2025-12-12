@@ -1,7 +1,6 @@
 import 'package:driving_profits/configuration/dependecies.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:driving_profits/domain/entry/daily_entry.dart';
 import 'package:driving_profits/domain/entry/entry_status.dart';
 import 'package:driving_profits/ui/feature/entry/edit/edit_entry_screen.dart';
 import 'package:driving_profits/ui/feature/entry/close/close_entry_screen.dart';
@@ -462,9 +461,7 @@ class _DailyListScreenState extends State<DailyListScreen> {
                                       Navigator.of(context).push(
                                         MaterialPageRoute(
                                           builder: (ctx) => CloseEntryScreen(
-                                            entry: DailyEntry.fromMap(
-                                              entryDto.toMap(),
-                                            ),
+                                            entryDto: entryDto,
                                             onSave: viewmodel.updateEntryLocal,
                                           ),
                                         ),

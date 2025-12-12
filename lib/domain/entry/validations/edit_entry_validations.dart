@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:driving_profits/ui/feature/entry/entry_dto.dart';
 
-class CloseEntryValidations {
+class EditEntryValidations {
   static String? validateUberEarnings(String? value) {
     if (value == null || value.isEmpty) {
       return 'Informe os ganhos do Uber';
@@ -35,7 +35,11 @@ class CloseEntryValidations {
   }
 
   static String? validateNumberOfTrips(EntryDto entryDto) {
-    if (entryDto.numberOfTrips <= 0) {
+    if (entryDto.numberOfTrips == null) {
+      return null;
+    }
+
+    if (entryDto.numberOfTrips! < 0) {
       return 'Quantidade de viagens não pode ser negativa';
     }
     return null;
@@ -43,10 +47,13 @@ class CloseEntryValidations {
 
   /// Valida se a hora final é maior que a hora inicial considerando as datas
   static String? validateEndTimeAfterStartTime(EntryDto entryDto) {
-    if (entryDto.endTime != null && entryDto.endDate != null) {
+    if (entryDto.startTime != null &&
+        entryDto.endTime != null &&
+        entryDto.date != null &&
+        entryDto.endDate != null) {
       if (_isEndDateTimeBeforeStartDateTime(
-        startDate: entryDto.date,
-        startTime: entryDto.startTime,
+        startDate: entryDto.date!,
+        startTime: entryDto.startTime!,
         endDate: entryDto.endDate!,
         endTime: entryDto.endTime!,
       )) {
@@ -114,10 +121,11 @@ class CloseEntryValidations {
 
   static String? validateFuelEfficiency(String? value) {
     if (value == null || value.isEmpty) {
-      return 'Informe a média de consumo';
+      return null;
+      // return 'Informe a média de consumo';
     }
     final efficiency = double.tryParse(value.replaceAll(',', '.'));
-    if (efficiency == null || efficiency <= 0) {
+    if (efficiency == null || efficiency < 0) {
       return 'Média de consumo deve ser maior que zero';
     }
     return null;
@@ -125,10 +133,11 @@ class CloseEntryValidations {
 
   static String? validateFuelPrice(String? value) {
     if (value == null || value.isEmpty) {
-      return 'Informe o valor do combustível';
+      return null;
+      // return 'Informe o valor do combustível';
     }
     final price = double.tryParse(value.replaceAll(',', '.'));
-    if (price == null || price <= 0) {
+    if (price == null || price < 0) {
       return 'Valor do combustível deve ser maior que zero';
     }
     return null;

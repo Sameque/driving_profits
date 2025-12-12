@@ -1,11 +1,10 @@
 import 'package:driving_profits/configuration/dependecies.dart';
-import 'package:driving_profits/domain/entry/validations/close_entry_validations.dart';
+import 'package:driving_profits/domain/entry/validations/edit_entry_validations.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
 import 'package:driving_profits/l10n/app_localizations.dart';
-import 'package:driving_profits/domain/entry/daily_entry.dart';
 import 'package:driving_profits/ui/feature/entry/edit/edit_entry_viewmodel.dart';
 import 'package:driving_profits/ui/feature/entry/entry_dto.dart';
 import 'package:driving_profits/ui/widget/currency_input_formatter.dart';
@@ -87,7 +86,9 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
   }
 
   void _saveForm() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
 
     await viewmodel.updateCommand.execute(widget.entryDto);
 
@@ -310,7 +311,7 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
                     initial: widget.entryDto.getFuelEfficiency,
                     onChanged: widget.entryDto.setFuelEfficiency,
                     icon: Icons.speed,
-                    validator: CloseEntryValidations.validateFuelEfficiency,
+                    validator: EditEntryValidations.validateFuelEfficiency,
                   ),
                   // Valor do Combustível
                   _buildTextField(
@@ -319,7 +320,7 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
                     initial: widget.entryDto.getFuelPrice,
                     onChanged: widget.entryDto.setFuelPrice,
                     icon: Icons.attach_money,
-                    validator: CloseEntryValidations.validateFuelPrice,
+                    validator: EditEntryValidations.validateFuelPrice,
                   ),
 
                   const SizedBox(height: 24),
@@ -358,7 +359,7 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
                     icon: Icons.route,
                     inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                     validator: (value) =>
-                        CloseEntryValidations.validateNumberOfTrips(
+                        EditEntryValidations.validateNumberOfTrips(
                           widget.entryDto,
                         ),
                   ),

@@ -20,7 +20,7 @@ class EntryDto extends ChangeNotifier {
   late EntryStatus status;
   late double fuelEfficiency;
   late double fuelPrice;
-  late int? numberOfTrips;
+  late int numberOfTrips;
 
   EntryDto.start({
     required this.date,
@@ -88,6 +88,7 @@ class EntryDto extends ChangeNotifier {
     fuelEfficiency = entry.fuelEfficiency ?? 0.0;
     fuelPrice = entry.fuelPrice ?? 0.0;
     status = entry.status;
+    numberOfTrips = entry.numberOfTrips ?? 0;
   }
 
   Map<String, dynamic> toMap() {
@@ -222,7 +223,7 @@ class EntryDto extends ChangeNotifier {
     if (value == null || value.isEmpty) {
       numberOfTrips = 0;
     } else {
-      numberOfTrips = int.tryParse(value.replaceAll(',', '.'));
+      numberOfTrips = int.tryParse(value.replaceAll(',', '.')) ?? 0;
     }
     notifyListeners();
   }
@@ -256,6 +257,11 @@ class EntryDto extends ChangeNotifier {
     );
   }
 
+  void setStatusEnum(EntryStatus value) {
+    status = value;
+    notifyListeners();
+  }
+
   //getters in string format
   String get getDateStr => date.toIso8601String().split('T').first;
   String get getEndDateStr =>
@@ -281,7 +287,7 @@ class EntryDto extends ChangeNotifier {
   String get getOtherCosts =>
       otherCosts.toStringAsFixed(2).replaceAll('.', ',');
   String get getStatus => status.toString().split('.').last;
-  String get getNumberOfTrips => numberOfTrips?.toString() ?? '';
+  String get getNumberOfTrips => numberOfTrips.toString();
 
   //computed properties
   DateTime get getDate => date;
