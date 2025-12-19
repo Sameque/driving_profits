@@ -2,7 +2,6 @@ import 'package:driving_profits/configuration/dependecies.dart';
 import 'package:driving_profits/domain/entry/validations/edit_entry_validations.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
 import 'package:driving_profits/l10n/app_localizations.dart';
 import 'package:driving_profits/ui/feature/entry/edit/edit_entry_viewmodel.dart';
@@ -24,64 +23,81 @@ class EditEntryScreen extends StatefulWidget {
 class _EditEntryScreenState extends State<EditEntryScreen> {
   final _formKey = GlobalKey<FormState>();
   final viewmodel = injector.get<EditEntryViewModel>();
+  late EntryDto entry = EntryDto();
 
   @override
   void initState() {
     super.initState();
+
+    entry = widget.entryDto.copy();
+
     viewmodel.updateCommand.addListener(_listanable);
 
-    widget.entryDto.addListener(() => viewmodel.markAsUnsaved());
+    entry.addListener(() => viewmodel.markAsUnsaved());
+  }
+
+  @override
+  void dispose() {
+    viewmodel.updateCommand.removeListener(_listanable);
+    entry.removeListener(() => viewmodel.markAsUnsaved());
+
+    super.dispose();
   }
 
   void _listanable() {
     if (viewmodel.updateCommand.value.isFailure) {
       final failure = viewmodel.updateCommand.value as FailureCommand<Object>;
 
-      CustomSnackBar.error(
-        context: context,
-        message: "Erro ao salvar:\n - ${failure.error.toString()}",
-      );
+      if (mounted) {
+        CustomSnackBar.error(
+          context: context,
+          message: "Erro ao salvar:\n - ${failure.error.toString()}",
+        );
+      }
     }
+
     if (viewmodel.updateCommand.value.isSuccess) {
-      CustomSnackBar.success(
-        context: context,
-        message: 'Jornada atualizada com sucesso!',
-      );
+      if (mounted) {
+        CustomSnackBar.success(
+          context: context,
+          message: 'Jornada atualizada com sucesso!',
+        );
+      }
     }
   }
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: widget.entryDto.getDate,
+      initialDate: entry.getDate,
       firstDate: DateTime(2020),
       lastDate: DateTime.now(),
       locale: const Locale('pt', 'BR'),
     );
-    if (picked != null && picked != widget.entryDto.date) {
-      widget.entryDto.setDate(picked);
+    if (picked != null && picked != entry.date) {
+      entry.setDate(picked);
     }
   }
 
   Future<void> _selectStartTime() async {
     final TimeOfDay? picked = await showTimePicker(
       context: context,
-      initialTime: widget.entryDto.getStartTime ?? TimeOfDay.now(),
+      initialTime: entry.getStartTime ?? TimeOfDay.now(),
       initialEntryMode: TimePickerEntryMode.dial,
     );
     if (picked != null) {
-      widget.entryDto.setStartTime(picked);
+      entry.setStartTime(picked);
     }
   }
 
   Future<void> _selectEndTime() async {
     final TimeOfDay? picked = await showTimePicker(
       context: context,
-      initialTime: widget.entryDto.getEndTime ?? TimeOfDay.now(),
+      initialTime: entry.getEndTime ?? TimeOfDay.now(),
       initialEntryMode: TimePickerEntryMode.dial,
     );
     if (picked != null) {
-      widget.entryDto.setEndTime(picked);
+      entry.setEndTime(picked);
     }
   }
 
@@ -90,11 +106,11 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
       return;
     }
 
-    await viewmodel.updateCommand.execute(widget.entryDto);
+    await viewmodel.updateCommand.execute(entry);
 
     if (viewmodel.updateCommand.value.isFailure) return;
 
-    widget.onSave?.call(widget.entryDto);
+    widget.onSave?.call(entry);
 
     await Future.delayed(const Duration(milliseconds: 400));
 
@@ -158,11 +174,7 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
 
     return PopScope(
       onPopInvokedWithResult: (didPop, result) => () async {
-        final viewModel = Provider.of<EditEntryViewModel>(
-          context,
-          listen: false,
-        );
-        if (viewModel.hasUnsavedChanges) {
+        if (viewmodel.hasUnsavedChanges) {
           didPop =
               await showDialog(
                 context: context,
@@ -208,259 +220,261 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
         ),
         body: Stack(
           children: [
-            Form(
-              key: _formKey,
-              child: ListView(
-                padding: const EdgeInsets.all(16.0),
-                children: [
-                  // Data
-                  ListTile(
-                    title: const Text('Data'),
-                    subtitle: Text(
-                      DateFormat('dd/MM/yyyy').format(widget.entryDto.date),
-                    ),
-                    trailing: const Icon(Icons.calendar_today),
-                    onTap: () => _selectDate(context),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      side: BorderSide(
-                        color: Theme.of(context).colorScheme.outlineVariant,
-                      ),
-                    ),
-                    tileColor: Theme.of(context)
-                        .colorScheme
-                        .surfaceContainerHighest
-                        .withValues(alpha: 0.1),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  // Ganhos
-                  Text(
-                    //TODO: colocar o texto em um arquivo de localização
-                    'Ganhos',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  _buildTextField(
-                    //TODO: colocar o texto em um arquivo de localização
-                    label: 'Repasse (R\$)',
-                    initial: widget.entryDto.getUberEarnings,
-                    onChanged: widget.entryDto.setUberEarnings,
-                    icon: Icons.attach_money,
-                    autofocus: true,
-                  ),
-
-                  _buildTextField(
-                    //TODO: colocar o texto em um arquivo de localização
-                    label: 'Gorjetas (R\$)',
-                    initial: widget.entryDto.getTips,
-                    onChanged: widget.entryDto.setTips,
-                    icon: Icons.card_giftcard,
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Gastos do Dia
-                  Text(
-                    //TODO: colocar o texto em um arquivo de localização
-                    'Gastos do Dia',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  _buildTextField(
-                    //TODO: colocar o texto em um arquivo de localização
-                    label: 'Alimentação (R\$)',
-                    initial: widget.entryDto.getFoodCost,
-                    onChanged: widget.entryDto.setFoodCost,
-                    icon: Icons.restaurant,
-                  ),
-                  _buildTextField(
-                    //TODO: colocar o texto em um arquivo de localização
-                    label: 'Limpeza (R\$)',
-                    initial: widget.entryDto.getCleaningCost,
-                    onChanged: widget.entryDto.setCleaningCost,
-                    icon: Icons.wash,
-                  ),
-                  _buildTextField(
-                    //TODO: colocar o texto em um arquivo de localização
-                    label: 'Outros Gastos (R\$)',
-                    initial: widget.entryDto.getOtherCosts,
-                    onChanged: widget.entryDto.setOtherCosts,
-                    icon: Icons.more_horiz,
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  Text(
-                    //TODO: colocar o texto em um arquivo de localização
-                    'Calculo Combustível',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-
-                  const SizedBox(height: 8),
-
-                  _buildTextField(
-                    //TODO: colocar o texto em um arquivo de localização
-                    label: 'Média de Consumo (km/L)',
-                    initial: widget.entryDto.getFuelEfficiency,
-                    onChanged: widget.entryDto.setFuelEfficiency,
-                    icon: Icons.speed,
-                    validator: EditEntryValidations.validateFuelEfficiency,
-                  ),
-                  // Valor do Combustível
-                  _buildTextField(
-                    //TODO: colocar o texto em um arquivo de localização
-                    label: 'Valor do Combustível (R\$/l)',
-                    initial: widget.entryDto.getFuelPrice,
-                    onChanged: widget.entryDto.setFuelPrice,
-                    icon: Icons.attach_money,
-                    validator: EditEntryValidations.validateFuelPrice,
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  // Métricas de Trabalho
-                  Text(
-                    //TODO: colocar o texto em um arquivo de localização
-                    'Métricas de Trabalho',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  _buildTextField(
-                    //TODO: colocar o texto em um arquivo de localização
-                    label: 'Km Inicial',
-                    initial: widget.entryDto.getKmStart,
-                    onChanged: widget.entryDto.setKmStart,
-                    icon: Icons.directions_car,
-                    isCurrency: false,
-                  ),
-                  _buildTextField(
-                    //TODO: colocar o texto em um arquivo de localização
-                    label: 'Km Final',
-                    initial: widget.entryDto.getKmEnd,
-                    onChanged: widget.entryDto.setKmEnd,
-                    icon: Icons.directions_car,
-                    isCurrency: false,
-                  ),
-                  const SizedBox(height: 8),
-
-                  _buildTextField(
-                    initial: widget.entryDto.getNumberOfTrips,
-                    onChanged: widget.entryDto.setNumberOfTrips,
-                    label: 'Quantidade de viagens',
-                    icon: Icons.route,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    validator: (value) =>
-                        EditEntryValidations.validateNumberOfTrips(
-                          widget.entryDto,
+            ListenableBuilder(
+              listenable: viewmodel,
+              builder: (context, _) {
+                return Form(
+                  key: _formKey,
+                  child: ListView(
+                    padding: const EdgeInsets.all(16.0),
+                    children: [
+                      // Data
+                      ListTile(
+                        title: const Text('Data'),
+                        subtitle: Text(
+                          DateFormat('dd/MM/yyyy').format(entry.date),
                         ),
-                  ),
-
-                  ListTile(
-                    //TODO: colocar o texto em um arquivo de localização
-                    title: const Text('Hora Inicial'),
-                    subtitle: Text(
-                      widget.entryDto.startTime?.format(context) ??
-                          //TODO: colocar o texto em um arquivo de localização
-                          'Não definida',
-                    ),
-                    trailing: const Icon(Icons.access_time),
-                    onTap: _selectStartTime,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      side: BorderSide(
-                        color: Theme.of(context).colorScheme.outlineVariant,
-                      ),
-                    ),
-                    tileColor: Theme.of(context)
-                        .colorScheme
-                        .surfaceContainerHighest
-                        .withValues(alpha: 0.1),
-                  ),
-                  const SizedBox(height: 16),
-                  ListTile(
-                    //TODO: colocar o texto em um arquivo de localização
-                    title: const Text('Hora Final'),
-                    subtitle: Text(
-                      widget.entryDto.endTime?.format(context) ??
-                          //TODO: colocar o texto em um arquivo de localização
-                          'Não definida',
-                    ),
-                    trailing: const Icon(Icons.access_time),
-                    onTap: _selectEndTime,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      side: BorderSide(
-                        color: Theme.of(context).colorScheme.outlineVariant,
-                      ),
-                    ),
-                    tileColor: Theme.of(context)
-                        .colorScheme
-                        .surfaceContainerHighest
-                        .withValues(alpha: 0.1),
-                  ),
-                  const SizedBox(height: 16),
-                  ListTile(
-                    //TODO: colocar o texto em um arquivo de localização
-                    title: const Text('Km Rodados (calculado)'),
-                    trailing: Text(widget.entryDto.totalKm.toString()),
-                    tileColor: Theme.of(context)
-                        .colorScheme
-                        .surfaceContainerHighest
-                        .withValues(alpha: 0.1),
-                  ),
-                  ListTile(
-                    //TODO: colocar o texto em um arquivo de localização
-                    title: const Text('Horas Trabalhadas (calculado)'),
-                    trailing: Text(
-                      widget.entryDto.totalHoursWorked?.format(context) ?? '',
-                    ),
-                    tileColor: Theme.of(context)
-                        .colorScheme
-                        .surfaceContainerHighest
-                        .withValues(alpha: 0.1),
-                  ),
-                  const SizedBox(height: 32),
-
-                  // Botão para salvar
-                  Consumer<EditEntryViewModel>(
-                    builder: (context, viewModel, _) => FilledButton(
-                      onPressed: viewModel.updateCommand.value.isRunning
-                          ? null
-                          : _saveForm,
-                      style: FilledButton.styleFrom(
-                        minimumSize: const Size.fromHeight(50),
+                        trailing: const Icon(Icons.calendar_today),
+                        onTap: () => _selectDate(context),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
+                          side: BorderSide(
+                            color: Theme.of(context).colorScheme.outlineVariant,
+                          ),
+                        ),
+                        tileColor: Theme.of(context)
+                            .colorScheme
+                            .surfaceContainerHighest
+                            .withValues(alpha: 0.1),
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      // Ganhos
+                      Text(
+                        //TODO: colocar o texto em um arquivo de localização
+                        'Ganhos',
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                      //TODO: colocar o texto em um arquivo de localização
-                      child: const Text('Salvar Alterações'),
-                    ),
+                      const SizedBox(height: 8),
+                      _buildTextField(
+                        //TODO: colocar o texto em um arquivo de localização
+                        label: 'Repasse (R\$)',
+                        initial: entry.getUberEarnings,
+                        onChanged: entry.setUberEarnings,
+                        icon: Icons.attach_money,
+                        autofocus: true,
+                      ),
+
+                      _buildTextField(
+                        //TODO: colocar o texto em um arquivo de localização
+                        label: 'Gorjetas (R\$)',
+                        initial: entry.getTips,
+                        onChanged: entry.setTips,
+                        icon: Icons.card_giftcard,
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Gastos do Dia
+                      Text(
+                        //TODO: colocar o texto em um arquivo de localização
+                        'Gastos do Dia',
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      _buildTextField(
+                        //TODO: colocar o texto em um arquivo de localização
+                        label: 'Alimentação (R\$)',
+                        initial: entry.getFoodCost,
+                        onChanged: entry.setFoodCost,
+                        icon: Icons.restaurant,
+                      ),
+                      _buildTextField(
+                        //TODO: colocar o texto em um arquivo de localização
+                        label: 'Limpeza (R\$)',
+                        initial: entry.getCleaningCost,
+                        onChanged: entry.setCleaningCost,
+                        icon: Icons.wash,
+                      ),
+                      _buildTextField(
+                        //TODO: colocar o texto em um arquivo de localização
+                        label: 'Outros Gastos (R\$)',
+                        initial: entry.getOtherCosts,
+                        onChanged: entry.setOtherCosts,
+                        icon: Icons.more_horiz,
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      Text(
+                        //TODO: colocar o texto em um arquivo de localização
+                        'Calculo Combustível',
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+
+                      const SizedBox(height: 8),
+
+                      _buildTextField(
+                        //TODO: colocar o texto em um arquivo de localização
+                        label: 'Média de Consumo (km/L)',
+                        initial: entry.getFuelEfficiency,
+                        onChanged: entry.setFuelEfficiency,
+                        icon: Icons.speed,
+                        validator: EditEntryValidations.validateFuelEfficiency,
+                      ),
+                      // Valor do Combustível
+                      _buildTextField(
+                        //TODO: colocar o texto em um arquivo de localização
+                        label: 'Valor do Combustível (R\$/l)',
+                        initial: entry.getFuelPrice,
+                        onChanged: entry.setFuelPrice,
+                        icon: Icons.attach_money,
+                        validator: EditEntryValidations.validateFuelPrice,
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      // Métricas de Trabalho
+                      Text(
+                        //TODO: colocar o texto em um arquivo de localização
+                        'Métricas de Trabalho',
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      _buildTextField(
+                        //TODO: colocar o texto em um arquivo de localização
+                        label: 'Km Inicial',
+                        initial: entry.getKmStart,
+                        onChanged: entry.setKmStart,
+                        icon: Icons.directions_car,
+                        isCurrency: false,
+                      ),
+                      _buildTextField(
+                        //TODO: colocar o texto em um arquivo de localização
+                        label: 'Km Final',
+                        initial: entry.getKmEnd,
+                        onChanged: entry.setKmEnd,
+                        icon: Icons.directions_car,
+                        isCurrency: false,
+                      ),
+                      const SizedBox(height: 8),
+
+                      _buildTextField(
+                        initial: entry.getNumberOfTrips,
+                        onChanged: entry.setNumberOfTrips,
+                        label: 'Quantidade de viagens',
+                        icon: Icons.route,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                        ],
+                        validator: (value) =>
+                            EditEntryValidations.validateNumberOfTrips(entry),
+                      ),
+
+                      ListTile(
+                        //TODO: colocar o texto em um arquivo de localização
+                        title: const Text('Hora Inicial'),
+                        subtitle: Text(
+                          entry.startTime?.format(context) ??
+                              //TODO: colocar o texto em um arquivo de localização
+                              'Não definida',
+                        ),
+                        trailing: const Icon(Icons.access_time),
+                        onTap: _selectStartTime,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: BorderSide(
+                            color: Theme.of(context).colorScheme.outlineVariant,
+                          ),
+                        ),
+                        tileColor: Theme.of(context)
+                            .colorScheme
+                            .surfaceContainerHighest
+                            .withValues(alpha: 0.1),
+                      ),
+                      const SizedBox(height: 16),
+                      ListTile(
+                        //TODO: colocar o texto em um arquivo de localização
+                        title: const Text('Hora Final'),
+                        subtitle: Text(
+                          entry.endTime?.format(context) ??
+                              //TODO: colocar o texto em um arquivo de localização
+                              'Não definida',
+                        ),
+                        trailing: const Icon(Icons.access_time),
+                        onTap: _selectEndTime,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: BorderSide(
+                            color: Theme.of(context).colorScheme.outlineVariant,
+                          ),
+                        ),
+                        tileColor: Theme.of(context)
+                            .colorScheme
+                            .surfaceContainerHighest
+                            .withValues(alpha: 0.1),
+                      ),
+                      const SizedBox(height: 16),
+                      ListTile(
+                        //TODO: colocar o texto em um arquivo de localização
+                        title: const Text('Km Rodados (calculado)'),
+                        trailing: Text(entry.totalKm.toString()),
+                        tileColor: Theme.of(context)
+                            .colorScheme
+                            .surfaceContainerHighest
+                            .withValues(alpha: 0.1),
+                      ),
+                      ListTile(
+                        //TODO: colocar o texto em um arquivo de localização
+                        title: const Text('Horas Trabalhadas (calculado)'),
+                        trailing: Text(
+                          entry.totalHoursWorked?.format(context) ?? '',
+                        ),
+                        tileColor: Theme.of(context)
+                            .colorScheme
+                            .surfaceContainerHighest
+                            .withValues(alpha: 0.1),
+                      ),
+                      const SizedBox(height: 32),
+
+                      // Botão para salvar
+                      FilledButton(
+                        onPressed: viewmodel.updateCommand.value.isRunning
+                            ? null
+                            : _saveForm,
+                        style: FilledButton.styleFrom(
+                          minimumSize: const Size.fromHeight(50),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        //TODO: colocar o texto em um arquivo de localização
+                        child: const Text('Salvar Alterações'),
+                      ),
+                      // ),
+                    ],
                   ),
-                ],
-              ),
+                );
+              },
             ),
-            Consumer<EditEntryViewModel>(
-              builder: (context, viewModel, _) =>
-                  viewModel.updateCommand.value.isRunning
-                  ? const Center(child: CircularProgressIndicator())
-                  : const SizedBox(),
-            ),
+
+            viewmodel.updateCommand.value.isRunning
+                ? const Center(child: CircularProgressIndicator())
+                : const SizedBox(),
           ],
         ),
         bottomNavigationBar: SafeArea(
           top: false,
           child: ListenableBuilder(
-            listenable: widget.entryDto,
+            listenable: entry,
             builder: (context, child) {
               return Container(
                 padding: const EdgeInsets.all(16.0),
@@ -484,11 +498,11 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                     Text(
-                      currencyFormat.format(widget.entryDto.netEarnings),
+                      currencyFormat.format(entry.netEarnings),
                       style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
-                        color: widget.entryDto.netEarnings >= 0
+                        color: entry.netEarnings >= 0
                             ? Colors.green.shade700
                             : Colors.red.shade700,
                       ),

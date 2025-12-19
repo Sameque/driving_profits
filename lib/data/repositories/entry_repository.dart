@@ -10,7 +10,7 @@ class EntryRepository {
   AsyncResult<dynamic> addEntry(DailyEntry dailyEntry) async =>
       await _service.insertEntry(dailyEntry.toMap());
 
-  Future<void> updateEntry(String id, DailyEntry dailyEntry) async =>
+  AsyncResult updateEntry(String id, DailyEntry dailyEntry) async =>
       await _service.updateEntry(id, dailyEntry.toMap());
 
   AsyncResult<dynamic> deleteEntry(String id) async =>

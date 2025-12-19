@@ -1,10 +1,10 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SupabaseService {
-  static const String _tableName = 'daily_entries';
+  final String tableName;
   late final SupabaseClient _client;
 
-  SupabaseService() {
+  SupabaseService(this.tableName) {
     _client = Supabase.instance.client;
   }
 
@@ -15,7 +15,7 @@ class SupabaseService {
     int? limit,
     int? offset,
   }) async {
-    var query = _client.from(_tableName).select();
+    var query = _client.from(tableName).select();
 
     if (filters != null) {
       filters.forEach((key, value) {
@@ -62,11 +62,11 @@ class SupabaseService {
   }
 
   Future<dynamic> insert(Map<String, dynamic> data) async =>
-      await _client.from(_tableName).insert([data]).select();
+      await _client.from(tableName).insert([data]).select();
 
   Future<dynamic> update(Map<String, dynamic> data, String id) async =>
-      await _client.from(_tableName).update(data).eq('id', id).select();
+      await _client.from(tableName).update(data).eq('id', id).select();
 
   Future<dynamic> delete(String id) async =>
-      await _client.from(_tableName).delete().eq('id', id).select();
+      await _client.from(tableName).delete().eq('id', id).select();
 }

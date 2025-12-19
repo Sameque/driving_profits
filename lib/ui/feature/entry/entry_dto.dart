@@ -43,33 +43,6 @@ class EntryDto extends ChangeNotifier {
 
   EntryDto({String? id}) : id = id ?? const Uuid().v4();
 
-  EntryDto.fromMap(Map<String, dynamic> map)
-    : id = (map['id'] as String?) ?? const Uuid().v4() {
-    date = DateTime.tryParse(map['start_date'] ?? '') ?? DateTime.now();
-    endDate = DateTime.tryParse(map['endDate'] ?? '');
-    startTime =
-        parseTime(map['startTime']) ??
-        TimeOfDay(hour: DateTime.now().hour, minute: DateTime.now().minute);
-    endTime = parseTime(map['endTime']);
-    kmStart = map['kmStart']?.toInt();
-    kmEnd = map['kmEnd']?.toInt();
-    uberEarnings = map['uberEarnings'];
-    tips = map['tips'];
-    fuelCost = map['fuelCost'];
-    foodCost = map['foodCost'];
-    cleaningCost = map['cleaningCost'];
-    otherCosts = map['otherCosts'];
-    fuelEfficiency = map['fuelEfficiency'] ?? 0.0;
-    fuelPrice = map['fuelPrice'] ?? 0.0;
-    status = map['status'] != null
-        ? EntryStatus.values.firstWhere(
-            (e) => e.toString().split('.').last == map['status'],
-            orElse: () => EntryStatus.none,
-          )
-        : EntryStatus.none;
-    numberOfTrips = map['number_of_trips'] ?? 0;
-  }
-
   EntryDto.fromDailyEntry(DailyEntry entry) : id = entry.id {
     date = entry.startDate;
     endDate = entry.endDate;
@@ -364,5 +337,26 @@ class EntryDto extends ChangeNotifier {
   void setEndDate(DateTime picked) {
     endDate = picked;
     notifyListeners();
+  }
+
+  EntryDto copy() {
+    final copyDto = EntryDto(id: id);
+    copyDto.date = date;
+    copyDto.endDate = endDate;
+    copyDto.startTime = startTime;
+    copyDto.endTime = endTime;
+    copyDto.kmStart = kmStart;
+    copyDto.kmEnd = kmEnd;
+    copyDto.uberEarnings = uberEarnings;
+    copyDto.tips = tips;
+    copyDto.fuelCost = fuelCost;
+    copyDto.foodCost = foodCost;
+    copyDto.cleaningCost = cleaningCost;
+    copyDto.otherCosts = otherCosts;
+    copyDto.status = status;
+    copyDto.fuelEfficiency = fuelEfficiency;
+    copyDto.fuelPrice = fuelPrice;
+    copyDto.numberOfTrips = numberOfTrips;
+    return copyDto;
   }
 }
