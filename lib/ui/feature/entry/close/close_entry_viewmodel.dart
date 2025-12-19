@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:driving_profits/data/repositories/entry_repository.dart';
 import 'package:driving_profits/domain/entry/daily_entry.dart';
+import 'package:result_command/result_command.dart';
+import 'package:result_dart/result_dart.dart';
 
 /// ViewModel responsável por operações relacionadas ao fechamento de uma jornada.
 ///
@@ -13,21 +15,7 @@ class CloseEntryViewModel with ChangeNotifier {
 
   CloseEntryViewModel(this._repository);
 
-  bool _isLoading = false;
-  String? _error;
-
-  bool get isLoading => _isLoading;
-  String? get error => _error;
-
-  void _setLoading(bool v) {
-    _isLoading = v;
-    notifyListeners();
-  }
-
-  void _setError(String? message) {
-    _error = message;
-    notifyListeners();
-  }
+  late final closeCommand = Command1(_closeWorkSession);
 
   /// Fecha a jornada atualizando a entrada no repositório.
   ///
@@ -35,16 +23,7 @@ class CloseEntryViewModel with ChangeNotifier {
   /// endDate/endTime etc.). Retorna [true] em caso de sucesso ou lança uma
   /// exceção em caso de falha. O estado de carregamento e a mensagem de erro
   /// ficam disponíveis via `isLoading` e `error`.
-  Future<void> closeWorkSession(DailyEntry entry) async {
-    try {
-      _setError(null);
-      _setLoading(true);
-      await _repository.updateEntry(entry.id, entry);
-    } catch (e) {
-      _setError(e.toString());
-      rethrow;
-    } finally {
-      _setLoading(false);
-    }
+  AsyncResult _closeWorkSession(DailyEntry entry) async {
+    return _repository.updateEntry(entry.id, entry);
   }
 }

@@ -2,7 +2,6 @@ import 'package:driving_profits/configuration/dependecies.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
 import 'package:driving_profits/domain/entry/daily_entry.dart';
 import 'package:driving_profits/domain/entry/entry_status.dart';
 import 'package:driving_profits/ui/feature/entry/close/close_entry_viewmodel.dart';
@@ -69,38 +68,15 @@ class _CloseEntryScreenState extends State<CloseEntryScreen> {
       return;
     }
 
-    /*
-    
-    try {
-      final viewModel = Provider.of<CloseEntryViewModel>(
-        context,
-        listen: false,
-      );
-*/
     widget.entryDto.setStatusEnum(EntryStatus.closed);
-    // final map = widget.entryDto.toMap();
-    // map['status'] = EntryStatus.closed.toString().split('.').last;
     final closed = DailyEntry.fromMap(widget.entryDto.toMap());
 
-    await viewmodel.closeWorkSession(closed);
-    /*
-      CustomSnackBar.success(
-        context: context,
-        message: 'Jornada finalizada com sucesso!',
-      );
-*/
+    await viewmodel.closeCommand.execute(closed);
+
     widget.onSave?.call(widget.entryDto);
 
     await Future.delayed(const Duration(milliseconds: 300));
     if (mounted) Navigator.of(context).pop();
-    /*
-    } catch (e) {
-      CustomSnackBar.error(
-        context: context,
-        message: 'Erro ao finalizar: ${e.toString()}',
-      );
-    }
-    */
   }
 
   Widget _buildTextField({
@@ -148,22 +124,17 @@ class _CloseEntryScreenState extends State<CloseEntryScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Fechar Jornada'),
-        centerTitle:
-            false, // Alinha o título à esquerda para melhor legibilidade
-        elevation: 0, // Visual mais moderno e flat
-        scrolledUnderElevation: 4, // Elevação sutil ao scrollar
-        backgroundColor: Theme.of(
-          context,
-        ).colorScheme.surface, // Integra com o tema
-        foregroundColor: Theme.of(
-          context,
-        ).colorScheme.onSurface, // Garante contraste
+        centerTitle: false,
+        elevation: 0,
+        scrolledUnderElevation: 4,
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        foregroundColor: Theme.of(context).colorScheme.onSurface,
         shape: Border(
           bottom: BorderSide(
             color: Theme.of(context).colorScheme.outlineVariant,
             width: 1,
           ),
-        ), // Borda inferior sutil para separação
+        ),
       ),
       body: Stack(
         children: [
@@ -395,35 +366,33 @@ class _CloseEntryScreenState extends State<CloseEntryScreen> {
                                 ),
                               ],
                             ),
+                            const SizedBox(height: 32),
+
+                            // Botão principal para salvar
+                            FilledButton(
+                              onPressed: viewmodel.closeCommand.value.isRunning
+                                  ? null
+                                  : _save,
+                              style: FilledButton.styleFrom(
+                                minimumSize: const Size.fromHeight(50),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              child: const Text('Fechar Jornada'),
+                            ),
                           ],
                         ),
                       ),
                     );
                   },
                 ),
-                const SizedBox(height: 32),
-
-                // Botão principal para salvar
-                Consumer<CloseEntryViewModel>(
-                  builder: (context, viewModel, _) => FilledButton(
-                    onPressed: viewModel.isLoading ? null : _save,
-                    style: FilledButton.styleFrom(
-                      minimumSize: const Size.fromHeight(50),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: const Text('Fechar Jornada'),
-                  ),
-                ),
               ],
             ),
           ),
-          Consumer<CloseEntryViewModel>(
-            builder: (context, viewModel, _) => viewModel.isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : const SizedBox(),
-          ),
+          viewmodel.closeCommand.value.isRunning
+              ? const Center(child: CircularProgressIndicator())
+              : const SizedBox(),
         ],
       ),
     );
