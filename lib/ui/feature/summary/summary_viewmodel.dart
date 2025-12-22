@@ -3,52 +3,53 @@ import 'package:driving_profits/data/repositories/entry_repository.dart';
 import 'package:driving_profits/domain/entry/entry_status.dart';
 import 'package:driving_profits/ui/feature/summary/entry_summary_model.dart';
 import 'package:driving_profits/ui/feature/summary/widget/period.dart';
+import 'package:result_command/result_command.dart';
+import 'package:result_dart/result_dart.dart';
 
 class SummaryViewmodel extends ChangeNotifier {
   final EntryRepository _repository;
 
-  SummaryViewmodel(this._repository) {
-    onPeriodChanged(Period.daily);
-  }
+  SummaryViewmodel(this._repository);
+
+  late final onPeriodChangedCommand = Command1(_onPeriodChanged);
 
   List<EntrySummaryModel> _entrySummaryModel = [];
-  bool _isLoading = false;
-  String? _error;
 
   Period _selectedPeriod = Period.none;
 
-  bool get isLoading => _isLoading;
-  String? get error => _error;
-  List<EntrySummaryModel> get entrySummaryModel => _entrySummaryModel;
   Period get selectedPeriod => _selectedPeriod;
 
-  Future<void> _fetchEntries() async {
-    try {
-      final entries = await _repository.getEntries();
+  AsyncResult _fetchEntries() async {
+    final entries = await _repository.getEntries();
 
-      _entrySummaryModel = entries
-          .map((e) => EntrySummaryModel.fromMap(e.toMap()))
-          .where((e) => e.status == EntryStatus.closed)
-          .cast<EntrySummaryModel>()
-          .toList();
-    } catch (e) {
-      _error = "Erro: $e";
-    }
+    _entrySummaryModel = entries
+        .getOrThrow()
+        .map((e) => EntrySummaryModel.fromDailyEntry(e))
+        .where((e) => e.status == EntryStatus.closed)
+        .cast<EntrySummaryModel>()
+        .toList();
+
+    return Success(unit);
   }
 
-  void onPeriodChanged(Period? newPeriod) async {
-    if (newPeriod == null || newPeriod == _selectedPeriod) return;
+  AsyncResult _onPeriodChanged(Period? newPeriod) async {
+    if (newPeriod == null || newPeriod == _selectedPeriod) {
+      return Success(_entrySummaryModel);
+    }
 
     _selectedPeriod = newPeriod;
-    _isLoading = true;
-    notifyListeners();
-
     await _fetchEntries();
 
-    List<EntrySummaryModel> filtered;
+    _entrySummaryModel = _filterEntriesByPeriod(newPeriod);
+
+    Future.delayed(const Duration(milliseconds: 800), () {});
+
+    return Success(unit);
+  }
+
+  List<EntrySummaryModel> _filterEntriesByPeriod(Period period) {
     DateTime startDateSearch = DateTime.now();
-    // DateTime startDateSearch = DateTime.now();
-    switch (newPeriod) {
+    switch (period) {
       case Period.daily:
         startDateSearch = DateTime(
           DateTime.now().year,
@@ -58,7 +59,6 @@ class SummaryViewmodel extends ChangeNotifier {
         break;
       case Period.weekly:
         startDateSearch = _startOfWeek(DateTime.now());
-
         break;
       case Period.monthly:
         startDateSearch = DateTime(
@@ -66,7 +66,6 @@ class SummaryViewmodel extends ChangeNotifier {
           DateTime.now().month,
           1,
         );
-
         break;
       case Period.yearly:
         startDateSearch = DateTime(DateTime.now().year, 1, 1);
@@ -76,7 +75,7 @@ class SummaryViewmodel extends ChangeNotifier {
         throw UnimplementedError();
     }
 
-    filtered = _entrySummaryModel
+    return _entrySummaryModel
         .where(
           (entry) =>
               entry.date.isAtSameMomentAs(startDateSearch) &&
@@ -85,12 +84,6 @@ class SummaryViewmodel extends ChangeNotifier {
                   entry.status == EntryStatus.closed,
         )
         .toList();
-    _entrySummaryModel = filtered;
-
-    Future.delayed(const Duration(milliseconds: 800), () {
-      _isLoading = false;
-      notifyListeners();
-    });
   }
 
   DateTime _startOfWeek(DateTime date) {
