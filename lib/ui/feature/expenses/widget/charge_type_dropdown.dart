@@ -1,14 +1,14 @@
+import 'package:driving_profits/domain/expense/charge_type.dart';
 import 'package:flutter/material.dart';
-import 'package:driving_profits/domain/expense/expense_type.dart';
 
-class ExpenseTypeDropdown extends StatelessWidget {
-  final ExpenseType? value;
-  final void Function(ExpenseType?)? onChanged;
+class ChargeTypeDropdown extends StatelessWidget {
+  final ChargeType? value;
+  final void Function(ChargeType?)? onChanged;
   final String? labelText;
   final String? hintText;
   final bool isExpanded;
 
-  const ExpenseTypeDropdown({
+  const ChargeTypeDropdown({
     super.key,
     required this.value,
     required this.onChanged,
@@ -19,28 +19,28 @@ class ExpenseTypeDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final items = ExpenseType.values
+    final items = ChargeType.values
         .map(
           (e) =>
-              DropdownMenuItem<ExpenseType>(value: e, child: Text(e.descricao)),
+              DropdownMenuItem<ChargeType>(value: e, child: Text(e.descricao)),
         )
-        .where((item) => item.value != ExpenseType.none)
+        .where((item) => item.value != ChargeType.none)
         .toList();
 
     items.sort((a, b) => a.value!.descricao.compareTo(b.value!.descricao));
 
     items.insert(
       0,
-      DropdownMenuItem<ExpenseType>(
-        value: ExpenseType.none,
-        child: Text(ExpenseType.none.descricao),
+      DropdownMenuItem<ChargeType>(
+        value: ChargeType.none,
+        child: Text(ChargeType.none.descricao),
       ),
     );
-    return DropdownButtonFormField<ExpenseType>(
+    return DropdownButtonFormField<ChargeType>(
       initialValue: value,
       isExpanded: isExpanded,
       decoration: InputDecoration(
-        labelText: labelText ?? 'Tipo de gasto',
+        labelText: labelText ?? 'Tipo Cobrança',
         hintText: hintText,
         prefixIcon: const Icon(Icons.category),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
@@ -52,7 +52,7 @@ class ExpenseTypeDropdown extends StatelessWidget {
       items: items,
       onChanged: onChanged,
       validator: (value) =>
-          value == null || value.value == ExpenseType.none.value
+          value == null || value.value == ChargeType.none.value
           ? 'Selecione o tipo de gasto.'
           : null,
     );
