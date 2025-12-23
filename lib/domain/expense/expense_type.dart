@@ -3,16 +3,15 @@ import 'package:flutter/material.dart';
 enum ExpenseType {
   none(0, 'Nenhum', Icons.not_interested),
   food(1, 'Alimentação', Icons.restaurant),
-  fuel(2, 'Combustível', Icons.local_gas_station),
-  parking(3, 'Estacionamento', Icons.local_parking),
-  ipva(4, 'IPVA', Icons.receipt_long),
-  tax(5, 'Imposto', Icons.account_balance),
-  internet(6, 'Internet', Icons.wifi),
-  maintenance(7, 'Manutenção', Icons.build),
-  other(8, 'Outros', Icons.more_horiz),
-  carInstallments(9, 'Parcelas do Carro', Icons.payments),
-  toll(10, 'Pedágio', Icons.account_balance_wallet),
-  insurance(11, 'Seguro', Icons.verified_user);
+  parking(2, 'Estacionamento', Icons.local_parking),
+  ipva(3, 'IPVA', Icons.receipt_long),
+  tax(4, 'Imposto', Icons.account_balance),
+  internet(5, 'Internet', Icons.wifi),
+  maintenance(6, 'Manutenção', Icons.build),
+  carInstallments(7, 'Parcelas do Carro', Icons.payments),
+  toll(8, 'Pedágio', Icons.account_balance_wallet),
+  insurance(9, 'Seguro', Icons.verified_user),
+  other(10, 'Outros', Icons.more_horiz);
 
   final int value;
   final String descricao;
