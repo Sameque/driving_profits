@@ -5,9 +5,18 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Flutter: Attach to Device",
+            "name": "POCO X4 GT",
+            "request": "launch",
             "type": "dart",
-            "request": "attach"
+            "deviceId": "9XJZBI4PAYXSWW6D",
+            "args": ["--target=lib/main.dart"]
+        },
+        {
+            "name": "Flutter: Web",
+            "request": "launch",
+            "type": "dart",
+            "deviceId": "edge",
+            "args": ["--target=lib/main.dart"]
         },
         {
             "name": "driving_profits",
