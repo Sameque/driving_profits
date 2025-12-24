@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:driving_profits/configuration/dependecies.dart';
 import 'package:driving_profits/ui/feature/entry/expenses/expenses_viewmodel.dart';
+import 'package:driving_profits/ui/widget/app_bar_screen_form.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:driving_profits/ui/feature/entry/entry_dto.dart';
@@ -115,20 +116,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Lançar Gastos'),
-        centerTitle: false,
-        elevation: 0,
-        scrolledUnderElevation: 4,
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        foregroundColor: Theme.of(context).colorScheme.onSurface,
-        shape: Border(
-          bottom: BorderSide(
-            color: Theme.of(context).colorScheme.outlineVariant,
-            width: 1,
-          ),
-        ),
-      ),
+      appBar: AppBarScreenForm(screenTitle: 'Lançar Gastos'),
       body: Stack(
         children: [
           Form(

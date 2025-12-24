@@ -36,12 +36,14 @@ class _SummaryScreenState extends State<SummaryScreen> {
     if (viewmodel.onPeriodChangedCommand.value.isFailure) {
       final failure =
           viewmodel.onPeriodChangedCommand.value as FailureCommand<Object>;
-
-      CustomSnackBar.error(
-        context: context,
-        //TODO: colocar o texto em um arquivo de localização
-        message: "Erro ao consultar registros:\n - ${failure.error.toString()}",
-      );
+      if (mounted) {
+        CustomSnackBar.error(
+          context: context,
+          //TODO: colocar o texto em um arquivo de localização
+          message:
+              "Erro ao consultar registros:\n - ${failure.error.toString()}",
+        );
+      }
       return;
     }
   }
@@ -49,7 +51,7 @@ class _SummaryScreenState extends State<SummaryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Posts")),
+      appBar: AppBar(title: const Text("Resumo")),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
         child: ListenableBuilder(

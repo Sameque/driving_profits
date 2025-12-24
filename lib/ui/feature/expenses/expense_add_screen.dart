@@ -1,6 +1,7 @@
 import 'package:driving_profits/configuration/dependecies.dart';
 import 'package:driving_profits/domain/expense/charge_type.dart';
 import 'package:driving_profits/ui/feature/expenses/widget/charge_type_dropdown.dart';
+import 'package:driving_profits/ui/widget/app_bar_screen_form.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:driving_profits/domain/expense/dtos/expense_dto.dart';
@@ -23,11 +24,20 @@ class _ExpenseAddScreenState extends State<ExpenseAddScreen> {
   final viewmodel = injector.get<ExpenseViewModel>();
 
   final expense = ExpenseDto.empty();
+  late TextEditingController descriptionController;
 
   @override
   void initState() {
     super.initState();
     viewmodel.addCommand.addListener(_listenerAdd);
+    descriptionController = TextEditingController(text: expense.description);
+  }
+
+  @override
+  void dispose() {
+    descriptionController.dispose();
+    viewmodel.addCommand.removeListener(_listenerAdd);
+    super.dispose();
   }
 
   void _listenerAdd() {
@@ -64,12 +74,13 @@ class _ExpenseAddScreenState extends State<ExpenseAddScreen> {
     List<TextInputFormatter>? inputFormatters,
     TextInputType keyboardType = TextInputType.number,
     bool isCurrency = true,
+    TextEditingController? controller,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
       child: TextFormField(
         onChanged: onChanged,
-        controller: TextEditingController(text: initial),
+        controller: controller ?? TextEditingController(text: initial),
         decoration: InputDecoration(
           labelText: label,
           prefixIcon: Icon(icon),
@@ -105,94 +116,104 @@ class _ExpenseAddScreenState extends State<ExpenseAddScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Adicionar Gasto')),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: ListenableBuilder(
-            listenable: expense,
-            builder: (context, _) {
-              return Column(
-                children: [
-                  ExpenseTypeDropdown(
-                    value: expense.expenseType,
-                    onChanged: expense.setExpenseType,
-                  ),
+      appBar: AppBarScreenForm(screenTitle: 'Adicionar Gasto'),
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              child: Form(
+                key: _formKey,
+                child: ListenableBuilder(
+                  listenable: expense,
+                  builder: (context, _) {
+                    return Column(
+                      children: [
+                        ExpenseTypeDropdown(
+                          value: expense.expenseType,
+                          onChanged: expense.setExpenseType,
+                        ),
 
-                  const SizedBox(height: 16),
+                        const SizedBox(height: 16),
 
-                  ChargeTypeDropdown(
-                    value: expense.chargeType,
-                    onChanged: expense.setChargeType,
-                  ),
+                        ChargeTypeDropdown(
+                          value: expense.chargeType,
+                          onChanged: expense.setChargeType,
+                        ),
 
-                  const SizedBox(height: 16),
-                  if (expense.expenseType != ExpenseType.other)
-                    _buildTextField(
-                      label: 'Descrição',
-                      initial: expense.description,
-                      inputFormatters: [LengthLimitingTextInputFormatter(20)],
-                      icon: Icons.description,
-                      onChanged: expense.setDescription,
-                      keyboardType: TextInputType.text,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Informe uma descrição.';
-                        }
-                        if (value.length > 20) {
-                          return 'Descrição deve ter no máximo 20 caracteres.';
-                        }
-                        return null;
-                      },
-                    ),
-                  const SizedBox(height: 24),
+                        const SizedBox(height: 16),
+                        if (expense.expenseType != ExpenseType.other)
+                          _buildTextField(
+                            label: 'Descrição',
+                            initial: '',
+                            controller: descriptionController,
+                            inputFormatters: [
+                              LengthLimitingTextInputFormatter(20),
+                            ],
+                            icon: Icons.description,
+                            onChanged: expense.setDescription,
+                            keyboardType: TextInputType.text,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Informe uma descrição.';
+                              }
+                              if (value.length > 20) {
+                                return 'Descrição deve ter no máximo 20 caracteres.';
+                              }
+                              return null;
+                            },
+                          ),
+                        const SizedBox(height: 24),
 
-                  if (expense.chargeType == ChargeType.fixedMonthly ||
-                      expense.chargeType == ChargeType.fixedDaily ||
-                      expense.chargeType == ChargeType.valuePerKm)
-                    _buildTextField(
-                      label: 'Valor',
-                      initial: expense.strAmount,
-                      icon: Icons.attach_money,
-                      onChanged: expense.setAmount,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Informe o valor do gasto.';
-                        }
-                        final amount = double.tryParse(
-                          value.replaceAll(RegExp(r'[^0-9]'), ''),
-                        );
-                        if (amount == null || amount <= 0) {
-                          return 'Informe um valor válido.';
-                        }
-                        return null;
-                      },
-                    ),
-
-                  const SizedBox(height: 24),
-                  FilledButton.icon(
-                    icon: const Icon(Icons.add),
-                    label: const Text('Adicionar Gasto'),
-                    onPressed: viewmodel.addCommand.value.isRunning
-                        ? null
-                        : () {
-                            if (_formKey.currentState!.validate()) {
-                              viewmodel.addCommand.execute(expense);
-                            }
-                          },
-                    style: FilledButton.styleFrom(
-                      minimumSize: const Size.fromHeight(50),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                ],
-              );
-            },
+                        if (expense.chargeType == ChargeType.fixedMonthly ||
+                            expense.chargeType == ChargeType.fixedDaily ||
+                            expense.chargeType == ChargeType.valuePerKm)
+                          _buildTextField(
+                            label: 'Valor',
+                            initial: expense.strAmount,
+                            icon: Icons.attach_money,
+                            onChanged: expense.setAmount,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Informe o valor do gasto.';
+                              }
+                              final amount = double.tryParse(
+                                value.replaceAll(RegExp(r'[^0-9]'), ''),
+                              );
+                              if (amount == null || amount <= 0) {
+                                return 'Informe um valor válido.';
+                              }
+                              return null;
+                            },
+                          ),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            ),
           ),
-        ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: FilledButton.icon(
+              icon: const Icon(Icons.add),
+              label: const Text('Adicionar Gasto'),
+              onPressed: viewmodel.addCommand.value.isRunning
+                  ? null
+                  : () {
+                      if (_formKey.currentState!.validate()) {
+                        viewmodel.addCommand.execute(expense);
+                      }
+                    },
+              style: FilledButton.styleFrom(
+                minimumSize: const Size.fromHeight(50),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

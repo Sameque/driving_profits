@@ -1,5 +1,6 @@
 import 'package:driving_profits/configuration/dependecies.dart';
 import 'package:driving_profits/domain/entry/validations/edit_entry_validations.dart';
+import 'package:driving_profits/ui/widget/app_bar_screen_form.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/services.dart';
@@ -203,21 +204,8 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
         return true;
       },
       child: Scaffold(
-        appBar: AppBar(
-          //TODO: colocar o texto em um arquivo de localização
-          title: const Text('Editar Lançamento'),
-          centerTitle: false,
-          elevation: 0,
-          scrolledUnderElevation: 4,
-          backgroundColor: Theme.of(context).colorScheme.surface,
-          foregroundColor: Theme.of(context).colorScheme.onSurface,
-          shape: Border(
-            bottom: BorderSide(
-              color: Theme.of(context).colorScheme.outlineVariant,
-              width: 1,
-            ),
-          ),
-        ),
+        //TODO: colocar o texto em um arquivo de localização
+        appBar: AppBarScreenForm(screenTitle: 'Editar Lançamento'),
         body: Stack(
           children: [
             ListenableBuilder(

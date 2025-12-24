@@ -1,6 +1,7 @@
 import 'package:driving_profits/configuration/dependecies.dart';
 import 'package:driving_profits/ui/feature/entry/entry_dto.dart';
 import 'package:driving_profits/ui/feature/entry/start/start_entry_viewmodel.dart';
+import 'package:driving_profits/ui/widget/app_bar_screen_form.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/services.dart';
@@ -38,20 +39,23 @@ class _StartEntryScreenState extends State<StartEntryScreen> {
       final failure =
           viewmodel.startWorkSessionCommand.value as FailureCommand<Object>;
 
-      CustomSnackBar.error(
-        context: context,
-        //TODO: Localizar
-        message: "Erro ao iniciar jornada:\n - ${failure.error.toString()}",
-      );
-      return;
+      if (mounted) {
+        CustomSnackBar.error(
+          context: context,
+          //TODO: Localizar
+          message: "Erro ao iniciar jornada:\n - ${failure.error.toString()}",
+        );
+      }
     }
 
     if (viewmodel.startWorkSessionCommand.value.isSuccess) {
-      CustomSnackBar.success(
-        context: context,
-        //TODO: Localizar
-        message: 'Jornada Iniciada!',
-      );
+      if (mounted) {
+        CustomSnackBar.success(
+          context: context,
+          //TODO: Localizar
+          message: 'Jornada Iniciada!',
+        );
+      }
     }
   }
 
@@ -148,20 +152,7 @@ class _StartEntryScreenState extends State<StartEntryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Iniciar Jornada'),
-        centerTitle: false,
-        elevation: 0,
-        scrolledUnderElevation: 4,
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        foregroundColor: Theme.of(context).colorScheme.onSurface,
-        shape: Border(
-          bottom: BorderSide(
-            color: Theme.of(context).colorScheme.outlineVariant,
-            width: 1,
-          ),
-        ),
-      ),
+      appBar: AppBarScreenForm(screenTitle: 'Iniciar Jornada'),
       body: Stack(
         children: [
           Form(
