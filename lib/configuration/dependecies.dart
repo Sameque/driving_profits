@@ -10,7 +10,7 @@ import 'package:driving_profits/ui/feature/entry/edit/edit_entry_viewmodel.dart'
 import 'package:driving_profits/ui/feature/entry/expenses/expenses_viewmodel.dart';
 import 'package:driving_profits/ui/feature/entry/start/start_entry_viewmodel.dart';
 import 'package:driving_profits/ui/feature/expenses/expense_viewmodel.dart';
-import 'package:driving_profits/ui/feature/list/entry_list_viewmodel.dart';
+import 'package:driving_profits/ui/feature/entry/list/entry_list_viewmodel.dart';
 import 'package:driving_profits/ui/feature/summary/summary_viewmodel.dart';
 
 final injector = AutoInjector();

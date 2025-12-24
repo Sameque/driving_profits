@@ -1,6 +1,6 @@
 import 'package:driving_profits/ui/feature/expenses/expense_list_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:driving_profits/ui/feature/list/entry_list_screen.dart';
+import 'package:driving_profits/ui/feature/entry/list/entry_list_screen.dart';
 import 'package:driving_profits/ui/feature/summary/summary_screen.dart';
 
 class HomeScreen extends StatefulWidget {
