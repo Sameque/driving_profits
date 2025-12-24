@@ -1,3 +1,4 @@
+import 'package:driving_profits/domain/entry/daily_entry.dart';
 import 'package:flutter/material.dart';
 import 'package:driving_profits/domain/entry/entry_status.dart';
 
@@ -33,8 +34,8 @@ class EntrySummaryModel {
   });
 
   factory EntrySummaryModel.fromMap(Map<String, dynamic> map) {
-    final startTimeStr = map['startTime'] as String?;
-    final endTimeStr = map['endTime'] as String?;
+    final startTimeStr = map['start_time'] as String?;
+    final endTimeStr = map['end_time'] as String?;
 
     TimeOfDay? parseTime(String? timeStr) {
       if (timeStr == null || timeStr.isEmpty) return null;
@@ -44,19 +45,34 @@ class EntrySummaryModel {
 
     return EntrySummaryModel(
       id: map['id'] as String,
-      kmStart: map['kmStart'],
-      kmEnd: map['kmEnd'],
-      date: DateTime.parse(map['date']),
+      kmStart: map['km_start'],
+      kmEnd: map['km_end'],
+      date: DateTime.parse(map['date_start']),
       startTime: parseTime(startTimeStr),
       endTime: parseTime(endTimeStr),
-      uberEarnings: map['uberEarnings'] ?? 0.0,
+      uberEarnings: map['uber_earnings'] ?? 0.0,
       tips: map['tips'] ?? 0.0,
-      fuelCost: map['fuelCost'] ?? 0.0,
-      foodCost: map['foodCost'] ?? 0.0,
-      cleaningCost: map['cleaningCost'] ?? 0.0,
-      otherCosts: map['otherCosts'] ?? 0.0,
-      status: EntryStatus.values.byName(map['status'] ?? 'none'),
+      fuelCost: map['fuel_cost'] ?? 0.0,
+      foodCost: map['food_cost'] ?? 0.0,
+      cleaningCost: map['cleaning_cost'] ?? 0.0,
+      otherCosts: map['other_costs'] ?? 0.0,
+      status: EntryStatus.values.byName(map['status_id'] ?? 'none'),
     );
+  }
+
+  EntrySummaryModel.fromDailyEntry(DailyEntry entry) : id = entry.id {
+    date = entry.startDate;
+    startTime = entry.startTime ?? TimeOfDay.now();
+    endTime = entry.endTime;
+    kmStart = entry.kmStart;
+    kmEnd = entry.kmEnd;
+    uberEarnings = entry.uberEarnings;
+    tips = entry.tips;
+    fuelCost = entry.fuelCost;
+    foodCost = entry.foodCost;
+    cleaningCost = entry.cleaningCost;
+    otherCosts = entry.otherCosts;
+    status = entry.status;
   }
 
   double get totalGains => uberEarnings + tips;

@@ -7,14 +7,12 @@ import 'package:result_dart/result_dart.dart';
 class DailyListViewmodel extends ChangeNotifier {
   final EntryRepository _repository;
 
-  DailyListViewmodel(this._repository) {
-    fetchCommand.execute();
-  }
+  DailyListViewmodel(this._repository);
 
   late final fetchCommand = Command0(_fetchEntries);
+  late final deleteCommand = Command1(_deleteEntry);
 
   List<EntryDto> _entries = [];
-
   List<EntryDto> get entries => _entries;
 
   Future updateEntryLocal(EntryDto updatedEntry) async {
@@ -35,21 +33,16 @@ class DailyListViewmodel extends ChangeNotifier {
   AsyncResult _fetchEntries() async {
     final data = await _repository.getEntries();
 
-    _entries = data.map((e) => EntryDto.fromDailyEntry(e)).toList()
-      ..sort((a, b) => b.date.compareTo(a.date));
-
-    notifyListeners();
+    _entries = data
+        .getOrThrow()
+        .map((e) => EntryDto.fromDailyEntry(e))
+        .toList();
 
     return Success(unit);
   }
 
-  late final deleteCommand = Command1(_deleteEntry);
-
   AsyncResult<Result<dynamic>> _deleteEntry(String id) async {
     final result = await _repository.deleteEntry(id);
-
-    if (result.isError()) return Failure(Exception('Erro ao deletar entrada'));
-
     _entries.removeWhere((entry) => entry.id == id);
 
     return Success(result);

@@ -25,6 +25,17 @@ class _DailyListScreenState extends State<DailyListScreen> {
     super.initState();
     viewmodel.fetchCommand.addListener(_fetchListener);
     viewmodel.deleteCommand.addListener(_deleteListener);
+
+    viewmodel.fetchCommand.execute();
+  }
+
+  @override
+  void dispose() {
+    viewmodel.fetchCommand.removeListener(_fetchListener);
+    viewmodel.deleteCommand.removeListener(_deleteListener);
+    viewmodel.dispose();
+
+    super.dispose();
   }
 
   void _fetchListener() {
@@ -78,7 +89,7 @@ class _DailyListScreenState extends State<DailyListScreen> {
       body: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8.0),
         child: ListenableBuilder(
-          listenable: viewmodel,
+          listenable: viewmodel.fetchCommand,
           builder: (context, _) {
             return ListView.builder(
               itemCount: viewmodel.entries.length,

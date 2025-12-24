@@ -1,5 +1,5 @@
+import 'package:driving_profits/ui/feature/expenses/expense_list_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:driving_profits/ui/feature/expenses/expense_screen.dart';
 import 'package:driving_profits/ui/feature/list/daily_list_screen.dart';
 import 'package:driving_profits/ui/feature/summary/summary_screen.dart';
 
@@ -16,7 +16,7 @@ class _HomeScreenState extends State<HomeScreen> {
   static final List<Widget> _widgetOptions = <Widget>[
     DailyListScreen(),
     const SummaryScreen(),
-    const ExpenseScreen(),
+    ExpenseListScreen(),
     // Placeholder para tela futura
     _buildPlaceholder(),
   ];

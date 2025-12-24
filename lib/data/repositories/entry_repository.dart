@@ -29,31 +29,14 @@ class EntryRepository {
         .firstWhere((entry) => entry.id == id);
   }
 
-  Future<List<DailyEntry>> getEntries() {
-    final data = _service.getAllEntries();
-    return data.then((result) {
-      if (result.isError()) {
-        return [];
-      }
-      final entries = result.getOrThrow();
+  AsyncResult<List<DailyEntry>> getEntries() async {
+    final data = await _service.getAllEntries();
+    return data.map((result) {
+      final entries = result;
       return List.generate(
         entries.length,
         (i) => DailyEntry.fromMap(entries[i]),
       );
     });
-  }
-
-  Future<List<DailyEntry>> getEntriesByMonth(int year, int month) async {
-    final data = await _service.getEntriesByFilter(
-      filters: {
-        'start_date': [
-          '$year-${month.toString().padLeft(2, '0')}-01',
-          '$year-${month.toString().padLeft(2, '0')}-31',
-        ],
-      },
-      orderBy: 'start_date DESC, start_time DESC',
-    );
-
-    return List.generate(data.length, (i) => DailyEntry.fromMap(data[i]));
   }
 }
