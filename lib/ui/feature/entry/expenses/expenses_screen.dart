@@ -1,16 +1,20 @@
+import 'dart:developer';
+
+import 'package:driving_profits/configuration/dependecies.dart';
+import 'package:driving_profits/ui/feature/entry/expenses/expenses_viewmodel.dart';
+import 'package:driving_profits/ui/widget/app_bar_screen_form.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
-import 'package:driving_profits/models/daily_entry.dart';
-import 'package:driving_profits/providers/entry_provider.dart';
 import 'package:driving_profits/ui/feature/entry/entry_dto.dart';
 import 'package:driving_profits/ui/widget/currency_input_formatter.dart';
 import 'package:driving_profits/ui/widget/custom_snackbar.dart';
+import 'package:result_command/result_command.dart';
 
 class ExpensesScreen extends StatefulWidget {
-  final DailyEntry entry;
+  final EntryDto entryDto;
+  final Function(EntryDto)? onSave;
 
-  const ExpensesScreen({super.key, required this.entry});
+  const ExpensesScreen({super.key, required this.entryDto, this.onSave});
 
   @override
   State<ExpensesScreen> createState() => _ExpensesScreenState();
@@ -18,41 +22,52 @@ class ExpensesScreen extends StatefulWidget {
 
 class _ExpensesScreenState extends State<ExpensesScreen> {
   final _formKey = GlobalKey<FormState>();
-  late EntryDto entryDto;
-
-  bool _isLoading = false;
+  final viewmodel = injector.get<ExpensesViewmodel>();
 
   @override
   void initState() {
     super.initState();
-    entryDto = EntryDto.fromMap(widget.entry.toMap());
+    viewmodel.updateCommand.addListener(_listanable);
   }
 
-  void _save() async {
-    if (!_formKey.currentState!.validate()) return;
-    try {
-      setState(() => _isLoading = true);
+  void _listanable() {
+    if (viewmodel.updateCommand.value.isRunning) return;
 
-      final provider = Provider.of<EntryProvider>(context, listen: false);
-      final map = entryDto.toMap();
-      final updated = DailyEntry.fromMap(map);
+    if (viewmodel.updateCommand.value.isFailure) {
+      final failure = viewmodel.updateCommand.value as FailureCommand<Object>;
 
-      provider.updateEntry(updated);
+      CustomSnackBar.error(
+        context: context,
+        message: "Erro ao salvar:\n - ${failure.error.toString()}",
+      );
+      return;
+    }
 
+    if (viewmodel.updateCommand.value.isSuccess) {
       CustomSnackBar.success(
         context: context,
         message: 'Gastos atualizados com sucesso!',
       );
-      await Future.delayed(const Duration(milliseconds: 300));
-      if (mounted) Navigator.of(context).pop();
-    } catch (e) {
-      CustomSnackBar.error(
-        context: context,
-        message: 'Erro ao salvar gastos: ${e.toString()}',
-      );
-    } finally {
-      setState(() => _isLoading = false);
     }
+  }
+
+  void _save() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    await viewmodel.updateCommand.execute(widget.entryDto);
+
+    if (viewmodel.updateCommand.value.isFailure) return;
+
+    try {
+      widget.onSave?.call(widget.entryDto);
+    } catch (e) {
+      log('Erro ao chamar onSave', error: e);
+    }
+
+    //TODO: millisecondsClosedScreen em arquivo de configuração, statico
+    await Future.delayed(const Duration(milliseconds: 300));
+
+    if (mounted) Navigator.of(context).pop();
   }
 
   Widget _amountField({
@@ -101,25 +116,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Lançar Gastos'),
-        centerTitle:
-            false, // Alinha o título à esquerda para melhor legibilidade
-        elevation: 0, // Visual mais moderno e flat
-        scrolledUnderElevation: 4, // Elevação sutil ao scrollar
-        backgroundColor: Theme.of(
-          context,
-        ).colorScheme.surface, // Integra com o tema
-        foregroundColor: Theme.of(
-          context,
-        ).colorScheme.onSurface, // Garante contraste
-        shape: Border(
-          bottom: BorderSide(
-            color: Theme.of(context).colorScheme.outlineVariant,
-            width: 1,
-          ),
-        ), // Borda inferior sutil para separação
-      ),
+      appBar: AppBarScreenForm(screenTitle: 'Lançar Gastos'),
       body: Stack(
         children: [
           Form(
@@ -145,17 +142,17 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Jornada do dia ${entryDto.date.day}/${entryDto.date.month}',
+                          'Jornada do dia ${widget.entryDto.date.day}/${widget.entryDto.date.month}',
                           style: Theme.of(context).textTheme.titleMedium
                               ?.copyWith(fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 8),
-                        Text('KM Inicial: ${entryDto.getKmStart}'),
-                        if (entryDto.getKmEnd.isNotEmpty)
-                          Text('KM Final: ${entryDto.getKmEnd}'),
-                        if (entryDto.startTime != null)
+                        Text('KM Inicial: ${widget.entryDto.getKmStart}'),
+                        if (widget.entryDto.getKmEnd.isNotEmpty)
+                          Text('KM Final: ${widget.entryDto.getKmEnd}'),
+                        if (widget.entryDto.startTime != null)
                           Text(
-                            'Hora Inicial: ${entryDto.startTime!.format(context)}',
+                            'Hora Inicial: ${widget.entryDto.startTime!.format(context)}',
                           ),
                       ],
                     ),
@@ -166,20 +163,20 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                 // Campos de gastos
                 _amountField(
                   label: 'Alimentação (R\$)',
-                  initial: entryDto.getFoodCost,
-                  onChanged: entryDto.setFoodCost,
+                  initial: widget.entryDto.getFoodCost,
+                  onChanged: widget.entryDto.setFoodCost,
                   icon: Icons.restaurant,
                 ),
                 _amountField(
                   label: 'Lavagem/Limpeza (R\$)',
-                  initial: entryDto.getCleaningCost,
-                  onChanged: entryDto.setCleaningCost,
+                  initial: widget.entryDto.getCleaningCost,
+                  onChanged: widget.entryDto.setCleaningCost,
                   icon: Icons.local_laundry_service,
                 ),
                 _amountField(
                   label: 'Outros Gastos (R\$)',
-                  initial: entryDto.getOtherCosts,
-                  onChanged: entryDto.setOtherCosts,
+                  initial: widget.entryDto.getOtherCosts,
+                  onChanged: widget.entryDto.setOtherCosts,
                   icon: Icons.more_horiz,
                 ),
 
@@ -198,7 +195,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                   child: Padding(
                     padding: const EdgeInsets.all(16),
                     child: ListenableBuilder(
-                      listenable: entryDto,
+                      listenable: widget.entryDto,
                       builder: (context, child) {
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -210,18 +207,18 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              'Total de Gastos: R\$ ${entryDto.totalCosts.toStringAsFixed(2)}',
+                              'Total de Gastos: R\$ ${widget.entryDto.totalCosts.toStringAsFixed(2)}',
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'Ganhos: R\$ ${entryDto.totalEarnings.toStringAsFixed(2)}',
+                              'Ganhos: R\$ ${widget.entryDto.totalEarnings.toStringAsFixed(2)}',
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'Lucro Líquido: R\$ ${entryDto.netEarnings.toStringAsFixed(2)}',
+                              'Lucro Líquido: R\$ ${widget.entryDto.netEarnings.toStringAsFixed(2)}',
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
-                                color: entryDto.netEarnings >= 0
+                                color: widget.entryDto.netEarnings >= 0
                                     ? Colors.green
                                     : Colors.red,
                               ),
@@ -236,7 +233,9 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
 
                 // Botão principal para salvar
                 FilledButton(
-                  onPressed: _isLoading ? null : _save,
+                  onPressed: viewmodel.updateCommand.value.isRunning
+                      ? null
+                      : _save,
                   style: FilledButton.styleFrom(
                     minimumSize: const Size.fromHeight(50),
                     shape: RoundedRectangleBorder(
@@ -248,7 +247,8 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
               ],
             ),
           ),
-          if (_isLoading) const Center(child: CircularProgressIndicator()),
+          if (viewmodel.updateCommand.value.isRunning)
+            const Center(child: CircularProgressIndicator()),
         ],
       ),
     );

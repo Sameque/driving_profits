@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:driving_profits/ui/feature/entry/entry_dto.dart';
 
-class CloseEntryValidations {
-  /// Valida se os ganhos do Uber foram preenchidos e são maiores que zero
+class EditEntryValidations {
   static String? validateUberEarnings(String? value) {
     if (value == null || value.isEmpty) {
       return 'Informe os ganhos do Uber';
@@ -14,7 +13,6 @@ class CloseEntryValidations {
     return null;
   }
 
-  /// Valida se a quilometragem final foi preenchida, é maior que zero e maior que a inicial
   static String? validateKmEnd(String? value, EntryDto entryDto) {
     if (value == null || value.isEmpty) {
       return 'Informe a quilometragem final';
@@ -29,7 +27,6 @@ class CloseEntryValidations {
     return null;
   }
 
-  /// Valida se a hora final foi selecionada
   static String? validateEndTime(EntryDto entryDto) {
     if (entryDto.endTime == null) {
       return 'Selecione a hora final';
@@ -37,23 +34,59 @@ class CloseEntryValidations {
     return null;
   }
 
-  /// Valida se a hora final é maior que a hora inicial
-  static String? validateEndTimeAfterStartTime(EntryDto entryDto) {
-    if (entryDto.startTime != null &&
-        _isEndTimeBeforeStartTime(entryDto.startTime!, entryDto.endTime!)) {
-      return 'Hora final deve ser maior que a hora inicial';
+  static String? validateNumberOfTrips(EntryDto entryDto) {
+    if (entryDto.numberOfTrips == null) {
+      return null;
+    }
+
+    if (entryDto.numberOfTrips! < 0) {
+      return 'Quantidade de viagens não pode ser negativa';
     }
     return null;
   }
 
-  /// Verifica se a hora final é anterior à hora inicial
-  static bool _isEndTimeBeforeStartTime(
-    TimeOfDay startTime,
-    TimeOfDay endTime,
-  ) {
-    final startMinutes = startTime.hour * 60 + startTime.minute;
-    final endMinutes = endTime.hour * 60 + endTime.minute;
-    return endMinutes <= startMinutes;
+  /// Valida se a hora final é maior que a hora inicial considerando as datas
+  static String? validateEndTimeAfterStartTime(EntryDto entryDto) {
+    if (entryDto.startTime != null &&
+        entryDto.endTime != null &&
+        entryDto.date != null &&
+        entryDto.endDate != null) {
+      if (_isEndDateTimeBeforeStartDateTime(
+        startDate: entryDto.date!,
+        startTime: entryDto.startTime!,
+        endDate: entryDto.endDate!,
+        endTime: entryDto.endTime!,
+      )) {
+        return 'Data/hora final deve ser maior que a data/hora inicial';
+      }
+    }
+    return null;
+  }
+
+  static bool _isEndDateTimeBeforeStartDateTime({
+    required DateTime startDate,
+    required TimeOfDay startTime,
+    required DateTime endDate,
+    required TimeOfDay endTime,
+  }) {
+    final startDateTime = DateTime(
+      startDate.year,
+      startDate.month,
+      startDate.day,
+      startTime.hour,
+      startTime.minute,
+    );
+
+    final endDateTime = DateTime(
+      endDate.year,
+      endDate.month,
+      endDate.day,
+      endTime.hour,
+      endTime.minute,
+    );
+
+    return endDateTime.isBefore(startDateTime) ||
+        endDateTime.isAtSameMomentAs(startDateTime);
   }
 
   static String? getEndTimeErrorMessage(
@@ -67,10 +100,18 @@ class CloseEntryValidations {
 
     final timeComparisonError = validateEndTimeAfterStartTime(entryDto);
     if (timeComparisonError != null) {
-      return 'Hora final deve ser maior que a inicial (${entryDto.startTime!.format(context)})';
+      return 'Data/hora final deve ser maior que a inicial (${_formatDateTime(entryDto.date!, entryDto.startTime!, context)})';
     }
 
     return null;
+  }
+
+  static String _formatDateTime(
+    DateTime date,
+    TimeOfDay time,
+    BuildContext context,
+  ) {
+    return '${date.day}/${date.month}/${date.year} ${time.format(context)}';
   }
 
   static bool hasEndTimeError(EntryDto entryDto) {
@@ -78,41 +119,38 @@ class CloseEntryValidations {
         validateEndTimeAfterStartTime(entryDto) != null;
   }
 
-  /// Valida se a eficiência de combustível é válida
   static String? validateFuelEfficiency(String? value) {
     if (value == null || value.isEmpty) {
-      return 'Informe a média de consumo';
+      return null;
+      // return 'Informe a média de consumo';
     }
     final efficiency = double.tryParse(value.replaceAll(',', '.'));
-    if (efficiency == null || efficiency <= 0) {
+    if (efficiency == null || efficiency < 0) {
       return 'Média de consumo deve ser maior que zero';
     }
     return null;
   }
 
-  /// Valida se o preço do combustível é válido
   static String? validateFuelPrice(String? value) {
     if (value == null || value.isEmpty) {
-      return 'Informe o valor do combustível';
+      return null;
+      // return 'Informe o valor do combustível';
     }
     final price = double.tryParse(value.replaceAll(',', '.'));
-    if (price == null || price <= 0) {
+    if (price == null || price < 0) {
       return 'Valor do combustível deve ser maior que zero';
     }
     return null;
   }
 
-  /// Validação completa para salvar a jornada
   static List<String> validateForSave(EntryDto entryDto) {
     final errors = <String>[];
 
-    // Validar hora final
     final endTimeError = validateEndTime(entryDto);
     if (endTimeError != null) {
       errors.add(endTimeError);
     }
 
-    // Validar se hora final é maior que inicial
     final timeComparisonError = validateEndTimeAfterStartTime(entryDto);
     if (timeComparisonError != null) {
       errors.add(timeComparisonError);

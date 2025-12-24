@@ -1,42 +1,77 @@
-import 'package:driving_profits/data/services/database_service.dart';
+import 'dart:developer';
+
+import 'package:driving_profits/data/services/supabase_service.dart';
+import 'package:result_dart/result_dart.dart';
 
 class EntryService {
-  final DatabaseService _dbService;
-  static const String _tableName = 'daily_entries';
+  final SupabaseService supabaseService;
 
-  EntryService(this._dbService);
+  EntryService(this.supabaseService);
 
-  Future<List<dynamic>> getAllEntries() async {
-    final data = await _dbService.query(
-      _tableName,
-      orderBy: 'date DESC, startTime DESC',
-    );
-    return data;
+  AsyncResult<List<dynamic>> getAllEntries() async {
+    try {
+      final result = await supabaseService.query(orderBy: 'start_date');
+      return Success(result);
+    } on Exception catch (e) {
+      return Failure(e);
+    } catch (e, s) {
+      log('Erro desconhecido ao consultar entry', error: e, stackTrace: s);
+      return Failure(Exception('Erro desconhecido'));
+    }
   }
 
-  Future<int> insertEntry(dynamic data) async {
-    return await _dbService.insert(_tableName, data);
+  AsyncResult<dynamic> insertEntry(dynamic data) async {
+    try {
+      final result = await supabaseService.insert(data);
+      return Success(result);
+    } on Exception catch (e, s) {
+      log('Erro ao inserir: $e', stackTrace: s);
+      return Failure(e);
+    } catch (e, s) {
+      log('Erro desconhecido ao inserir entry', error: e, stackTrace: s);
+      return Failure(Exception('Erro desconhecido'));
+    }
   }
 
-  Future<int> updateEntry(String id, dynamic data) async {
-    return await _dbService.update(_tableName, data, 'id = ?', [id]);
+  AsyncResult updateEntry(String id, dynamic data) async {
+    try {
+      final result = await supabaseService.update(data, id);
+      return Success(result);
+    } on Exception catch (e, s) {
+      log('Erro ao consultar: $e', stackTrace: s);
+      return Failure(e);
+    } catch (e, s) {
+      log('Erro desconhecido ao atualizar entrada', error: e, stackTrace: s);
+      return Failure(Exception('Erro desconhecido'));
+    }
   }
 
-  Future<int> deleteEntry(String id) async {
-    return await _dbService.delete(_tableName, 'id = ?', [id]);
+  AsyncResult<dynamic> deleteEntry(String id) async {
+    try {
+      final result = await supabaseService.delete(id);
+      return Success(result);
+    } on Exception catch (e, s) {
+      log('Erro ao apagar: $e', error: e, stackTrace: s);
+      return Failure(e);
+    } catch (e, s) {
+      log('Erro desconhecido ao remover entrada', error: e, stackTrace: s);
+      return Failure(Exception('Erro desconhecido'));
+    }
   }
 
-  Future<List<dynamic>> getEntriesByFilter(
-    String where,
-    List<dynamic> whereArgs,
+  Future<List<dynamic>> getEntriesByFilter({
+    Map<String, dynamic>? filters,
     String? orderBy,
-  ) async {
-    final data = await _dbService.query(
-      _tableName,
-      where: where,
-      whereArgs: whereArgs,
+    int? limit,
+    int? offset,
+    bool ascending = false,
+  }) async {
+    return await supabaseService.query(
+      filters: filters,
       orderBy: orderBy,
+      limit: limit,
+      offset: offset,
+      ascending: ascending,
     );
-    return data;
   }
 }

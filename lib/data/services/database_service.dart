@@ -10,7 +10,7 @@ typedef OnUpgradeCallback =
 
 class DatabaseService {
   static const _dbName = 'trackerDb.db';
-  static const _dbVersion = 10;
+  static const _dbVersion = 13;
 
   DatabaseService._privateConstructor();
   static final DatabaseService instance = DatabaseService._privateConstructor();
@@ -29,7 +29,7 @@ class DatabaseService {
     return await openDatabase(
       path,
       version: _dbVersion,
-      onCreate: (db, version) => _createDb,
+      onCreate: _createDb,
       onUpgrade: _upgrade,
     );
   }
@@ -74,13 +74,31 @@ class DatabaseService {
     );
   }
 
-  void _upgrade(db, int oldVersion, int newVersion) async {
+  Future _upgrade(db, int oldVersion, int newVersion) async {
     log(
       'EntryService: Upgrading database from version $oldVersion to $newVersion',
     );
+
+    if (newVersion == 11) {
+      await db.execute(
+        'ALTER TABLE daily_entries ADD COLUMN fuelEfficiency REAL NOT NULL DEFAULT 0',
+      );
+    }
+
+    if (newVersion == 12) {
+      await db.execute(
+        'ALTER TABLE daily_entries ADD COLUMN fuelPrice REAL NOT NULL DEFAULT 0',
+      );
+    }
+
+    if (newVersion == 13) {
+      await db.execute(
+        'ALTER TABLE daily_entries ADD COLUMN numberOfTrips INT NULL DEFAULT 0',
+      );
+    }
   }
 
-  void _createDb(db, int version) async {
+  Future _createDb(db, int version) async {
     await db.execute('''
       CREATE TABLE IF NOT EXISTS daily_entries (
         id TEXT PRIMARY KEY,
@@ -91,10 +109,14 @@ class DatabaseService {
         foodCost REAL NOT NULL,
         cleaningCost REAL NOT NULL,
         otherCosts REAL NOT NULL,
+        fuelPrice REAL NOT NULL,
+        fuelEfficiency REAL NOT NULL,
         kmEnd INT NOT NULL,
         kmStart INT NOT NULL,
         startTime TEXT,
         endTime TEXT,
+        endDate TEXT NULL,
+        numberOfTrips INT NULL,
         status TEXT NULL
       )
     ''');

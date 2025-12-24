@@ -1,20 +1,49 @@
-import 'package:driving_profits/data/services/database_service.dart';
+import 'dart:developer';
+
+import 'package:driving_profits/data/services/supabase_service.dart';
+import 'package:result_dart/result_dart.dart';
 
 class ExpenseService {
-  final DatabaseService _dbService;
-  static const String _tableName = 'expenses';
+  final SupabaseService supabaseService;
 
-  ExpenseService(this._dbService);
+  ExpenseService(this.supabaseService);
 
-  Future<int> insertExpense(dynamic data) async {
-    return await _dbService.insert(_tableName, data);
+  AsyncResult<dynamic> insertExpense(dynamic data) async {
+    try {
+      final result = await supabaseService.insert(data);
+      return Success(result);
+    } on Exception catch (e, s) {
+      log('Erro ao inserir: $e', stackTrace: s);
+      return Failure(e);
+    } catch (e, s) {
+      log('Erro desconhecido ao inserir', error: e, stackTrace: s);
+      return Failure(Exception('Erro desconhecido'));
+    }
   }
 
-  Future<List<Map<String, dynamic>>> fetchExpenses() async {
-    return await _dbService.query(_tableName, orderBy: 'id DESC');
+  AsyncResult<List<dynamic>> fetchExpenses() async {
+    try {
+      final result = await supabaseService.query(orderBy: 'created_at');
+      return Success(result);
+    } on Exception catch (e, s) {
+      log('Erro ao consultar: $e', stackTrace: s);
+      return Failure(e);
+    } catch (e, s) {
+      log('Erro desconhecido ao consultar', error: e, stackTrace: s);
+      return Failure(Exception('Erro desconhecido'));
+    }
   }
 
-  Future<int> deleteExpense(int id) async {
-    return await _dbService.delete(_tableName, 'id = ?', [id]);
+  AsyncResult<dynamic> deleteExpense(int id) async {
+    try {
+      final result = await supabaseService.delete(id.toString());
+      return Success(result);
+    } on Exception catch (e, s) {
+      log('Erro ao apagar: $e', error: e, stackTrace: s);
+      return Failure(e);
+    } catch (e, s) {
+      log('Erro desconhecido ao remover', error: e, stackTrace: s);
+      return Failure(Exception('Erro desconhecido'));
+    }
   }
 }
