@@ -6,7 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:flutter/services.dart';
 import 'package:driving_profits/l10n/app_localizations.dart';
 import 'package:driving_profits/ui/feature/entry/edit/edit_entry_viewmodel.dart';
-import 'package:driving_profits/ui/feature/entry/entry_dto.dart';
+import 'package:driving_profits/domain/entry/entry_dto.dart';
 import 'package:driving_profits/ui/widget/currency_input_formatter.dart';
 import 'package:driving_profits/ui/widget/custom_snackbar.dart';
 import 'package:result_command/result_command.dart';
@@ -370,11 +370,7 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
                       ListTile(
                         //TODO: colocar o texto em um arquivo de localização
                         title: const Text('Hora Inicial'),
-                        subtitle: Text(
-                          entry.startTime?.format(context) ??
-                              //TODO: colocar o texto em um arquivo de localização
-                              'Não definida',
-                        ),
+                        subtitle: Text(entry.startTime.format(context)),
                         trailing: const Icon(Icons.access_time),
                         onTap: _selectStartTime,
                         shape: RoundedRectangleBorder(

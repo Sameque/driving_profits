@@ -33,7 +33,6 @@ class _DailyListScreenState extends State<DailyListScreen> {
   void dispose() {
     viewmodel.fetchCommand.removeListener(_fetchListener);
     viewmodel.deleteCommand.removeListener(_deleteListener);
-    viewmodel.dispose();
 
     super.dispose();
   }
@@ -195,10 +194,7 @@ class _DailyListScreenState extends State<DailyListScreen> {
                                       ),
                                       _buildTableRow(
                                         'Qtd. Viagens',
-                                        entryDto.numberOfTrips == null
-                                            ? '-'
-                                            : entryDto.numberOfTrips!
-                                                  .toString(),
+                                        entryDto.numberOfTrips.toString(),
                                       ),
                                       _buildTableRow(
                                         'Hora Inicial',

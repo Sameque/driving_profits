@@ -26,6 +26,7 @@ dependencies:
   auto_injector: ^2.0.2
   result_command: ^2.2.0
   result_dart: ^2.1.1
+  path: ^1.9.1
 
 dev_dependencies:
   # flutter_test:

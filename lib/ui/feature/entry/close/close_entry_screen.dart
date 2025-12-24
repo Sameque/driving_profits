@@ -6,7 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:driving_profits/domain/entry/daily_entry.dart';
 import 'package:driving_profits/domain/entry/entry_status.dart';
 import 'package:driving_profits/ui/feature/entry/close/close_entry_viewmodel.dart';
-import 'package:driving_profits/ui/feature/entry/entry_dto.dart';
+import 'package:driving_profits/domain/entry/entry_dto.dart';
 import 'package:driving_profits/domain/entry/validations/close_entry_validations.dart';
 import 'package:driving_profits/ui/widget/currency_input_formatter.dart';
 import 'package:driving_profits/ui/widget/custom_snackbar.dart';

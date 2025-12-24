@@ -5,7 +5,7 @@ import 'package:driving_profits/ui/feature/entry/expenses/expenses_viewmodel.dar
 import 'package:driving_profits/ui/widget/app_bar_screen_form.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:driving_profits/ui/feature/entry/entry_dto.dart';
+import 'package:driving_profits/domain/entry/entry_dto.dart';
 import 'package:driving_profits/ui/widget/currency_input_formatter.dart';
 import 'package:driving_profits/ui/widget/custom_snackbar.dart';
 import 'package:result_command/result_command.dart';
@@ -150,10 +150,10 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                         Text('KM Inicial: ${widget.entryDto.getKmStart}'),
                         if (widget.entryDto.getKmEnd.isNotEmpty)
                           Text('KM Final: ${widget.entryDto.getKmEnd}'),
-                        if (widget.entryDto.startTime != null)
-                          Text(
-                            'Hora Inicial: ${widget.entryDto.startTime!.format(context)}',
-                          ),
+
+                        Text(
+                          'Hora Inicial: ${widget.entryDto.startTime.format(context)}',
+                        ),
                       ],
                     ),
                   ),

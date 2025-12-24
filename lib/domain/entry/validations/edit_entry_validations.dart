@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:driving_profits/ui/feature/entry/entry_dto.dart';
+import 'package:driving_profits/domain/entry/entry_dto.dart';
 
 class EditEntryValidations {
   static String? validateUberEarnings(String? value) {
@@ -35,25 +35,21 @@ class EditEntryValidations {
   }
 
   static String? validateNumberOfTrips(EntryDto entryDto) {
-    if (entryDto.numberOfTrips == null) {
-      return null;
-    }
+    if (entryDto.numberOfTrips == 0) return null;
 
-    if (entryDto.numberOfTrips! < 0) {
+    if (entryDto.numberOfTrips < 0) {
       return 'Quantidade de viagens não pode ser negativa';
     }
+
     return null;
   }
 
   /// Valida se a hora final é maior que a hora inicial considerando as datas
   static String? validateEndTimeAfterStartTime(EntryDto entryDto) {
-    if (entryDto.startTime != null &&
-        entryDto.endTime != null &&
-        entryDto.date != null &&
-        entryDto.endDate != null) {
+    if (entryDto.endTime != null && entryDto.endDate != null) {
       if (_isEndDateTimeBeforeStartDateTime(
-        startDate: entryDto.date!,
-        startTime: entryDto.startTime!,
+        startDate: entryDto.date,
+        startTime: entryDto.startTime,
         endDate: entryDto.endDate!,
         endTime: entryDto.endTime!,
       )) {
@@ -100,7 +96,7 @@ class EditEntryValidations {
 
     final timeComparisonError = validateEndTimeAfterStartTime(entryDto);
     if (timeComparisonError != null) {
-      return 'Data/hora final deve ser maior que a inicial (${_formatDateTime(entryDto.date!, entryDto.startTime!, context)})';
+      return 'Data/hora final deve ser maior que a inicial (${_formatDateTime(entryDto.date, entryDto.startTime, context)})';
     }
 
     return null;

@@ -300,7 +300,7 @@ class EntryDto extends ChangeNotifier {
       return null;
     }
 
-    final difference = getEndDateTime!.difference(getStartDateTime!).inMinutes;
+    final difference = getEndDateTime!.difference(getStartDateTime).inMinutes;
     if (difference <= 0) return null;
     final hours = difference ~/ 60;
     final minutes = difference % 60;

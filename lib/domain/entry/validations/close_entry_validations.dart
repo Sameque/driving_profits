@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:driving_profits/ui/feature/entry/entry_dto.dart';
+import 'package:driving_profits/domain/entry/entry_dto.dart';
 
 class CloseEntryValidations {
   static String? validateUberEarnings(String? value) {
@@ -93,7 +93,7 @@ class CloseEntryValidations {
 
     final timeComparisonError = validateEndTimeAfterStartTime(entryDto);
     if (timeComparisonError != null) {
-      return 'Data/hora final deve ser maior que a inicial (${_formatDateTime(entryDto.date!, entryDto.startTime!, context)})';
+      return 'Data/hora final deve ser maior que a inicial (${_formatDateTime(entryDto.date, entryDto.startTime, context)})';
     }
 
     return null;

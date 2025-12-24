@@ -14,8 +14,8 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
 
   static final List<Widget> _widgetOptions = <Widget>[
-    DailyListScreen(),
     const SummaryScreen(),
+    DailyListScreen(),
     ExpenseListScreen(),
     // Placeholder para tela futura
     _buildPlaceholder(),
@@ -77,14 +77,14 @@ class _HomeScreenState extends State<HomeScreen> {
         child: BottomNavigationBar(
           items: const [
             BottomNavigationBarItem(
-              icon: Icon(Icons.list_alt),
-              activeIcon: Icon(Icons.list_alt_rounded),
-              label: 'Lançamentos',
-            ),
-            BottomNavigationBarItem(
               icon: Icon(Icons.bar_chart),
               activeIcon: Icon(Icons.bar_chart_rounded),
               label: 'Resumo',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.list_alt),
+              activeIcon: Icon(Icons.list_alt_rounded),
+              label: 'Lançamentos',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.attach_money),

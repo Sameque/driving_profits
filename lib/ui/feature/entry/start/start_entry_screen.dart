@@ -1,5 +1,5 @@
 import 'package:driving_profits/configuration/dependecies.dart';
-import 'package:driving_profits/ui/feature/entry/entry_dto.dart';
+import 'package:driving_profits/domain/entry/entry_dto.dart';
 import 'package:driving_profits/ui/feature/entry/start/start_entry_viewmodel.dart';
 import 'package:driving_profits/ui/widget/app_bar_screen_form.dart';
 import 'package:flutter/material.dart';
