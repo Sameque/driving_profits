@@ -6,19 +6,19 @@ import 'package:driving_profits/ui/feature/entry/edit/edit_entry_screen.dart';
 import 'package:driving_profits/ui/feature/entry/close/close_entry_screen.dart';
 import 'package:driving_profits/ui/feature/entry/expenses/expenses_screen.dart';
 import 'package:driving_profits/ui/feature/entry/start/start_entry_screen.dart';
-import 'package:driving_profits/ui/feature/list/daily_list_viewmodel.dart';
+import 'package:driving_profits/ui/feature/list/entry_list_viewmodel.dart';
 import 'package:driving_profits/ui/widget/custom_snackbar.dart';
 import 'package:result_command/result_command.dart';
 
-class DailyListScreen extends StatefulWidget {
-  const DailyListScreen({super.key});
+class EntryListScreen extends StatefulWidget {
+  const EntryListScreen({super.key});
 
   @override
-  State<DailyListScreen> createState() => _DailyListScreenState();
+  State<EntryListScreen> createState() => _EntryListScreenState();
 }
 
-class _DailyListScreenState extends State<DailyListScreen> {
-  final viewmodel = injector.get<DailyListViewmodel>();
+class _EntryListScreenState extends State<EntryListScreen> {
+  final viewmodel = injector.get<EntryListViewmodel>();
 
   @override
   void initState() {

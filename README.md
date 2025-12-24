@@ -47,7 +47,7 @@ Repositório e persistência:
 - `EntryRepository` contém métodos para inserir, buscar (por mês), atualizar e deletar registros.
 
 Gerenciamento de estado:
-- `provider` com `ChangeNotifier` para `EntryProvider`, `SummaryViewmodel`, `DailyListViewmodel` e `ExpenseViewModel`.
+- `provider` com `ChangeNotifier` para `EntryProvider`, `SummaryViewmodel`, `EntryListViewmodel` e `ExpenseViewModel`.
 
 Temas:
 - O app inclui temas claros e escuros personalizados em `ui/theme` (por exemplo `AltSoftTheme` e `AltSoftDarkTheme`).

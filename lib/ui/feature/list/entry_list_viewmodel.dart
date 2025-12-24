@@ -4,10 +4,10 @@ import 'package:driving_profits/domain/entry/entry_dto.dart';
 import 'package:result_command/result_command.dart';
 import 'package:result_dart/result_dart.dart';
 
-class DailyListViewmodel extends ChangeNotifier {
+class EntryListViewmodel extends ChangeNotifier {
   final EntryRepository _repository;
 
-  DailyListViewmodel(this._repository);
+  EntryListViewmodel(this._repository);
 
   late final fetchCommand = Command0(_fetchEntries);
   late final deleteCommand = Command1(_deleteEntry);

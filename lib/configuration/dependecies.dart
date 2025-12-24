@@ -10,14 +10,14 @@ import 'package:driving_profits/ui/feature/entry/edit/edit_entry_viewmodel.dart'
 import 'package:driving_profits/ui/feature/entry/expenses/expenses_viewmodel.dart';
 import 'package:driving_profits/ui/feature/entry/start/start_entry_viewmodel.dart';
 import 'package:driving_profits/ui/feature/expenses/expense_viewmodel.dart';
-import 'package:driving_profits/ui/feature/list/daily_list_viewmodel.dart';
+import 'package:driving_profits/ui/feature/list/entry_list_viewmodel.dart';
 import 'package:driving_profits/ui/feature/summary/summary_viewmodel.dart';
 
 final injector = AutoInjector();
 
 void setupDependencies() {
   //viemodels
-  injector.addSingleton(DailyListViewmodel.new);
+  injector.addSingleton(EntryListViewmodel.new);
   injector.addSingleton(StartEntryViewmodel.new);
   injector.addSingleton(ExpensesViewmodel.new);
   injector.addSingleton(EditEntryViewModel.new);
