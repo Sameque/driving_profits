@@ -65,11 +65,11 @@ class ExpenseDto extends ChangeNotifier {
     return ExpenseDto(
       id: map['id'],
       expenseType: ExpenseType.values.firstWhere(
-        (e) => e.index == int.parse(map['expense_type']),
+        (e) => e.index == map['expense_type'],
         orElse: () => ExpenseType.none,
       ),
       chargeType: ChargeType.values.firstWhere(
-        (e) => e.index == int.parse(map['charge_type']),
+        (e) => e.index == map['charge_type'],
         orElse: () => ChargeType.none,
       ),
       amount: map['amount'],

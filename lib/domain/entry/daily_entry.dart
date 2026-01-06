@@ -1,3 +1,4 @@
+import 'package:driving_profits/domain/entry/entry_expense/entry_expense.dart';
 import 'package:flutter/material.dart';
 import 'package:driving_profits/domain/entry/entry_status.dart';
 import 'package:uuid/uuid.dart';
@@ -20,6 +21,7 @@ class DailyEntry {
   final double? fuelEfficiency;
   final double? fuelPrice;
   final int? numberOfTrips;
+  final List<EntryExpense>? entryExpenses;
 
   DailyEntry({
     String? id,
@@ -39,6 +41,7 @@ class DailyEntry {
     required this.otherCosts,
     required this.status,
     this.numberOfTrips,
+    this.entryExpenses,
   }) : id = id ?? const Uuid().v4();
 
   DailyEntry.start({
@@ -58,11 +61,8 @@ class DailyEntry {
        status = EntryStatus.open,
        fuelEfficiency = 0.0,
        fuelPrice = 0.0,
-       numberOfTrips = 0;
-
-  double get totalGains => uberEarnings + tips;
-  double get totalExpenses => fuelCost + foodCost + cleaningCost + otherCosts;
-  double get netProfit => totalGains - totalExpenses;
+       numberOfTrips = 0,
+       entryExpenses = [];
 
   Map<String, dynamic> toMap() {
     return {
@@ -97,6 +97,12 @@ class DailyEntry {
       return TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
     }
 
+    final calcEx = map['entry_expenses'] != null
+        ? (map['entry_expenses'] as List)
+              .map((e) => EntryExpense.fromMap(e))
+              .toList()
+        : null;
+
     return DailyEntry(
       id: map['id'] == null ? null : map['id'] as String,
       startDate: DateTime.parse(map['start_date']),
@@ -119,6 +125,7 @@ class DailyEntry {
       fuelEfficiency: map['fuel_efficiency'] ?? 0.0,
       fuelPrice: map['fuel_price'] ?? 0.0,
       numberOfTrips: map['number_of_trips'] ?? 0,
+      entryExpenses: calcEx ?? [],
     );
   }
 }

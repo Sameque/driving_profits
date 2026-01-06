@@ -1,15 +1,16 @@
 import 'package:driving_profits/configuration/dependecies.dart';
+import 'package:driving_profits/domain/expense/dtos/expense_dto.dart';
 import 'package:driving_profits/ui/widget/app_bar_screen_form.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
-import 'package:driving_profits/domain/entry/daily_entry.dart';
 import 'package:driving_profits/domain/entry/entry_status.dart';
 import 'package:driving_profits/ui/feature/entry/close/close_entry_viewmodel.dart';
 import 'package:driving_profits/domain/entry/entry_dto.dart';
 import 'package:driving_profits/domain/entry/validations/close_entry_validations.dart';
 import 'package:driving_profits/ui/widget/currency_input_formatter.dart';
 import 'package:driving_profits/ui/widget/custom_snackbar.dart';
+import 'package:result_command/result_command.dart';
 
 class CloseEntryScreen extends StatefulWidget {
   final EntryDto entryDto;
@@ -28,8 +29,19 @@ class _CloseEntryScreenState extends State<CloseEntryScreen> {
   @override
   void initState() {
     super.initState();
+
     widget.entryDto.setEndTime(TimeOfDay.now());
     widget.entryDto.setEndDate(DateTime.now());
+
+    viewmodel.getExpensesCommand.addListener(_loadCalculatedExpenses);
+
+    viewmodel.getExpensesCommand.execute();
+  }
+
+  @override
+  void dispose() {
+    viewmodel.getExpensesCommand.removeListener(_loadCalculatedExpenses);
+    super.dispose();
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -56,6 +68,24 @@ class _CloseEntryScreenState extends State<CloseEntryScreen> {
     }
   }
 
+  void _loadCalculatedExpenses() async {
+    if (viewmodel.getExpensesCommand.value.isRunning) return;
+
+    if (viewmodel.getExpensesCommand.value.isSuccess) {
+      final result =
+          viewmodel.getExpensesCommand.value
+              as SuccessCommand<List<ExpenseDto>>;
+      widget.entryDto.setExpense(result.value);
+    }
+
+    if (viewmodel.getExpensesCommand.value.isFailure) {
+      CustomSnackBar.error(
+        context: context,
+        message: 'Erro ao carregar despesas calculadas.',
+      );
+    }
+  }
+
   void _save() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -70,9 +100,9 @@ class _CloseEntryScreenState extends State<CloseEntryScreen> {
     }
 
     widget.entryDto.setStatusEnum(EntryStatus.closed);
-    final closed = DailyEntry.fromMap(widget.entryDto.toMap());
+    // final closed = DailyEntry.fromMap(widget.entryDto.toMap());
 
-    await viewmodel.closeCommand.execute(closed);
+    await viewmodel.closeCommand.execute(widget.entryDto);
 
     widget.onSave?.call(widget.entryDto);
 
@@ -241,6 +271,15 @@ class _CloseEntryScreenState extends State<CloseEntryScreen> {
                   icon: Icons.card_giftcard,
                 ),
 
+                Text(
+                  //TODO: colocar o texto em um arquivo de localização
+                  'Calculo Combustível',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+
                 // Média de Consumo
                 _buildTextField(
                   label: 'Média de Consumo (km/l)',
@@ -257,6 +296,68 @@ class _CloseEntryScreenState extends State<CloseEntryScreen> {
                   onChanged: widget.entryDto.setFuelPrice,
                   icon: Icons.attach_money,
                   validator: CloseEntryValidations.validateFuelPrice,
+                ),
+
+                // Quadro de Despesas Calculadas
+                ListenableBuilder(
+                  listenable: widget.entryDto,
+                  builder: (context, child) {
+                    return Card(
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: BorderSide(
+                          color: Theme.of(context).colorScheme.outlineVariant,
+                        ),
+                      ),
+                      color: Theme.of(context)
+                          .colorScheme
+                          .surfaceContainerHighest
+                          .withValues(alpha: 0.1),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Despesas Calculadas (por Km)',
+                              style: Theme.of(context).textTheme.titleMedium
+                                  ?.copyWith(fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 16),
+                            Table(
+                              columnWidths: const {
+                                0: FlexColumnWidth(3),
+                                1: FlexColumnWidth(2),
+                              },
+                              border: TableBorder(
+                                horizontalInside: BorderSide(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.outlineVariant,
+                                  width: 1,
+                                ),
+                                bottom: BorderSide(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.outlineVariant,
+                                  width: 1,
+                                ),
+                              ),
+                              children: [
+                                for (final expense
+                                    in widget.entryDto.entryExpenses)
+                                  _buildTableRow(
+                                    expense.description,
+                                    'R\$ ${expense.amount.toStringAsFixed(2).replaceAll('.', ',')}',
+                                  ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
                 ),
 
                 // Resumo da Jornada - Apresentação melhorada com tabela

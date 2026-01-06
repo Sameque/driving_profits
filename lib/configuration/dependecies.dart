@@ -4,6 +4,7 @@ import 'package:driving_profits/data/repositories/expense_repository.dart';
 import 'package:driving_profits/data/services/database_service.dart';
 import 'package:driving_profits/data/services/entry_service.dart';
 import 'package:driving_profits/data/services/expense_service.dart';
+import 'package:driving_profits/data/services/entry_expense_service.dart';
 import 'package:driving_profits/data/services/supabase_service.dart';
 import 'package:driving_profits/ui/feature/entry/close/close_entry_viewmodel.dart';
 import 'package:driving_profits/ui/feature/entry/edit/edit_entry_viewmodel.dart';
@@ -32,10 +33,14 @@ void setupDependencies() {
   //services
   final supabarEntryService = SupabaseService('daily_entries');
   final supabarExpenseService = SupabaseService('expenses');
+  final supabaseEntryExpenseService = SupabaseService('calculated_expenses');
 
   injector.addSingleton<EntryService>(() => EntryService(supabarEntryService));
   injector.addSingleton<ExpenseService>(
     () => ExpenseService(supabarExpenseService),
+  );
+  injector.addSingleton<EntryExpenseService>(
+    () => EntryExpenseService(supabaseEntryExpenseService),
   );
 
   //librares

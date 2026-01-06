@@ -74,4 +74,23 @@ class EntryService {
       ascending: ascending,
     );
   }
+
+  AsyncResult<dynamic> insertCalculatedExpense(dynamic data) async {
+    try {
+      final result = await supabaseService.insert(
+        data,
+      ); // Mas supabaseService é para daily_entries
+      return Success(result);
+    } on Exception catch (e, s) {
+      log('Erro ao inserir calculated expense: $e', stackTrace: s);
+      return Failure(e);
+    } catch (e, s) {
+      log(
+        'Erro desconhecido ao inserir calculated expense',
+        error: e,
+        stackTrace: s,
+      );
+      return Failure(Exception('Erro desconhecido'));
+    }
+  }
 }

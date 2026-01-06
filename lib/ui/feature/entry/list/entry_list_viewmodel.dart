@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:driving_profits/data/repositories/entry_repository.dart';
-import 'package:driving_profits/domain/entry/entry_dto.dart';
 import 'package:result_command/result_command.dart';
 import 'package:result_dart/result_dart.dart';
+
+import 'package:driving_profits/data/repositories/entry_repository.dart';
+import 'package:driving_profits/domain/entry/entry_dto.dart';
 
 class EntryListViewmodel extends ChangeNotifier {
   final EntryRepository _repository;
@@ -20,14 +21,14 @@ class EntryListViewmodel extends ChangeNotifier {
     if (index > -1) {
       _entries[index] = updatedEntry;
       _entries.sort((a, b) => b.date.compareTo(a.date));
-      notifyListeners();
+      fetchCommand.notifyListeners();
     }
   }
 
   Future addEntryLocal(EntryDto newEntry) async {
     _entries.add(newEntry);
     _entries.sort((a, b) => b.date.compareTo(a.date));
-    notifyListeners();
+    fetchCommand.notifyListeners();
   }
 
   AsyncResult _fetchEntries() async {
