@@ -1,13 +1,13 @@
 import 'package:driving_profits/configuration/dependecies.dart';
 import 'package:driving_profits/domain/entry/validations/edit_entry_validations.dart';
 import 'package:driving_profits/ui/widget/app_bar_screen_form.dart';
+import 'package:driving_profits/ui/widget/text_field_custom.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/services.dart';
 import 'package:driving_profits/l10n/app_localizations.dart';
 import 'package:driving_profits/ui/feature/entry/edit/edit_entry_viewmodel.dart';
 import 'package:driving_profits/domain/entry/entry_dto.dart';
-import 'package:driving_profits/ui/widget/currency_input_formatter.dart';
 import 'package:driving_profits/ui/widget/custom_snackbar.dart';
 import 'package:result_command/result_command.dart';
 
@@ -118,54 +118,6 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
     if (mounted) Navigator.of(context).pop();
   }
 
-  Widget _buildTextField({
-    required String label,
-    required String initial,
-    required ValueChanged<String> onChanged,
-    IconData icon = Icons.attach_money,
-    String? Function(String?)? validator,
-    List<TextInputFormatter>? inputFormatters,
-    bool isCurrency = true,
-    bool autofocus = false,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16.0),
-      child: TextFormField(
-        onChanged: onChanged,
-        controller: TextEditingController(text: initial),
-        decoration: InputDecoration(
-          labelText: label,
-          prefixIcon: Icon(icon),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-          filled: true,
-          fillColor: Theme.of(
-            context,
-          ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.1),
-        ),
-        keyboardType: TextInputType.number,
-        inputFormatters:
-            inputFormatters ??
-            (isCurrency
-                ? [
-                    FilteringTextInputFormatter.digitsOnly,
-                    CurrencyInputFormatter(),
-                  ]
-                : [FilteringTextInputFormatter.digitsOnly]),
-        //TODO: criar um validator
-        validator:
-            validator ??
-            (value) {
-              if (value == null || value.isEmpty) return null;
-              final parsed = double.tryParse(value.replaceAll(',', '.'));
-              if (parsed == null || parsed < 0) {
-                return 'Insira um valor válido maior ou igual a zero.';
-              }
-              return null;
-            },
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final currencyFormat = NumberFormat.currency(
@@ -208,246 +160,252 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
         appBar: AppBarScreenForm(screenTitle: 'Editar Lançamento'),
         body: Stack(
           children: [
-            ListenableBuilder(
-              listenable: viewmodel,
-              builder: (context, _) {
-                return Form(
-                  key: _formKey,
-                  child: ListView(
-                    padding: const EdgeInsets.all(16.0),
-                    children: [
-                      // Data
-                      ListTile(
-                        title: const Text('Data'),
-                        subtitle: Text(
-                          DateFormat('dd/MM/yyyy').format(entry.date),
-                        ),
-                        trailing: const Icon(Icons.calendar_today),
-                        onTap: () => _selectDate(context),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          side: BorderSide(
-                            color: Theme.of(context).colorScheme.outlineVariant,
-                          ),
-                        ),
-                        tileColor: Theme.of(context)
-                            .colorScheme
-                            .surfaceContainerHighest
-                            .withValues(alpha: 0.1),
+            Form(
+              key: _formKey,
+              child: ListView(
+                padding: const EdgeInsets.all(16.0),
+                children: [
+                  // Data
+                  ListTile(
+                    title: const Text('Data'),
+                    subtitle: Text(DateFormat('dd/MM/yyyy').format(entry.date)),
+                    trailing: const Icon(Icons.calendar_today),
+                    onTap: () => _selectDate(context),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: BorderSide(
+                        color: Theme.of(context).colorScheme.outlineVariant,
                       ),
-
-                      const SizedBox(height: 24),
-
-                      // Ganhos
-                      Text(
-                        //TODO: colocar o texto em um arquivo de localização
-                        'Ganhos',
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      _buildTextField(
-                        //TODO: colocar o texto em um arquivo de localização
-                        label: 'Repasse (R\$)',
-                        initial: entry.getUberEarnings,
-                        onChanged: entry.setUberEarnings,
-                        icon: Icons.attach_money,
-                        autofocus: true,
-                      ),
-
-                      _buildTextField(
-                        //TODO: colocar o texto em um arquivo de localização
-                        label: 'Gorjetas (R\$)',
-                        initial: entry.getTips,
-                        onChanged: entry.setTips,
-                        icon: Icons.card_giftcard,
-                      ),
-                      const SizedBox(height: 24),
-
-                      // Gastos do Dia
-                      Text(
-                        //TODO: colocar o texto em um arquivo de localização
-                        'Gastos do Dia',
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      _buildTextField(
-                        //TODO: colocar o texto em um arquivo de localização
-                        label: 'Alimentação (R\$)',
-                        initial: entry.getFoodCost,
-                        onChanged: entry.setFoodCost,
-                        icon: Icons.restaurant,
-                      ),
-                      _buildTextField(
-                        //TODO: colocar o texto em um arquivo de localização
-                        label: 'Limpeza (R\$)',
-                        initial: entry.getCleaningCost,
-                        onChanged: entry.setCleaningCost,
-                        icon: Icons.wash,
-                      ),
-                      _buildTextField(
-                        //TODO: colocar o texto em um arquivo de localização
-                        label: 'Outros Gastos (R\$)',
-                        initial: entry.getOtherCosts,
-                        onChanged: entry.setOtherCosts,
-                        icon: Icons.more_horiz,
-                      ),
-
-                      const SizedBox(height: 24),
-
-                      Text(
-                        //TODO: colocar o texto em um arquivo de localização
-                        'Calculo Combustível',
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-
-                      const SizedBox(height: 8),
-
-                      _buildTextField(
-                        //TODO: colocar o texto em um arquivo de localização
-                        label: 'Média de Consumo (km/L)',
-                        initial: entry.getFuelEfficiency,
-                        onChanged: entry.setFuelEfficiency,
-                        icon: Icons.speed,
-                        validator: EditEntryValidations.validateFuelEfficiency,
-                      ),
-                      // Valor do Combustível
-                      _buildTextField(
-                        //TODO: colocar o texto em um arquivo de localização
-                        label: 'Valor do Combustível (R\$/l)',
-                        initial: entry.getFuelPrice,
-                        onChanged: entry.setFuelPrice,
-                        icon: Icons.attach_money,
-                        validator: EditEntryValidations.validateFuelPrice,
-                      ),
-
-                      const SizedBox(height: 24),
-
-                      // Métricas de Trabalho
-                      Text(
-                        //TODO: colocar o texto em um arquivo de localização
-                        'Métricas de Trabalho',
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      _buildTextField(
-                        //TODO: colocar o texto em um arquivo de localização
-                        label: 'Km Inicial',
-                        initial: entry.getKmStart,
-                        onChanged: entry.setKmStart,
-                        icon: Icons.directions_car,
-                        isCurrency: false,
-                      ),
-                      _buildTextField(
-                        //TODO: colocar o texto em um arquivo de localização
-                        label: 'Km Final',
-                        initial: entry.getKmEnd,
-                        onChanged: entry.setKmEnd,
-                        icon: Icons.directions_car,
-                        isCurrency: false,
-                      ),
-                      const SizedBox(height: 8),
-
-                      _buildTextField(
-                        initial: entry.getNumberOfTrips,
-                        onChanged: entry.setNumberOfTrips,
-                        label: 'Quantidade de viagens',
-                        icon: Icons.route,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly,
-                        ],
-                        validator: (value) =>
-                            EditEntryValidations.validateNumberOfTrips(entry),
-                      ),
-
-                      ListTile(
-                        //TODO: colocar o texto em um arquivo de localização
-                        title: const Text('Hora Inicial'),
-                        subtitle: Text(entry.startTime.format(context)),
-                        trailing: const Icon(Icons.access_time),
-                        onTap: _selectStartTime,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          side: BorderSide(
-                            color: Theme.of(context).colorScheme.outlineVariant,
-                          ),
-                        ),
-                        tileColor: Theme.of(context)
-                            .colorScheme
-                            .surfaceContainerHighest
-                            .withValues(alpha: 0.1),
-                      ),
-                      const SizedBox(height: 16),
-                      ListTile(
-                        //TODO: colocar o texto em um arquivo de localização
-                        title: const Text('Hora Final'),
-                        subtitle: Text(
-                          entry.endTime?.format(context) ??
-                              //TODO: colocar o texto em um arquivo de localização
-                              'Não definida',
-                        ),
-                        trailing: const Icon(Icons.access_time),
-                        onTap: _selectEndTime,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          side: BorderSide(
-                            color: Theme.of(context).colorScheme.outlineVariant,
-                          ),
-                        ),
-                        tileColor: Theme.of(context)
-                            .colorScheme
-                            .surfaceContainerHighest
-                            .withValues(alpha: 0.1),
-                      ),
-                      const SizedBox(height: 16),
-                      ListTile(
-                        //TODO: colocar o texto em um arquivo de localização
-                        title: const Text('Km Rodados (calculado)'),
-                        trailing: Text(entry.totalKm.toString()),
-                        tileColor: Theme.of(context)
-                            .colorScheme
-                            .surfaceContainerHighest
-                            .withValues(alpha: 0.1),
-                      ),
-                      ListTile(
-                        //TODO: colocar o texto em um arquivo de localização
-                        title: const Text('Horas Trabalhadas (calculado)'),
-                        trailing: Text(
-                          entry.totalHoursWorked?.format(context) ?? '',
-                        ),
-                        tileColor: Theme.of(context)
-                            .colorScheme
-                            .surfaceContainerHighest
-                            .withValues(alpha: 0.1),
-                      ),
-                      const SizedBox(height: 32),
-
-                      // Botão para salvar
-                      FilledButton(
-                        onPressed: viewmodel.updateCommand.value.isRunning
-                            ? null
-                            : _saveForm,
-                        style: FilledButton.styleFrom(
-                          minimumSize: const Size.fromHeight(50),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        //TODO: colocar o texto em um arquivo de localização
-                        child: const Text('Salvar Alterações'),
-                      ),
-                      // ),
-                    ],
+                    ),
+                    tileColor: Theme.of(context)
+                        .colorScheme
+                        .surfaceContainerHighest
+                        .withValues(alpha: 0.1),
                   ),
-                );
-              },
+
+                  const SizedBox(height: 24),
+
+                  // Ganhos
+                  Text(
+                    //TODO: colocar o texto em um arquivo de localização
+                    'Ganhos',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+
+                  TextFieldCustom(
+                    //TODO: colocar o texto em um arquivo de localização
+                    label: 'Repasse (R\$)',
+                    initial: entry.getUberEarnings,
+                    onChanged: entry.setUberEarnings,
+                    icon: Icons.attach_money,
+                    autofocus: true,
+                  ),
+
+                  TextFieldCustom(
+                    //TODO: colocar o texto em um arquivo de localização
+                    label: 'Gorjetas (R\$)',
+                    initial: entry.getTips,
+                    onChanged: entry.setTips,
+                    icon: Icons.card_giftcard,
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Gastos do Dia
+                  Text(
+                    //TODO: colocar o texto em um arquivo de localização
+                    'Gastos do Dia',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextFieldCustom(
+                    //TODO: colocar o texto em um arquivo de localização
+                    label: 'Alimentação (R\$)',
+                    initial: entry.getFoodCost,
+                    onChanged: entry.setFoodCost,
+                    icon: Icons.restaurant,
+                  ),
+                  TextFieldCustom(
+                    //TODO: colocar o texto em um arquivo de localização
+                    label: 'Limpeza (R\$)',
+                    initial: entry.getCleaningCost,
+                    onChanged: entry.setCleaningCost,
+                    icon: Icons.wash,
+                  ),
+                  TextFieldCustom(
+                    //TODO: colocar o texto em um arquivo de localização
+                    label: 'Outros Gastos (R\$)',
+                    initial: entry.getOtherCosts,
+                    onChanged: entry.setOtherCosts,
+                    icon: Icons.more_horiz,
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  Text(
+                    //TODO: colocar o texto em um arquivo de localização
+                    'Calculo Combustível',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  TextFieldCustom(
+                    //TODO: colocar o texto em um arquivo de localização
+                    label: 'Média de Consumo (km/L)',
+                    initial: entry.getFuelEfficiency,
+                    onChanged: entry.setFuelEfficiency,
+                    icon: Icons.speed,
+                    validator: EditEntryValidations.validateFuelEfficiency,
+                  ),
+                  // Valor do Combustível
+                  TextFieldCustom(
+                    //TODO: colocar o texto em um arquivo de localização
+                    label: 'Valor do Combustível (R\$/l)',
+                    initial: entry.getFuelPrice,
+                    onChanged: entry.setFuelPrice,
+                    icon: Icons.attach_money,
+                    validator: EditEntryValidations.validateFuelPrice,
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Métricas de Trabalho
+                  Text(
+                    //TODO: colocar o texto em um arquivo de localização
+                    'Métricas de Trabalho',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextFieldCustom(
+                    //TODO: colocar o texto em um arquivo de localização
+                    label: 'Km Inicial',
+                    initial: entry.getKmStart,
+                    onChanged: entry.setKmStart,
+                    icon: Icons.directions_car,
+                    isCurrency: false,
+                  ),
+
+                  TextFieldCustom(
+                    //TODO: colocar o texto em um arquivo de localização
+                    label: 'Km Final',
+                    initial: entry.getKmEnd,
+                    onChanged: entry.setKmEnd,
+                    icon: Icons.directions_car,
+                    isCurrency: false,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  ),
+                  const SizedBox(height: 8),
+
+                  TextFieldCustom(
+                    initial: entry.getNumberOfTrips,
+                    onChanged: entry.setNumberOfTrips,
+                    label: 'Quantidade de viagens',
+                    icon: Icons.route,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    validator: (value) =>
+                        EditEntryValidations.validateNumberOfTrips(entry),
+                  ),
+                  ListenableBuilder(
+                    listenable: viewmodel,
+                    builder: (context, _) {
+                      return Column(
+                        children: [
+                          ListTile(
+                            //TODO: colocar o texto em um arquivo de localização
+                            title: const Text('Hora Inicial'),
+                            subtitle: Text(entry.startTime.format(context)),
+                            trailing: const Icon(Icons.access_time),
+                            onTap: _selectStartTime,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              side: BorderSide(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.outlineVariant,
+                              ),
+                            ),
+                            tileColor: Theme.of(context)
+                                .colorScheme
+                                .surfaceContainerHighest
+                                .withValues(alpha: 0.1),
+                          ),
+                          const SizedBox(height: 16),
+                          ListTile(
+                            //TODO: colocar o texto em um arquivo de localização
+                            title: const Text('Hora Final'),
+                            subtitle: Text(
+                              entry.endTime?.format(context) ??
+                                  //TODO: colocar o texto em um arquivo de localização
+                                  'Não definida',
+                            ),
+                            trailing: const Icon(Icons.access_time),
+                            onTap: _selectEndTime,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              side: BorderSide(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.outlineVariant,
+                              ),
+                            ),
+                            tileColor: Theme.of(context)
+                                .colorScheme
+                                .surfaceContainerHighest
+                                .withValues(alpha: 0.1),
+                          ),
+                          const SizedBox(height: 16),
+                          ListTile(
+                            //TODO: colocar o texto em um arquivo de localização
+                            title: const Text('Km Rodados (calculado)'),
+                            trailing: Text(entry.totalKm.toString()),
+                            tileColor: Theme.of(context)
+                                .colorScheme
+                                .surfaceContainerHighest
+                                .withValues(alpha: 0.1),
+                          ),
+                          ListTile(
+                            //TODO: colocar o texto em um arquivo de localização
+                            title: const Text('Horas Trabalhadas (calculado)'),
+                            trailing: Text(
+                              entry.totalHoursWorked?.format(context) ?? '',
+                            ),
+                            tileColor: Theme.of(context)
+                                .colorScheme
+                                .surfaceContainerHighest
+                                .withValues(alpha: 0.1),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 32),
+
+                  // Botão para salvar
+                  FilledButton(
+                    onPressed: viewmodel.updateCommand.value.isRunning
+                        ? null
+                        : _saveForm,
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size.fromHeight(50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    //TODO: colocar o texto em um arquivo de localização
+                    child: const Text('Salvar Alterações'),
+                  ),
+                  // ),
+                ],
+              ),
             ),
 
             viewmodel.updateCommand.value.isRunning

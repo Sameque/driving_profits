@@ -8,6 +8,7 @@ import 'package:driving_profits/data/services/entry_expense_service.dart';
 import 'package:driving_profits/data/services/supabase_service.dart';
 import 'package:driving_profits/ui/feature/entry/close/close_entry_viewmodel.dart';
 import 'package:driving_profits/ui/feature/entry/edit/edit_entry_viewmodel.dart';
+import 'package:driving_profits/ui/feature/entry/expenses/entry_expense_list_viewmodel.dart';
 import 'package:driving_profits/ui/feature/entry/expenses/expenses_viewmodel.dart';
 import 'package:driving_profits/ui/feature/entry/start/start_entry_viewmodel.dart';
 import 'package:driving_profits/ui/feature/expenses/expense_viewmodel.dart';
@@ -25,6 +26,7 @@ void setupDependencies() {
   injector.addSingleton(CloseEntryViewModel.new);
   injector.addSingleton(SummaryViewmodel.new);
   injector.addSingleton(ExpenseViewModel.new);
+  injector.addSingleton(EntryExpenseListViewmodel.new);
 
   //repositories
   injector.addSingleton(EntryRepository.new);

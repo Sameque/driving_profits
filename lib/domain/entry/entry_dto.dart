@@ -357,8 +357,8 @@ class EntryDto extends ChangeNotifier {
         .map(
           (expense) => EntryExpenseDto(
             entryId: id,
-            expenseType: expense.expenseType.index,
-            chargeType: expense.chargeType.index,
+            expenseType: expense.expenseType,
+            chargeType: expense.chargeType,
             amount: (expense.amount * totalKm),
             description:
                 "${expense.expenseType.descricao}-${expense.description}",

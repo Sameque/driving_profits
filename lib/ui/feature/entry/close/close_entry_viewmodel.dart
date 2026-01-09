@@ -27,7 +27,6 @@ class CloseEntryViewModel with ChangeNotifier {
   ///
   /// Retorna uma lista de mapas com 'description', 'cost', 'expense_type' e 'charge_type' para despesas
   /// do tipo valuePerKm multiplicadas pelo total de km.
-  // Future<List<Map<String, dynamic>>> _getCalculatedExpenses(
   AsyncResult<List<ExpenseDto>> _getExpenses() async {
     final result = await _expenseRepository.getAllExpenses();
 

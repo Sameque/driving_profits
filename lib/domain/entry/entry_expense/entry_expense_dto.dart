@@ -1,7 +1,10 @@
+import 'package:driving_profits/domain/expense/charge_type.dart';
+import 'package:driving_profits/domain/expense/expense_type.dart';
+
 class EntryExpenseDto {
   final String entryId;
-  final int expenseType;
-  final int chargeType;
+  final ExpenseType expenseType;
+  final ChargeType chargeType;
   final double amount;
   final String description;
   final DateTime? deletedAt;
@@ -20,8 +23,8 @@ class EntryExpenseDto {
   Map<String, dynamic> toMap() {
     return {
       'entry_id': entryId,
-      'expense_type': expenseType,
-      'charge_type': chargeType,
+      'expense_type': expenseType.index,
+      'charge_type': chargeType.index,
       'amount': amount,
       'description': description,
       'deleted_at': deletedAt?.toIso8601String(),
@@ -32,8 +35,8 @@ class EntryExpenseDto {
   factory EntryExpenseDto.empty(Map<String, dynamic> map) {
     return EntryExpenseDto(
       entryId: '',
-      expenseType: 0,
-      chargeType: 0,
+      expenseType: ExpenseType.none,
+      chargeType: ChargeType.none,
       amount: 0.0,
       description: '',
       isCalculated: false,
@@ -43,8 +46,8 @@ class EntryExpenseDto {
   factory EntryExpenseDto.fromMap(Map<String, dynamic> map) {
     return EntryExpenseDto(
       entryId: map['entry_id'] as String,
-      expenseType: map['expense_type'] as int,
-      chargeType: map['charge_type'] as int,
+      expenseType: ExpenseType.values[map['expense_type'] as int],
+      chargeType: ChargeType.values[map['charge_type'] as int],
       amount: map['amount'] as double,
       description: map['description'] as String,
       deletedAt: map['deleted_at'] != null

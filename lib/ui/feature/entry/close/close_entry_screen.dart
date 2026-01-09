@@ -1,5 +1,6 @@
 import 'package:driving_profits/configuration/dependecies.dart';
 import 'package:driving_profits/domain/expense/dtos/expense_dto.dart';
+import 'package:driving_profits/ui/feature/entry/widget/entry_expenses_widget.dart';
 import 'package:driving_profits/ui/widget/app_bar_screen_form.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -100,7 +101,6 @@ class _CloseEntryScreenState extends State<CloseEntryScreen> {
     }
 
     widget.entryDto.setStatusEnum(EntryStatus.closed);
-    // final closed = DailyEntry.fromMap(widget.entryDto.toMap());
 
     await viewmodel.closeCommand.execute(widget.entryDto);
 
@@ -302,60 +302,8 @@ class _CloseEntryScreenState extends State<CloseEntryScreen> {
                 ListenableBuilder(
                   listenable: widget.entryDto,
                   builder: (context, child) {
-                    return Card(
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        side: BorderSide(
-                          color: Theme.of(context).colorScheme.outlineVariant,
-                        ),
-                      ),
-                      color: Theme.of(context)
-                          .colorScheme
-                          .surfaceContainerHighest
-                          .withValues(alpha: 0.1),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Despesas Calculadas (por Km)',
-                              style: Theme.of(context).textTheme.titleMedium
-                                  ?.copyWith(fontWeight: FontWeight.bold),
-                            ),
-                            const SizedBox(height: 16),
-                            Table(
-                              columnWidths: const {
-                                0: FlexColumnWidth(3),
-                                1: FlexColumnWidth(2),
-                              },
-                              border: TableBorder(
-                                horizontalInside: BorderSide(
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.outlineVariant,
-                                  width: 1,
-                                ),
-                                bottom: BorderSide(
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.outlineVariant,
-                                  width: 1,
-                                ),
-                              ),
-                              children: [
-                                for (final expense
-                                    in widget.entryDto.entryExpenses)
-                                  _buildTableRow(
-                                    expense.description,
-                                    'R\$ ${expense.amount.toStringAsFixed(2).replaceAll('.', ',')}',
-                                  ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
+                    return EntryExpensesWidget(
+                      entryExpenses: widget.entryDto.entryExpenses,
                     );
                   },
                 ),
