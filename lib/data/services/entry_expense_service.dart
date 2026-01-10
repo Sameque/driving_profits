@@ -24,4 +24,21 @@ class EntryExpenseService {
       return Failure(Exception('Erro desconhecido'));
     }
   }
+
+  AsyncResult deleteEntryExpensesByEntryId(String entryId) async {
+    try {
+      await supabaseService.deleteWhere({'entry_id': entryId});
+      return Success(unit);
+    } on Exception catch (e, s) {
+      log('Erro ao deletar entry expenses: $e', stackTrace: s);
+      return Failure(e);
+    } catch (e, s) {
+      log(
+        'Erro desconhecido ao deletar entry expenses',
+        error: e,
+        stackTrace: s,
+      );
+      return Failure(Exception('Erro desconhecido'));
+    }
+  }
 }
