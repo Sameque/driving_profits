@@ -303,7 +303,7 @@ class _CloseEntryScreenState extends State<CloseEntryScreen> {
                   listenable: widget.entryDto,
                   builder: (context, child) {
                     return EntryExpensesWidget(
-                      entryExpenses: widget.entryDto.entryExpenses,
+                      entryExpenses: widget.entryDto.getEntryExpenses,
                     );
                   },
                 ),

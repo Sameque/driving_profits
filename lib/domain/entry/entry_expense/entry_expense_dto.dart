@@ -1,16 +1,18 @@
 import 'package:driving_profits/domain/expense/charge_type.dart';
 import 'package:driving_profits/domain/expense/expense_type.dart';
+import 'package:uuid/uuid.dart';
 
 class EntryExpenseDto {
+  late String id;
   final String entryId;
-  final ExpenseType expenseType;
   final ChargeType chargeType;
-  final double amount;
-  final String description;
   final DateTime? deletedAt;
   final bool isCalculated;
+  late String description;
+  late double amount;
+  late ExpenseType expenseType;
 
-  const EntryExpenseDto({
+  EntryExpenseDto({
     required this.entryId,
     required this.expenseType,
     required this.chargeType,
@@ -18,7 +20,21 @@ class EntryExpenseDto {
     required this.description,
     required this.isCalculated,
     this.deletedAt,
+    this.id = '',
   });
+
+  //seters
+  void setAmount(String value) {
+    amount = double.tryParse(value.replaceAll(',', '.')) ?? 0.0;
+  }
+
+  void setDescription(String value) {
+    description = value;
+  }
+
+  void setExpenseType(ExpenseType? value) {
+    expenseType = value ?? ExpenseType.none;
+  }
 
   Map<String, dynamic> toMap() {
     return {
@@ -32,9 +48,10 @@ class EntryExpenseDto {
     };
   }
 
-  factory EntryExpenseDto.empty(Map<String, dynamic> map) {
+  factory EntryExpenseDto.notCalculated(String entryId) {
     return EntryExpenseDto(
-      entryId: '',
+      id: Uuid().v4(),
+      entryId: entryId,
       expenseType: ExpenseType.none,
       chargeType: ChargeType.none,
       amount: 0.0,

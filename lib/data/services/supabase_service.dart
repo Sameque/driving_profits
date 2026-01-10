@@ -69,4 +69,12 @@ class SupabaseService {
 
   Future<dynamic> delete(String id) async =>
       await _client.from(tableName).delete().eq('id', id).select();
+
+  Future<dynamic> deleteWhere(Map<String, dynamic> filters) async {
+    var query = _client.from(tableName).delete();
+    filters.forEach((key, value) {
+      query = query.eq(key, value);
+    });
+    return await query.select();
+  }
 }

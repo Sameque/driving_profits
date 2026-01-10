@@ -10,6 +10,7 @@ class TextFieldCustom extends StatelessWidget {
     this.isCurrency = true,
     this.autofocus = false,
     this.icon = Icons.attach_money,
+    this.keyboardType = TextInputType.number,
     required this.label,
     required this.initial,
     required this.onChanged,
@@ -23,6 +24,7 @@ class TextFieldCustom extends StatelessWidget {
   final List<TextInputFormatter>? inputFormatters;
   final bool isCurrency;
   final bool autofocus;
+  final TextInputType keyboardType;
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +42,7 @@ class TextFieldCustom extends StatelessWidget {
             context,
           ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.1),
         ),
-        keyboardType: TextInputType.number,
+        keyboardType: keyboardType,
         inputFormatters:
             inputFormatters ??
             (isCurrency

@@ -24,7 +24,7 @@ class EntryDto extends ChangeNotifier {
   late double fuelEfficiency;
   late double fuelPrice;
   late int numberOfTrips;
-  late List<EntryExpenseDto> entryExpenses;
+  late List<EntryExpenseDto> _entryExpenses;
 
   late List<ExpenseDto> _expenses;
 
@@ -46,8 +46,9 @@ class EntryDto extends ChangeNotifier {
        fuelPrice = 0.0,
        status = EntryStatus.open,
        numberOfTrips = 0,
-       entryExpenses = [],
-       _expenses = [];
+       _expenses = [] {
+    setEntryExpenses([]);
+  }
 
   EntryDto({String? id}) : id = id ?? const Uuid().v4();
 
@@ -70,11 +71,13 @@ class EntryDto extends ChangeNotifier {
     fuelPrice = entry.fuelPrice ?? 0.0;
     status = entry.status;
     numberOfTrips = entry.numberOfTrips ?? 0;
-    entryExpenses = entry.entryExpenses == null
-        ? []
+
+    final entryExpenses = entry.entryExpenses == null
+        ? List<EntryExpenseDto>.empty()
         : entry.entryExpenses!
               .map((e) => EntryExpenseDto.fromMap(e.toMap()))
               .toList();
+    setEntryExpenses(entryExpenses);
   }
 
   Map<String, dynamic> toMap() {
@@ -98,7 +101,7 @@ class EntryDto extends ChangeNotifier {
           EntryStatus.values.asNameMap()[getStatus]?.index ??
           EntryStatus.none.index,
       'number_of_trips': numberOfTrips,
-      'entry_expenses': entryExpenses.map((e) => e.toMap()).toList(),
+      'entry_expenses': getEntryExpenses.map((e) => e.toMap()).toList(),
     };
   }
 
@@ -251,13 +254,22 @@ class EntryDto extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setentryExpenses(List<EntryExpenseDto> values) {
-    entryExpenses = values;
+  void setEntryExpenses(List<EntryExpenseDto> values) {
+    _entryExpenses = values;
     notifyListeners();
   }
 
   void addEntryExpense(EntryExpenseDto value) {
-    entryExpenses.add(value);
+    _entryExpenses.add(value);
+    notifyListeners();
+  }
+
+  void removeExpense(EntryExpenseDto value) {
+    _entryExpenses.removeWhere(
+      (element) =>
+          element.entryId == value.entryId &&
+          element.expenseType == value.expenseType,
+    );
     notifyListeners();
   }
 
@@ -267,6 +279,8 @@ class EntryDto extends ChangeNotifier {
   }
 
   //getters in string format
+  List<EntryExpenseDto> get getEntryExpenses => _entryExpenses;
+
   String get getDateStr => date.toIso8601String().split('T').first;
   String get getEndDateStr =>
       endDate == null ? '' : endDate!.toIso8601String().split('T').first;
@@ -303,7 +317,7 @@ class EntryDto extends ChangeNotifier {
   double get netEarnings =>
       totalEarnings -
       totalCosts -
-      entryExpenses.fold(0.0, (sum, expense) => sum + expense.amount);
+      getEntryExpenses.fold(0.0, (sum, expense) => sum + expense.amount);
 
   int get totalKm =>
       ((kmStart == null || kmStart! <= 0) || (kmEnd == null || kmEnd! <= 0))
@@ -352,7 +366,7 @@ class EntryDto extends ChangeNotifier {
   }
 
   void _calculatedEntryExpenses() async {
-    entryExpenses = _expenses
+    final entryExpenses = _expenses
         .where((expense) => expense.chargeType == ChargeType.valuePerKm)
         .map(
           (expense) => EntryExpenseDto(
@@ -366,11 +380,12 @@ class EntryDto extends ChangeNotifier {
           ),
         )
         .toList();
+    setEntryExpenses(entryExpenses);
   }
 
   @override
   String toString() {
-    return 'EntryDto{id: $id, date: $date, endDate: $endDate, startTime: $startTime, endTime: $endTime, kmStart: $kmStart, kmEnd: $kmEnd, uberEarnings: $uberEarnings, tips: $tips, fuelCost: $fuelCost, foodCost: $foodCost, cleaningCost: $cleaningCost, otherCosts: $otherCosts, status: $status, numberOfTrips: $numberOfTrips ,fuelEfficiency: $fuelEfficiency, fuelPrice: $fuelPrice, entryExpenses: $entryExpenses, expenses: $_expenses, totalEarnings: $totalEarnings, totalCosts: $totalCosts, netEarnings: $netEarnings, totalKm: $totalKm, earningsPerKm: $earningsPerKm, totalHoursWorked: $totalHoursWorked, totalHoursWorkedStr: $totalHoursWorkedStr}';
+    return 'EntryDto{id: $id, date: $date, endDate: $endDate, startTime: $startTime, endTime: $endTime, kmStart: $kmStart, kmEnd: $kmEnd, uberEarnings: $uberEarnings, tips: $tips, fuelCost: $fuelCost, foodCost: $foodCost, cleaningCost: $cleaningCost, otherCosts: $otherCosts, status: $status, numberOfTrips: $numberOfTrips ,fuelEfficiency: $fuelEfficiency, fuelPrice: $fuelPrice, entryExpenses: $getEntryExpenses, expenses: $_expenses, totalEarnings: $totalEarnings, totalCosts: $totalCosts, netEarnings: $netEarnings, totalKm: $totalKm, earningsPerKm: $earningsPerKm, totalHoursWorked: $totalHoursWorked, totalHoursWorkedStr: $totalHoursWorkedStr}';
   }
 
   TimeOfDay? parseTime(String? value) {
@@ -409,7 +424,7 @@ class EntryDto extends ChangeNotifier {
     copyDto.fuelEfficiency = fuelEfficiency;
     copyDto.fuelPrice = fuelPrice;
     copyDto.numberOfTrips = numberOfTrips;
-    copyDto.entryExpenses = entryExpenses;
+    copyDto.setEntryExpenses(_entryExpenses);
     copyDto._expenses = _expenses;
     return copyDto;
   }
