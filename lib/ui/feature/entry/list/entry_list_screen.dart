@@ -1,14 +1,15 @@
-import 'package:driving_profits/configuration/dependecies.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:driving_profits/domain/entry/entry_status.dart';
-import 'package:driving_profits/ui/feature/entry/edit/edit_entry_screen.dart';
-import 'package:driving_profits/ui/feature/entry/close/close_entry_screen.dart';
-import 'package:driving_profits/ui/feature/entry/expenses/expenses_screen.dart';
-import 'package:driving_profits/ui/feature/entry/start/start_entry_screen.dart';
-import 'package:driving_profits/ui/feature/entry/list/entry_list_viewmodel.dart';
-import 'package:driving_profits/ui/widget/custom_snackbar.dart';
 import 'package:result_command/result_command.dart';
+
+import 'package:driving_profits/configuration/dependecies.dart';
+import 'package:driving_profits/domain/entry/entry_status.dart';
+import 'package:driving_profits/ui/feature/entry/close/close_entry_screen.dart';
+import 'package:driving_profits/ui/feature/entry/edit/edit_entry_screen.dart';
+import 'package:driving_profits/ui/feature/entry/expenses/entry_expense_list.dart';
+import 'package:driving_profits/ui/feature/entry/list/entry_list_viewmodel.dart';
+import 'package:driving_profits/ui/feature/entry/start/start_entry_screen.dart';
+import 'package:driving_profits/ui/widget/custom_snackbar.dart';
 
 class EntryListScreen extends StatefulWidget {
   const EntryListScreen({super.key});
@@ -449,7 +450,7 @@ class _EntryListScreenState extends State<EntryListScreen> {
                                     onPressed: () {
                                       Navigator.of(context).push(
                                         MaterialPageRoute(
-                                          builder: (ctx) => ExpensesScreen(
+                                          builder: (ctx) => EntryExpenseList(
                                             entryDto: entryDto,
                                             onSave: viewmodel.updateEntryLocal,
                                           ),

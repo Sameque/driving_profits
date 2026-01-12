@@ -1,15 +1,17 @@
-import 'package:driving_profits/configuration/dependecies.dart';
-import 'package:driving_profits/domain/expense/charge_type.dart';
-import 'package:driving_profits/ui/feature/expenses/widget/charge_type_dropdown.dart';
-import 'package:driving_profits/ui/widget/app_bar_screen_form.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:result_command/result_command.dart';
+
+import 'package:driving_profits/configuration/dependecies.dart';
+import 'package:driving_profits/domain/expense/charge_type.dart';
 import 'package:driving_profits/domain/expense/dtos/expense_dto.dart';
 import 'package:driving_profits/domain/expense/expense_type.dart';
+import 'package:driving_profits/ui/feature/expenses/widget/charge_type_dropdown.dart';
 import 'package:driving_profits/ui/feature/expenses/widget/expense_type_dropdown.dart';
+import 'package:driving_profits/ui/widget/app_bar_screen_form.dart';
 import 'package:driving_profits/ui/widget/currency_input_formatter.dart';
 import 'package:driving_profits/ui/widget/custom_snackbar.dart';
-import 'package:result_command/result_command.dart';
+
 import 'expense_viewmodel.dart';
 
 class ExpenseAddScreen extends StatefulWidget {
