@@ -62,9 +62,10 @@ class EntryExpenseDto {
 
   factory EntryExpenseDto.fromMap(Map<String, dynamic> map) {
     return EntryExpenseDto(
+      id: map['id'] as String,
       entryId: map['entry_id'] as String,
-      expenseType: ExpenseType.values[map['expense_type'] as int],
-      chargeType: ChargeType.values[map['charge_type'] as int],
+      expenseType: ExpenseType.values[(map['expense_type'] ?? 0) as int],
+      chargeType: ChargeType.values[(map['charge_type'] ?? 0) as int],
       amount: map['amount'] as double,
       description: map['description'] as String,
       deletedAt: map['deleted_at'] != null
@@ -73,4 +74,28 @@ class EntryExpenseDto {
       isCalculated: map['calculated'],
     );
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+
+    return other is EntryExpenseDto &&
+        other.entryId == entryId &&
+        other.expenseType == expenseType &&
+        other.chargeType == chargeType &&
+        other.amount == amount &&
+        other.description == description &&
+        other.isCalculated == isCalculated &&
+        other.deletedAt == deletedAt;
+  }
+
+  @override
+  int get hashCode =>
+      entryId.hashCode ^
+      expenseType.hashCode ^
+      chargeType.hashCode ^
+      amount.hashCode ^
+      description.hashCode ^
+      isCalculated.hashCode ^
+      deletedAt.hashCode;
 }

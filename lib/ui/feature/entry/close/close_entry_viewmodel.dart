@@ -47,6 +47,6 @@ class CloseEntryViewModel with ChangeNotifier {
   /// ficam disponíveis via `isLoading` e `error`.
   AsyncResult _closeWorkSession(EntryDto entryDto) async {
     final entryEntity = DailyEntry.fromMap(entryDto.toMap());
-    return _entryRepository.closeEntry(entryEntity);
+    return _entryRepository.updateEntry(entryEntity.id, entryEntity);
   }
 }

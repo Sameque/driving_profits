@@ -1,3 +1,4 @@
+import 'package:driving_profits/ui/widget/custom_snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:result_command/result_command.dart';
 
@@ -38,16 +39,21 @@ class _EntryExpenseListState extends State<EntryExpenseList> {
     if (viewmodel.updateEntryExpenseCommand.value.isFailure) {
       final failure =
           viewmodel.updateEntryExpenseCommand.value as FailureCommand<Object>;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro ao salvar: ${failure.error.toString()}')),
+
+      CustomSnackBar.error(
+        context: context,
+        message: 'Erro ao salvar gastos:\n - ${failure.error.toString()}',
       );
+
       return;
     }
 
     if (viewmodel.updateEntryExpenseCommand.value.isSuccess) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Gastos salvos com sucesso!')),
+      CustomSnackBar.success(
+        context: context,
+        message: 'Gastos salvos com sucesso!',
       );
+
       widget.onSave?.call(widget.entryDto);
       Future.delayed(const Duration(milliseconds: 300)).then((_) {
         if (mounted) Navigator.of(context).pop();
@@ -68,7 +74,9 @@ class _EntryExpenseListState extends State<EntryExpenseList> {
               itemCount: widget.entryDto.getEntryExpenses.length,
               separatorBuilder: (context, index) => const Divider(height: 1),
               itemBuilder: (context, index) {
-                final expense = widget.entryDto.getEntryExpenses[index];
+                final expense = widget.entryDto.getEntryExpenses.elementAt(
+                  index,
+                );
 
                 return Dismissible(
                   key: ValueKey(expense),
@@ -106,13 +114,11 @@ class _EntryExpenseListState extends State<EntryExpenseList> {
                     widget.entryDto.removeExpense(expense);
                   },
                   child: ListTile(
-                    leading: Icon(
-                      widget.entryDto.getEntryExpenses[index].expenseType.icon,
-                    ),
+                    leading: Icon(expense.expenseType.icon),
                     title: Text(expense.expenseType.descricao),
                     subtitle: Text(expense.description),
                     trailing: Text(
-                      AppConstants.formatterCurrency(value: expense.amount),
+                      AppConstants.formatterCurrency(expense.amount),
                     ),
                   ),
                 );

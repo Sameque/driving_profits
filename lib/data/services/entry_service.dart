@@ -1,7 +1,8 @@
 import 'dart:developer';
 
-import 'package:driving_profits/data/services/supabase_service.dart';
 import 'package:result_dart/result_dart.dart';
+
+import 'package:driving_profits/data/services/supabase_service.dart';
 
 class EntryService {
   final SupabaseService supabaseService;
@@ -10,7 +11,10 @@ class EntryService {
 
   AsyncResult<List<dynamic>> getAllEntries() async {
     try {
-      final result = await supabaseService.query(orderBy: 'start_date');
+      final result = await supabaseService.query(
+        selectFields: '*, entry_expenses(*)',
+        orderBy: 'start_date',
+      );
       return Success(result);
     } on Exception catch (e) {
       return Failure(e);
@@ -77,9 +81,7 @@ class EntryService {
 
   AsyncResult<dynamic> insertCalculatedExpense(dynamic data) async {
     try {
-      final result = await supabaseService.insert(
-        data,
-      ); // Mas supabaseService é para daily_entries
+      final result = await supabaseService.insert(data);
       return Success(result);
     } on Exception catch (e, s) {
       log('Erro ao inserir calculated expense: $e', stackTrace: s);

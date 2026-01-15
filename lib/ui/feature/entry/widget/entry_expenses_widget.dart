@@ -9,7 +9,7 @@ class EntryExpensesWidget extends StatelessWidget {
     required this.entryExpenses,
   });
 
-  final List<EntryExpenseDto> entryExpenses;
+  final Set<EntryExpenseDto> entryExpenses;
   final String title;
 
   @override

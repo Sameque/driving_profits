@@ -22,17 +22,16 @@ class EntryExpense {
     required this.amount,
     required this.description,
     required this.calculated,
-    DateTime? createdAt,
-    DateTime? updatedAt,
+    this.createdAt,
+    this.updatedAt,
     this.deletedAt,
   }) : id = id ?? const Uuid().v4();
 
   Map<String, dynamic> toMap() {
-    return {
-      'id': id,
+    final map = <String, dynamic>{
       'entry_id': entryId,
-      'expense_type': expenseType,
-      'charge_type': chargeType,
+      'expense_type': expenseType.index,
+      'charge_type': chargeType.index,
       'amount': amount,
       'description': description,
       'created_at': createdAt?.toIso8601String(),
@@ -40,6 +39,10 @@ class EntryExpense {
       'deleted_at': deletedAt?.toIso8601String(),
       'calculated': calculated,
     };
+    if (id.isNotEmpty) {
+      map['id'] = id;
+    }
+    return map;
   }
 
   factory EntryExpense.fromMap(Map<String, dynamic> map) {

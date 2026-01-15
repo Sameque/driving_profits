@@ -1,4 +1,5 @@
 import 'package:driving_profits/configuration/dependecies.dart';
+import 'package:driving_profits/core/app_constants.dart';
 import 'package:driving_profits/domain/expense/dtos/expense_dto.dart';
 import 'package:driving_profits/ui/feature/entry/widget/entry_expenses_widget.dart';
 import 'package:driving_profits/ui/widget/app_bar_screen_form.dart';
@@ -34,14 +35,14 @@ class _CloseEntryScreenState extends State<CloseEntryScreen> {
     widget.entryDto.setEndTime(TimeOfDay.now());
     widget.entryDto.setEndDate(DateTime.now());
 
-    viewmodel.getExpensesCommand.addListener(_loadCalculatedExpenses);
+    viewmodel.getExpensesCommand.addListener(_loadExpenses);
 
     viewmodel.getExpensesCommand.execute();
   }
 
   @override
   void dispose() {
-    viewmodel.getExpensesCommand.removeListener(_loadCalculatedExpenses);
+    viewmodel.getExpensesCommand.removeListener(_loadExpenses);
     super.dispose();
   }
 
@@ -69,7 +70,7 @@ class _CloseEntryScreenState extends State<CloseEntryScreen> {
     }
   }
 
-  void _loadCalculatedExpenses() async {
+  void _loadExpenses() async {
     if (viewmodel.getExpensesCommand.value.isRunning) return;
 
     if (viewmodel.getExpensesCommand.value.isSuccess) {
@@ -364,12 +365,10 @@ class _CloseEntryScreenState extends State<CloseEntryScreen> {
                                   widget.entryDto.totalKm.toString(),
                                 ),
                                 _buildTableRow(
-                                  'Combustível (Calculado)',
-                                  'R\$ ${widget.entryDto.fuelCost.toStringAsFixed(2).replaceAll('.', ',')}',
-                                ),
-                                _buildTableRow(
                                   'Total de Gastos',
-                                  'R\$ ${(widget.entryDto.totalCosts - widget.entryDto.fuelCost).toStringAsFixed(2).replaceAll('.', ',')}',
+                                  AppConstants.formatterCurrency(
+                                    widget.entryDto.totalEntryExpenses,
+                                  ),
                                 ),
                                 _buildTableRow(
                                   'Ganhos',

@@ -131,7 +131,11 @@ class _ExpenseListScreenState extends State<ExpenseListScreen> {
                   },
                   child: ListTile(
                     leading: Icon(expense.expenseType.icon),
-                    title: Text(expense.expenseType.descricao),
+                    title: Text(
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      "${expense.expenseType.descricao} - ${expense.chargeType.descricao}",
+                    ),
                     subtitle: Text(expense.description),
                     trailing: Text(_formatter.format(expense.amount)),
                   ),

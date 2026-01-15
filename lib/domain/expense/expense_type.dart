@@ -12,7 +12,8 @@ enum ExpenseType {
   toll(8, 'Pedágio', Icons.account_balance_wallet),
   insurance(9, 'Seguro', Icons.verified_user),
   other(10, 'Outros', Icons.more_horiz),
-  carWash(11, 'Lavagem', Icons.local_car_wash);
+  carWash(11, 'Lavagem', Icons.local_car_wash),
+  fuel(12, 'Combustível', Icons.local_gas_station);
 
   final int value;
   final String descricao;

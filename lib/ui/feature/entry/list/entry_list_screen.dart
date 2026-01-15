@@ -215,17 +215,9 @@ class _EntryListScreenState extends State<EntryListScreen> {
                                       ),
                                       _buildTableRow(
                                         //TODO: colocar o texto em um arquivo de localização
-                                        'Combustível',
+                                        'Gastos',
                                         currencyFormat.format(
-                                          entryDto.fuelCost,
-                                        ),
-                                      ),
-                                      _buildTableRow(
-                                        //TODO: colocar o texto em um arquivo de localização
-                                        'Gastos (Outros)',
-                                        currencyFormat.format(
-                                          entryDto.totalCosts -
-                                              entryDto.fuelCost,
+                                          entryDto.totalEntryExpenses,
                                         ),
                                       ),
                                       _buildTableRow(
@@ -406,7 +398,7 @@ class _EntryListScreenState extends State<EntryListScreen> {
                                       SizedBox(width: 2),
                                       Text(
                                         currencyFormat.format(
-                                          entryDto.totalCosts,
+                                          entryDto.totalEntryExpenses,
                                         ),
                                         style: TextStyle(
                                           color: Colors.red[800],

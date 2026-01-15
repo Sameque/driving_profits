@@ -17,8 +17,8 @@ class AppConstants {
     Locale('en', 'US'),
   ];
 
-  static String formatterCurrency({
-    double value = 0,
+  static String formatterCurrency(
+    double value, {
     String locale = 'pt_BR',
     String symbol = 'R\$',
     int decimalDigits = 2,

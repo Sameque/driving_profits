@@ -194,7 +194,7 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
                     ),
                   ),
                   const SizedBox(height: 8),
-
+                  //TODO: lista de gastos dinamca
                   TextFieldCustom(
                     //TODO: colocar o texto em um arquivo de localização
                     label: 'Repasse (R\$)',
@@ -222,13 +222,13 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  TextFieldCustom(
-                    //TODO: colocar o texto em um arquivo de localização
-                    label: 'Alimentação (R\$)',
-                    initial: entry.getFoodCost,
-                    onChanged: entry.setFoodCost,
-                    icon: Icons.restaurant,
-                  ),
+                  // TextFieldCustom(
+                  //   //TODO: colocar o texto em um arquivo de localização
+                  //   label: 'Alimentação (R\$)',
+                  //   initial: entry.getFoodCost,
+                  //   onChanged: entry.setFoodCost,
+                  //   icon: Icons.restaurant,
+                  // ),
                   TextFieldCustom(
                     //TODO: colocar o texto em um arquivo de localização
                     label: 'Limpeza (R\$)',

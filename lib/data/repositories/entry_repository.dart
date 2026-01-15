@@ -1,7 +1,8 @@
-import 'package:driving_profits/data/services/entry_service.dart';
-import 'package:driving_profits/data/services/entry_expense_service.dart';
-import 'package:driving_profits/domain/entry/daily_entry.dart';
 import 'package:result_dart/result_dart.dart';
+
+import 'package:driving_profits/data/services/entry_expense_service.dart';
+import 'package:driving_profits/data/services/entry_service.dart';
+import 'package:driving_profits/domain/entry/daily_entry.dart';
 
 class EntryRepository {
   final EntryService _service;
@@ -17,28 +18,22 @@ class EntryRepository {
       entryId,
       dailyEntry.toMap(),
     );
-    if (updateResult.isError()) return updateResult;
+    if (updateResult.isError()) {
+      return updateResult;
+    }
+
+    final deleteResult = await _entryExpenseService
+        .deleteEntryExpensesByEntryId(entryId);
+
+    if (deleteResult.isError()) {
+      return deleteResult;
+    }
 
     if (dailyEntry.entryExpenses != null &&
         dailyEntry.entryExpenses!.isNotEmpty) {
-      // Delete existing entry expenses
-      final deleteResult = await _entryExpenseService
-          .deleteEntryExpensesByEntryId(entryId);
-      if (deleteResult.isError()) return deleteResult;
-
-      // Insert new entry expenses
       for (final expense in dailyEntry.entryExpenses!) {
-        final data = {
-          'entry_id': entryId,
-          'expense_type': expense.expenseType.index,
-          'charge_type': expense.chargeType.index,
-          'amount': expense.amount,
-          'description': expense.description,
-          'calculated': false, // Not calculated, manual update
-        };
-
         final insertResult = await _entryExpenseService.insertEntryExpense(
-          data,
+          expense.toMap(),
         );
         if (insertResult.isError()) return insertResult;
       }
@@ -49,32 +44,6 @@ class EntryRepository {
 
   AsyncResult<dynamic> deleteEntry(String id) async =>
       await _service.deleteEntry(id);
-
-  AsyncResult closeEntry(DailyEntry entry) async {
-    if (entry.entryExpenses != null && entry.entryExpenses!.isNotEmpty) {
-      //deleção das despesas calculadas antigas antes de inserir as novas
-      // await _service.deleteentryExpensesByEntryId(entry.id);
-
-      //inclusão das despesas calculadas
-      for (final expense in entry.entryExpenses!) {
-        final data = {
-          'entry_id': entry.id,
-          'expense_type': expense.expenseType.index,
-          'charge_type': expense.chargeType.index,
-          'amount': expense.amount,
-          'description': expense.description,
-          'calculated':
-              true, // Sempre true para gastos calculados no fechamento
-        };
-
-        await _entryExpenseService.insertEntryExpense(data);
-      }
-    }
-
-    await updateEntry(entry.id, entry);
-
-    return Success(unit);
-  }
 
   //TODO: Implement getEntryById in EntryService
   Future<DailyEntry> getEntryById(String id) async {

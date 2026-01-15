@@ -14,8 +14,9 @@ class SupabaseService {
     bool ascending = false,
     int? limit,
     int? offset,
+    String? selectFields,
   }) async {
-    var query = _client.from(tableName).select();
+    var query = _client.from(tableName).select(selectFields ?? '*');
 
     if (filters != null) {
       filters.forEach((key, value) {
