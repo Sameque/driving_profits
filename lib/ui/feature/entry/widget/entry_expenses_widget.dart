@@ -1,3 +1,4 @@
+import 'package:driving_profits/core/app_constants.dart';
 import 'package:flutter/material.dart';
 
 import 'package:driving_profits/domain/entry/entry_expense/entry_expense_dto.dart';
@@ -54,8 +55,9 @@ class EntryExpensesWidget extends StatelessWidget {
                 for (final expense in entryExpenses)
                   _buildTableRow(
                     expense.description,
-                    'R\$ ${expense.amount.toStringAsFixed(2).replaceAll('.', ',')}',
+                    AppConstants.formatterCurrency(expense.amount),
                   ),
+                _buildTotalRow(context),
               ],
             ),
           ],
@@ -74,6 +76,47 @@ class EntryExpensesWidget extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0),
           child: Text(value, textAlign: TextAlign.right),
+        ),
+      ],
+    );
+  }
+
+  TableRow _buildTotalRow(BuildContext context) {
+    final total = entryExpenses.fold<double>(
+      0,
+      (sum, expense) => sum + expense.amount,
+    );
+
+    return TableRow(
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
+        border: Border(
+          top: BorderSide(
+            color: Theme.of(context).colorScheme.outlineVariant,
+            width: 2,
+          ),
+        ),
+      ),
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12.0),
+          child: Text(
+            'Total',
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12.0),
+          child: Text(
+            AppConstants.formatterCurrency(total),
+            textAlign: TextAlign.right,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+          ),
         ),
       ],
     );

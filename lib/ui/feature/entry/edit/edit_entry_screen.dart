@@ -213,39 +213,6 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
                   ),
                   const SizedBox(height: 24),
 
-                  // Gastos do Dia
-                  Text(
-                    //TODO: colocar o texto em um arquivo de localização
-                    'Gastos do Dia',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  // TextFieldCustom(
-                  //   //TODO: colocar o texto em um arquivo de localização
-                  //   label: 'Alimentação (R\$)',
-                  //   initial: entry.getFoodCost,
-                  //   onChanged: entry.setFoodCost,
-                  //   icon: Icons.restaurant,
-                  // ),
-                  TextFieldCustom(
-                    //TODO: colocar o texto em um arquivo de localização
-                    label: 'Limpeza (R\$)',
-                    initial: entry.getCleaningCost,
-                    onChanged: entry.setCleaningCost,
-                    icon: Icons.wash,
-                  ),
-                  TextFieldCustom(
-                    //TODO: colocar o texto em um arquivo de localização
-                    label: 'Outros Gastos (R\$)',
-                    initial: entry.getOtherCosts,
-                    onChanged: entry.setOtherCosts,
-                    icon: Icons.more_horiz,
-                  ),
-
-                  const SizedBox(height: 24),
-
                   Text(
                     //TODO: colocar o texto em um arquivo de localização
                     'Calculo Combustível',

@@ -23,9 +23,9 @@ class EntryDto extends ChangeNotifier {
   late double fuelEfficiency;
   late double fuelPrice;
   late int numberOfTrips;
-  late Set<EntryExpenseDto> _entryExpenses = Set<EntryExpenseDto>();
+  late Set<EntryExpenseDto> _entryExpenses = <EntryExpenseDto>{};
 
-  late List<ExpenseDto> _expenses;
+  late List<ExpenseDto> _expenses = [];
 
   EntryDto.start({
     required this.date,
@@ -44,7 +44,7 @@ class EntryDto extends ChangeNotifier {
        status = EntryStatus.open,
        numberOfTrips = 0,
        _expenses = [] {
-    setEntryExpenses(Set<EntryExpenseDto>());
+    setEntryExpenses(<EntryExpenseDto>{});
   }
 
   EntryDto({String? id}) : id = id ?? const Uuid().v4();
@@ -68,7 +68,7 @@ class EntryDto extends ChangeNotifier {
     numberOfTrips = entry.numberOfTrips ?? 0;
 
     final entryExpenses = entry.entryExpenses == null
-        ? Set<EntryExpenseDto>()
+        ? <EntryExpenseDto>{}
         : entry.entryExpenses!
               .map((e) => EntryExpenseDto.fromMap(e.toMap()))
               .toSet();
@@ -121,7 +121,7 @@ class EntryDto extends ChangeNotifier {
       expenseType: ExpenseType.fuel,
       chargeType: ChargeType.valuePerKm,
       amount: fuelCost,
-      description: 'Combustível (Calculado)',
+      description: 'Combustível',
       isCalculated: true,
     );
     addEntryExpense(fuelExpense);
@@ -164,25 +164,6 @@ class EntryDto extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setEndTimeStr(String? value) {
-    if (value == null || value.isEmpty) {
-      endTime = null;
-      return;
-    }
-
-    final parts = value.split(':');
-    if (parts.length == 2) {
-      final hour = int.tryParse(parts[0]);
-      final minute = int.tryParse(parts[1]);
-      if (hour != null && minute != null) {
-        endTime = TimeOfDay(hour: hour, minute: minute);
-      } else {
-        endTime = null;
-      }
-      notifyListeners();
-    }
-  }
-
   void setUberEarnings(String value) {
     uberEarnings = double.tryParse(value.replaceAll(',', '.')) ?? 0.0;
     notifyListeners();
@@ -190,16 +171,6 @@ class EntryDto extends ChangeNotifier {
 
   void setTips(String value) {
     tips = double.tryParse(value.replaceAll(',', '.')) ?? 0.0;
-    notifyListeners();
-  }
-
-  void setCleaningCost(String value) {
-    cleaningCost = double.tryParse(value.replaceAll(',', '.')) ?? 0.0;
-    notifyListeners();
-  }
-
-  void setOtherCosts(String value) {
-    otherCosts = double.tryParse(value.replaceAll(',', '.')) ?? 0.0;
     notifyListeners();
   }
 
@@ -246,11 +217,9 @@ class EntryDto extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setStatus(String value) {
-    status = EntryStatus.values.firstWhere(
-      (e) => e.toString().split('.').last == value,
-      orElse: () => EntryStatus.none,
-    );
+  void setEndDate(DateTime picked) {
+    endDate = picked;
+    notifyListeners();
   }
 
   void setStatusEnum(EntryStatus value) {
@@ -311,9 +280,6 @@ class EntryDto extends ChangeNotifier {
   String get getFuelPrice => fuelPrice.toStringAsFixed(2).replaceAll('.', ',');
   String get getFuelEfficiency =>
       fuelEfficiency.toStringAsFixed(2).replaceAll('.', ',');
-  String get getCleaningCost => cleaningCost.toString().replaceAll('.', ',');
-  String get getOtherCosts =>
-      otherCosts.toStringAsFixed(2).replaceAll('.', ',');
   String get getStatus => status.toString().split('.').last;
   String get getNumberOfTrips => numberOfTrips.toString();
 
@@ -332,7 +298,6 @@ class EntryDto extends ChangeNotifier {
       ((kmStart == null || kmStart! <= 0) || (kmEnd == null || kmEnd! <= 0))
       ? 0
       : (kmEnd! - kmStart!);
-  double get earningsPerKm => totalKm > 0 ? netEarnings / totalKm : 0.0;
 
   DateTime get getStartDateTime => DateTime(
     date.year,
@@ -401,7 +366,7 @@ class EntryDto extends ChangeNotifier {
 
   @override
   String toString() {
-    return 'EntryDto{id: $id, date: $date, endDate: $endDate, startTime: $startTime, endTime: $endTime, kmStart: $kmStart, kmEnd: $kmEnd, uberEarnings: $uberEarnings, tips: $tips, cleaningCost: $cleaningCost, otherCosts: $otherCosts, status: $status, numberOfTrips: $numberOfTrips ,fuelEfficiency: $fuelEfficiency, fuelPrice: $fuelPrice, entryExpenses: $getEntryExpenses, expenses: $_expenses, totalEarnings: $totalEarnings, netEarnings: $netEarnings, totalKm: $totalKm, earningsPerKm: $earningsPerKm, totalHoursWorked: $totalHoursWorked, totalHoursWorkedStr: $totalHoursWorkedStr}';
+    return 'EntryDto{id: $id, date: $date, endDate: $endDate, startTime: $startTime, endTime: $endTime, kmStart: $kmStart, kmEnd: $kmEnd, uberEarnings: $uberEarnings, tips: $tips, cleaningCost: $cleaningCost, otherCosts: $otherCosts, status: $status, numberOfTrips: $numberOfTrips ,fuelEfficiency: $fuelEfficiency, fuelPrice: $fuelPrice, entryExpenses: $getEntryExpenses, expenses: $_expenses, totalEarnings: $totalEarnings, netEarnings: $netEarnings, totalKm: $totalKm, totalHoursWorked: $totalHoursWorked, totalHoursWorkedStr: $totalHoursWorkedStr}';
   }
 
   @override
@@ -422,27 +387,8 @@ class EntryDto extends ChangeNotifier {
       totalEarnings.hashCode ^
       netEarnings.hashCode ^
       totalKm.hashCode ^
-      earningsPerKm.hashCode ^
       totalHoursWorked.hashCode ^
       totalHoursWorkedStr.hashCode;
-
-  TimeOfDay? parseTime(String? value) {
-    if (value == null || value.isEmpty) return null;
-    final parts = value.split(':');
-    if (parts.length == 2) {
-      final hour = int.tryParse(parts[0]);
-      final minute = int.tryParse(parts[1]);
-      if (hour != null && minute != null) {
-        return TimeOfDay(hour: hour, minute: minute);
-      }
-    }
-    return null;
-  }
-
-  void setEndDate(DateTime picked) {
-    endDate = picked;
-    notifyListeners();
-  }
 
   EntryDto copy() {
     final copyDto = EntryDto(id: id);
@@ -463,5 +409,10 @@ class EntryDto extends ChangeNotifier {
     copyDto.setEntryExpenses(_entryExpenses);
     copyDto._expenses = _expenses;
     return copyDto;
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return super == other;
   }
 }

@@ -372,50 +372,20 @@ class _CloseEntryScreenState extends State<CloseEntryScreen> {
                                 ),
                                 _buildTableRow(
                                   'Ganhos',
-                                  'R\$ ${widget.entryDto.totalEarnings.toStringAsFixed(2).replaceAll('.', ',')}',
+                                  AppConstants.formatterCurrency(
+                                    widget.entryDto.totalEarnings,
+                                  ),
                                 ),
-                                TableRow(
-                                  children: [
-                                    const Padding(
-                                      padding: EdgeInsets.symmetric(
-                                        vertical: 8.0,
-                                      ),
-                                      child: Text('Lucro Líquido'),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 8.0,
-                                      ),
-                                      child: Text(
-                                        'R\$ ${widget.entryDto.netEarnings.toStringAsFixed(2).replaceAll('.', ',')}',
-                                        textAlign: TextAlign.right,
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color:
-                                              widget.entryDto.netEarnings >= 0
-                                              ? Colors.green
-                                              : Colors.red,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
+                                _buildTotalRow(
+                                  'Lucro Líquido',
+                                  AppConstants.formatterCurrency(
+                                    widget.entryDto.netEarnings,
+                                  ),
+                                  widget.entryDto.netEarnings >= 0
+                                      ? Colors.green
+                                      : Colors.red,
                                 ),
                               ],
-                            ),
-                            const SizedBox(height: 32),
-
-                            // Botão principal para salvar
-                            FilledButton(
-                              onPressed: viewmodel.closeCommand.value.isRunning
-                                  ? null
-                                  : _save,
-                              style: FilledButton.styleFrom(
-                                minimumSize: const Size.fromHeight(50),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                              child: const Text('Fechar Jornada'),
                             ),
                           ],
                         ),
@@ -431,6 +401,20 @@ class _CloseEntryScreenState extends State<CloseEntryScreen> {
               : const SizedBox(),
         ],
       ),
+
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: FilledButton(
+          onPressed: viewmodel.closeCommand.value.isRunning ? null : _save,
+          style: FilledButton.styleFrom(
+            minimumSize: const Size.fromHeight(50),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+          child: const Text('Fechar Jornada'),
+        ),
+      ),
     );
   }
 
@@ -444,6 +428,42 @@ class _CloseEntryScreenState extends State<CloseEntryScreen> {
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0),
           child: Text(value, textAlign: TextAlign.right),
+        ),
+      ],
+    );
+  }
+
+  TableRow _buildTotalRow(String label, String value, Color color) {
+    return TableRow(
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        border: Border(
+          top: BorderSide(
+            color: Theme.of(context).colorScheme.outlineVariant,
+            width: 2,
+          ),
+        ),
+      ),
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12.0),
+          child: Text(
+            label,
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12.0),
+          child: Text(
+            value,
+            textAlign: TextAlign.right,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
         ),
       ],
     );

@@ -65,67 +65,75 @@ class _EntryExpenseListState extends State<EntryExpenseList> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Gastos Mensais')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: ListenableBuilder(
-          listenable: widget.entryDto,
-          builder: (context, _) {
-            return ListView.separated(
-              itemCount: widget.entryDto.getEntryExpenses.length,
-              separatorBuilder: (context, index) => const Divider(height: 1),
-              itemBuilder: (context, index) {
-                final expense = widget.entryDto.getEntryExpenses.elementAt(
-                  index,
-                );
+      body: Column(
+        children: [
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: ListenableBuilder(
+                listenable: widget.entryDto,
+                builder: (context, _) {
+                  return ListView.separated(
+                    itemCount: widget.entryDto.getEntryExpenses.length,
+                    separatorBuilder: (context, index) =>
+                        const Divider(height: 1),
+                    itemBuilder: (context, index) {
+                      final expense = widget.entryDto.getEntryExpenses
+                          .elementAt(index);
 
-                return Dismissible(
-                  key: ValueKey(expense),
-                  direction: DismissDirection.endToStart,
-                  confirmDismiss: (direction) async {
-                    return await showDialog<bool>(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return AlertDialog(
-                          title: const Text('Confirmar exclusão'),
-                          content: const Text(
-                            'Tem certeza que deseja apagar este gasto?',
+                      return Dismissible(
+                        key: ValueKey(expense),
+                        direction: DismissDirection.endToStart,
+                        confirmDismiss: (direction) async {
+                          return await showDialog<bool>(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                title: const Text('Confirmar exclusão'),
+                                content: const Text(
+                                  'Tem certeza que deseja apagar este gasto?',
+                                ),
+                                actions: <Widget>[
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.of(context).pop(false),
+                                    child: const Text('Cancelar'),
+                                  ),
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.of(context).pop(true),
+                                    child: const Text('Apagar'),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        },
+                        background: Container(
+                          color: Colors.red,
+                          alignment: Alignment.centerRight,
+                          padding: const EdgeInsets.only(right: 20.0),
+                          child: const Icon(Icons.delete, color: Colors.white),
+                        ),
+                        onDismissed: (direction) async {
+                          widget.entryDto.removeExpense(expense);
+                        },
+                        child: ListTile(
+                          leading: Icon(expense.expenseType.icon),
+                          title: Text(expense.expenseType.descricao),
+                          subtitle: Text(expense.description),
+                          trailing: Text(
+                            AppConstants.formatterCurrency(expense.amount),
                           ),
-                          actions: <Widget>[
-                            TextButton(
-                              onPressed: () => Navigator.of(context).pop(false),
-                              child: const Text('Cancelar'),
-                            ),
-                            TextButton(
-                              onPressed: () => Navigator.of(context).pop(true),
-                              child: const Text('Apagar'),
-                            ),
-                          ],
-                        );
-                      },
-                    );
-                  },
-                  background: Container(
-                    color: Colors.red,
-                    alignment: Alignment.centerRight,
-                    padding: const EdgeInsets.only(right: 20.0),
-                    child: const Icon(Icons.delete, color: Colors.white),
-                  ),
-                  onDismissed: (direction) async {
-                    widget.entryDto.removeExpense(expense);
-                  },
-                  child: ListTile(
-                    leading: Icon(expense.expenseType.icon),
-                    title: Text(expense.expenseType.descricao),
-                    subtitle: Text(expense.description),
-                    trailing: Text(
-                      AppConstants.formatterCurrency(expense.amount),
-                    ),
-                  ),
-                );
-              },
-            );
-          },
-        ),
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -141,22 +149,69 @@ class _EntryExpenseListState extends State<EntryExpenseList> {
         },
         child: const Icon(Icons.add),
       ),
-      bottomNavigationBar: Container(
-        padding: const EdgeInsets.all(16.0),
-        child: FilledButton(
-          onPressed: viewmodel.updateEntryExpenseCommand.value.isRunning
-              ? null
-              : () => viewmodel.updateEntryExpenseCommand.execute(
-                  widget.entryDto,
+      bottomNavigationBar: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListenableBuilder(
+            listenable: widget.entryDto,
+            builder: (context, _) {
+              final total = widget.entryDto.getEntryExpenses.fold<double>(
+                0,
+                (sum, expense) => sum + expense.amount,
+              );
+
+              return Container(
+                padding: const EdgeInsets.all(16.0),
+                decoration: BoxDecoration(
+                  border: Border(
+                    top: BorderSide(
+                      color: Colors.grey.withOpacity(0.3),
+                      width: 1,
+                    ),
+                  ),
+                  color: Colors.grey.withOpacity(0.05),
                 ),
-          style: FilledButton.styleFrom(
-            minimumSize: const Size.fromHeight(50),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Total de Gastos:',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      AppConstants.formatterCurrency(total),
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+          Container(
+            padding: const EdgeInsets.all(16.0),
+            child: FilledButton(
+              onPressed: viewmodel.updateEntryExpenseCommand.value.isRunning
+                  ? null
+                  : () => viewmodel.updateEntryExpenseCommand.execute(
+                      widget.entryDto,
+                    ),
+              style: FilledButton.styleFrom(
+                minimumSize: const Size.fromHeight(50),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text('Salvar Gastos'),
             ),
           ),
-          child: const Text('Salvar Gastos'),
-        ),
+        ],
       ),
     );
   }
