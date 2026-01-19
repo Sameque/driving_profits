@@ -45,7 +45,7 @@ class CloseEntryValidations {
   static String? validateEndTimeAfterStartTime(EntryDto entryDto) {
     if (entryDto.endTime != null && entryDto.endDate != null) {
       if (_isEndDateTimeBeforeStartDateTime(
-        startDate: entryDto.date,
+        startDate: entryDto.startDate,
         startTime: entryDto.startTime,
         endDate: entryDto.endDate!,
         endTime: entryDto.endTime!,
@@ -93,7 +93,7 @@ class CloseEntryValidations {
 
     final timeComparisonError = validateEndTimeAfterStartTime(entryDto);
     if (timeComparisonError != null) {
-      return 'Data/hora final deve ser maior que a inicial (${_formatDateTime(entryDto.date, entryDto.startTime, context)})';
+      return 'Data/hora final deve ser maior que a inicial (${_formatDateTime(entryDto.startDate, entryDto.startTime, context)})';
     }
 
     return null;

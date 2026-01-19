@@ -70,7 +70,7 @@ class _ExpenseListScreenState extends State<ExpenseListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Gastos Mensais')),
+      appBar: AppBar(title: const Text('Provisionamento Programado')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: ListenableBuilder(

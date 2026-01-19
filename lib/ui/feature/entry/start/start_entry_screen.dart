@@ -94,7 +94,7 @@ class _StartEntryScreenState extends State<StartEntryScreen> {
       final int kmStart = int.parse(_kmStartController.text);
 
       final entryStart = EntryDto.start(
-        date: _selectedDate,
+        startDate: _selectedDate,
         startTime: _startTime,
         kmStart: kmStart,
       );

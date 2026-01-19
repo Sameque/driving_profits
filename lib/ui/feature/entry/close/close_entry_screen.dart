@@ -402,18 +402,65 @@ class _CloseEntryScreenState extends State<CloseEntryScreen> {
         ],
       ),
 
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: FilledButton(
-          onPressed: viewmodel.closeCommand.value.isRunning ? null : _save,
-          style: FilledButton.styleFrom(
-            minimumSize: const Size.fromHeight(50),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+      bottomNavigationBar: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListenableBuilder(
+            listenable: widget.entryDto,
+            builder: (context, _) {
+              final total = widget.entryDto.getEntryExpenses.fold<double>(
+                0,
+                (sum, expense) => sum + expense.amount,
+              );
+
+              return Container(
+                padding: const EdgeInsets.all(16.0),
+                decoration: BoxDecoration(
+                  border: Border(
+                    top: BorderSide(
+                      color: Colors.grey.withOpacity(0.3),
+                      width: 1,
+                    ),
+                  ),
+                  color: Colors.grey.withOpacity(0.05),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Total de Gastos:',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      AppConstants.formatterCurrency(total),
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+          Container(
+            padding: const EdgeInsets.all(16.0),
+            child: FilledButton(
+              onPressed: viewmodel.closeCommand.value.isRunning ? null : _save,
+              style: FilledButton.styleFrom(
+                minimumSize: const Size.fromHeight(50),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text('Fechar Jornada'),
             ),
           ),
-          child: const Text('Fechar Jornada'),
-        ),
+        ],
       ),
     );
   }

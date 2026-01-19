@@ -67,16 +67,29 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
     }
   }
 
-  Future<void> _selectDate(BuildContext context) async {
+  Future<void> _selectStartDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: entry.getDate,
+      initialDate: entry.getStartDate,
       firstDate: DateTime(2020),
       lastDate: DateTime.now(),
       locale: const Locale('pt', 'BR'),
     );
-    if (picked != null && picked != entry.date) {
-      entry.setDate(picked);
+    if (picked != null && picked != entry.startDate) {
+      entry.setStartDate(picked);
+    }
+  }
+
+  Future<void> _selectEndDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: entry.getEndDate ?? DateTime.now(),
+      firstDate: DateTime(2020),
+      lastDate: DateTime.now(),
+      locale: const Locale('pt', 'BR'),
+    );
+    if (picked != null && picked != entry.startDate) {
+      entry.setEndDate(picked);
     }
   }
 
@@ -165,22 +178,60 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
               child: ListView(
                 padding: const EdgeInsets.all(16.0),
                 children: [
-                  // Data
-                  ListTile(
-                    title: const Text('Data'),
-                    subtitle: Text(DateFormat('dd/MM/yyyy').format(entry.date)),
-                    trailing: const Icon(Icons.calendar_today),
-                    onTap: () => _selectDate(context),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      side: BorderSide(
-                        color: Theme.of(context).colorScheme.outlineVariant,
-                      ),
-                    ),
-                    tileColor: Theme.of(context)
-                        .colorScheme
-                        .surfaceContainerHighest
-                        .withValues(alpha: 0.1),
+                  // Start Data
+                  ListenableBuilder(
+                    listenable: entry,
+                    builder: (context, _) {
+                      return Column(
+                        children: [
+                          ListTile(
+                            title: const Text('Data Inicial'),
+                            subtitle: Text(
+                              DateFormat('dd/MM/yyyy').format(entry.startDate),
+                            ),
+                            trailing: const Icon(Icons.calendar_today),
+                            onTap: () => _selectStartDate(context),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              side: BorderSide(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.outlineVariant,
+                              ),
+                            ),
+                            tileColor: Theme.of(context)
+                                .colorScheme
+                                .surfaceContainerHighest
+                                .withValues(alpha: 0.1),
+                          ),
+
+                          const SizedBox(height: 24),
+                          // End Data
+                          ListTile(
+                            title: const Text('Data Final'),
+                            subtitle: Text(
+                              DateFormat(
+                                'dd/MM/yyyy',
+                              ).format(entry.endDate ?? DateTime.now()),
+                            ),
+                            trailing: const Icon(Icons.calendar_today),
+                            onTap: () => _selectEndDate(context),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              side: BorderSide(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.outlineVariant,
+                              ),
+                            ),
+                            tileColor: Theme.of(context)
+                                .colorScheme
+                                .surfaceContainerHighest
+                                .withValues(alpha: 0.1),
+                          ),
+                        ],
+                      );
+                    },
                   ),
 
                   const SizedBox(height: 24),

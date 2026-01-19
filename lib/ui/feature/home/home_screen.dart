@@ -89,7 +89,7 @@ class _HomeScreenState extends State<HomeScreen> {
             BottomNavigationBarItem(
               icon: Icon(Icons.attach_money),
               activeIcon: Icon(Icons.attach_money_rounded),
-              label: 'Gastos',
+              label: 'Provisionamentos',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.build),

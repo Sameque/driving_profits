@@ -9,7 +9,7 @@ import 'package:uuid/uuid.dart';
 
 class EntryDto extends ChangeNotifier {
   final String id;
-  late DateTime date;
+  late DateTime startDate;
   late DateTime? endDate;
   late TimeOfDay startTime;
   late TimeOfDay? endTime;
@@ -28,7 +28,7 @@ class EntryDto extends ChangeNotifier {
   late List<ExpenseDto> _expenses = [];
 
   EntryDto.start({
-    required this.date,
+    required this.startDate,
     required this.startTime,
     required int this.kmStart,
   }) : id = const Uuid().v4(),
@@ -50,7 +50,7 @@ class EntryDto extends ChangeNotifier {
   EntryDto({String? id}) : id = id ?? const Uuid().v4();
 
   EntryDto.fromDailyEntry(DailyEntry entry) : id = entry.id {
-    date = entry.startDate;
+    startDate = entry.startDate;
     endDate = entry.endDate;
     startTime =
         entry.startTime ??
@@ -127,8 +127,8 @@ class EntryDto extends ChangeNotifier {
     addEntryExpense(fuelExpense);
   }
 
-  void setDate(DateTime value) {
-    date = value;
+  void setStartDate(DateTime value) {
+    startDate = value;
     notifyListeners();
   }
 
@@ -262,7 +262,7 @@ class EntryDto extends ChangeNotifier {
   //getters in string format
   Set<EntryExpenseDto> get getEntryExpenses => _entryExpenses;
 
-  String get getDateStr => date.toIso8601String().split('T').first;
+  String get getDateStr => startDate.toIso8601String().split('T').first;
   String get getEndDateStr =>
       endDate == null ? '' : endDate!.toIso8601String().split('T').first;
   String get getStartTimeStr =>
@@ -284,7 +284,7 @@ class EntryDto extends ChangeNotifier {
   String get getNumberOfTrips => numberOfTrips.toString();
 
   //computed properties
-  DateTime get getDate => date;
+  DateTime get getStartDate => startDate;
   DateTime? get getEndDate => endDate;
   TimeOfDay? get getEndTime => endTime;
   TimeOfDay? get getStartTime => startTime;
@@ -300,9 +300,9 @@ class EntryDto extends ChangeNotifier {
       : (kmEnd! - kmStart!);
 
   DateTime get getStartDateTime => DateTime(
-    date.year,
-    date.month,
-    date.day,
+    startDate.year,
+    startDate.month,
+    startDate.day,
     startTime.hour,
     startTime.minute,
   );
@@ -366,13 +366,13 @@ class EntryDto extends ChangeNotifier {
 
   @override
   String toString() {
-    return 'EntryDto{id: $id, date: $date, endDate: $endDate, startTime: $startTime, endTime: $endTime, kmStart: $kmStart, kmEnd: $kmEnd, uberEarnings: $uberEarnings, tips: $tips, cleaningCost: $cleaningCost, otherCosts: $otherCosts, status: $status, numberOfTrips: $numberOfTrips ,fuelEfficiency: $fuelEfficiency, fuelPrice: $fuelPrice, entryExpenses: $getEntryExpenses, expenses: $_expenses, totalEarnings: $totalEarnings, netEarnings: $netEarnings, totalKm: $totalKm, totalHoursWorked: $totalHoursWorked, totalHoursWorkedStr: $totalHoursWorkedStr}';
+    return 'EntryDto{id: $id, date: $startDate, endDate: $endDate, startTime: $startTime, endTime: $endTime, kmStart: $kmStart, kmEnd: $kmEnd, uberEarnings: $uberEarnings, tips: $tips, cleaningCost: $cleaningCost, otherCosts: $otherCosts, status: $status, numberOfTrips: $numberOfTrips ,fuelEfficiency: $fuelEfficiency, fuelPrice: $fuelPrice, entryExpenses: $getEntryExpenses, expenses: $_expenses, totalEarnings: $totalEarnings, netEarnings: $netEarnings, totalKm: $totalKm, totalHoursWorked: $totalHoursWorked, totalHoursWorkedStr: $totalHoursWorkedStr}';
   }
 
   @override
   int get hashCode =>
       id.hashCode ^
-      date.hashCode ^
+      startDate.hashCode ^
       startTime.hashCode ^
       kmStart.hashCode ^
       uberEarnings.hashCode ^
@@ -392,7 +392,7 @@ class EntryDto extends ChangeNotifier {
 
   EntryDto copy() {
     final copyDto = EntryDto(id: id);
-    copyDto.date = date;
+    copyDto.startDate = startDate;
     copyDto.endDate = endDate;
     copyDto.startTime = startTime;
     copyDto.endTime = endTime;

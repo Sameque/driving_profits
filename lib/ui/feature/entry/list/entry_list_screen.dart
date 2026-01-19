@@ -296,7 +296,7 @@ class _EntryListScreenState extends State<EntryListScreen> {
                                 DateFormat(
                                   'dd\nMMM',
                                   'pt_BR',
-                                ).format(entryDto.date),
+                                ).format(entryDto.startDate),
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,

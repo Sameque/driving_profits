@@ -20,14 +20,14 @@ class EntryListViewmodel extends ChangeNotifier {
     final index = _entries.indexWhere((entry) => entry.id == updatedEntry.id);
     if (index > -1) {
       _entries[index] = updatedEntry;
-      _entries.sort((a, b) => b.date.compareTo(a.date));
+      _entries.sort((a, b) => b.startDate.compareTo(a.startDate));
       fetchCommand.notifyListeners();
     }
   }
 
   Future addEntryLocal(EntryDto newEntry) async {
     _entries.add(newEntry);
-    _entries.sort((a, b) => b.date.compareTo(a.date));
+    _entries.sort((a, b) => b.startDate.compareTo(a.startDate));
     fetchCommand.notifyListeners();
   }
 
