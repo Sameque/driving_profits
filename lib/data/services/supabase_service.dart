@@ -1,5 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'package:driving_profits/data/filters/filter.dart';
+
 class SupabaseService {
   final String tableName;
   late final SupabaseClient _client;
@@ -9,7 +11,7 @@ class SupabaseService {
   }
 
   Future<List<Map<String, dynamic>>> query({
-    Map<String, dynamic>? filters,
+    List<Filter>? filters,
     String? orderBy,
     bool ascending = false,
     int? limit,
@@ -19,19 +21,13 @@ class SupabaseService {
     var query = _client.from(tableName).select(selectFields ?? '*');
 
     if (filters != null) {
-      filters.forEach((key, value) {
-        if (value == null) {
-          // busca onde coluna IS NULL
-          query = query.filter(key, 'is', value);
-          // is_(key, 'null');
-        } else if (value is List) {
-          // IN (val1, val2, ...)
-          query = query.filter(key, 'eq', value);
-        } else {
-          // igualdade simples
-          query = query.eq(key, value);
-        }
-      });
+      for (var filter in filters) {
+        query = query.filter(
+          filter.column,
+          filter.operator.value,
+          filter.value,
+        );
+      }
     }
 
     late PostgrestTransformBuilder<PostgrestList> transformBuilder;

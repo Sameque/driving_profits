@@ -1,5 +1,6 @@
 import 'package:result_dart/result_dart.dart';
 
+import 'package:driving_profits/data/filters/entry_filter.dart';
 import 'package:driving_profits/data/services/entry_expense_service.dart';
 import 'package:driving_profits/data/services/entry_service.dart';
 import 'package:driving_profits/domain/entry/daily_entry.dart';
@@ -56,6 +57,18 @@ class EntryRepository {
     return data
         .map((e) => DailyEntry.fromMap(e))
         .firstWhere((entry) => entry.id == id);
+  }
+
+  AsyncResult<List<DailyEntry>> getEntriesByFilter(EntryFilter filter) async {
+    final data = await _service.getEntriesByFilter(filters: filter);
+
+    return data.map((result) {
+      final entries = result;
+      return List.generate(
+        entries.length,
+        (i) => DailyEntry.fromMap(entries[i]),
+      );
+    });
   }
 
   AsyncResult<List<DailyEntry>> getEntries() async {

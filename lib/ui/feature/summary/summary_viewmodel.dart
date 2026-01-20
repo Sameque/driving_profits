@@ -1,10 +1,12 @@
 import 'package:flutter/cupertino.dart';
+import 'package:result_command/result_command.dart';
+import 'package:result_dart/result_dart.dart';
+
+import 'package:driving_profits/data/filters/entry_filter.dart';
 import 'package:driving_profits/data/repositories/entry_repository.dart';
 import 'package:driving_profits/domain/entry/entry_status.dart';
 import 'package:driving_profits/ui/feature/summary/entry_summary_model.dart';
 import 'package:driving_profits/ui/feature/summary/widget/period.dart';
-import 'package:result_command/result_command.dart';
-import 'package:result_dart/result_dart.dart';
 
 class SummaryViewmodel extends ChangeNotifier {
   final EntryRepository _repository;
@@ -19,13 +21,12 @@ class SummaryViewmodel extends ChangeNotifier {
 
   Period get selectedPeriod => _selectedPeriod;
 
-  AsyncResult _fetchEntries() async {
-    final entries = await _repository.getEntries();
+  AsyncResult _fetchEntries(EntryFilter filter) async {
+    final entries = await _repository.getEntriesByFilter(filter);
 
     _entrySummaryModel = entries
         .getOrThrow()
         .map((e) => EntrySummaryModel.fromDailyEntry(e))
-        .where((e) => e.status == EntryStatus.closed)
         .cast<EntrySummaryModel>()
         .toList();
 
@@ -33,21 +34,24 @@ class SummaryViewmodel extends ChangeNotifier {
   }
 
   AsyncResult _onPeriodChanged(Period? newPeriod) async {
-    if (newPeriod == null || newPeriod == _selectedPeriod) {
+    if (newPeriod == null ||
+        newPeriod == Period.none ||
+        newPeriod == _selectedPeriod) {
       return Success(_entrySummaryModel);
     }
 
     _selectedPeriod = newPeriod;
-    await _fetchEntries();
 
-    _entrySummaryModel = _filterEntriesByPeriod(newPeriod);
+    final EntryFilter filters = _filterEntriesByPeriod(newPeriod);
+
+    await _fetchEntries(filters);
 
     Future.delayed(const Duration(milliseconds: 800), () {});
 
     return Success(unit);
   }
 
-  List<EntrySummaryModel> _filterEntriesByPeriod(Period period) {
+  EntryFilter _filterEntriesByPeriod(Period period) {
     DateTime startDateSearch = DateTime.now();
     switch (period) {
       case Period.daily:
@@ -71,19 +75,13 @@ class SummaryViewmodel extends ChangeNotifier {
         startDateSearch = DateTime(DateTime.now().year, 1, 1);
         break;
       case Period.none:
-        // TODO: Handle this case.
         throw UnimplementedError();
     }
 
-    return _entrySummaryModel
-        .where(
-          (entry) =>
-              entry.date.isAtSameMomentAs(startDateSearch) &&
-                  entry.status == EntryStatus.closed ||
-              entry.date.isAfter(startDateSearch) &&
-                  entry.status == EntryStatus.closed,
-        )
-        .toList();
+    return EntryFilter(
+      startDateGte: startDateSearch,
+      statusEq: EntryStatus.closed,
+    );
   }
 
   DateTime _startOfWeek(DateTime date) {
@@ -98,7 +96,7 @@ class SummaryViewmodel extends ChangeNotifier {
   double get totalExpenses {
     return _entrySummaryModel.fold(
       0.0,
-      (sum, item) => sum + item.totalExpenses,
+      (sum, item) => sum + item.totalEntryExpenses,
     );
   }
 

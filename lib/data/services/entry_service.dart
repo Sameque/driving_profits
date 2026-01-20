@@ -2,6 +2,8 @@ import 'dart:developer';
 
 import 'package:result_dart/result_dart.dart';
 
+import 'package:driving_profits/data/filters/entry_filter.dart';
+import 'package:driving_profits/data/filters/filter.dart';
 import 'package:driving_profits/data/services/supabase_service.dart';
 
 class EntryService {
@@ -63,20 +65,31 @@ class EntryService {
     }
   }
 
-  Future<List<dynamic>> getEntriesByFilter({
-    Map<String, dynamic>? filters,
+  AsyncResult<List<dynamic>> getEntriesByFilter({
+    EntryFilter? filters,
     String? orderBy,
     int? limit,
     int? offset,
     bool ascending = false,
   }) async {
-    return await supabaseService.query(
-      filters: filters,
-      orderBy: orderBy,
-      limit: limit,
-      offset: offset,
-      ascending: ascending,
-    );
+    try {
+      final List<Filter>? filterMap = filters?.toFilterList();
+      final result = await supabaseService.query(
+        filters: filterMap,
+        selectFields: '*, entry_expenses(*)',
+        orderBy: orderBy,
+        limit: limit,
+        offset: offset,
+        ascending: ascending,
+      );
+
+      return Success(result);
+    } on Exception catch (e) {
+      return Failure(e);
+    } catch (e, s) {
+      log('Erro desconhecido ao consultar entry', error: e, stackTrace: s);
+      return Failure(Exception('Erro desconhecido'));
+    }
   }
 
   AsyncResult<dynamic> insertCalculatedExpense(dynamic data) async {
