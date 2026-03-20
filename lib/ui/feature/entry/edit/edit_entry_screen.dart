@@ -1,15 +1,18 @@
-import 'package:driving_profits/configuration/dependecies.dart';
-import 'package:driving_profits/domain/entry/validations/edit_entry_validations.dart';
-import 'package:driving_profits/ui/widget/app_bar_screen_form.dart';
-import 'package:driving_profits/ui/widget/text_field_custom.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
+import 'package:result_command/result_command.dart';
+
+import 'package:driving_profits/configuration/dependecies.dart';
+import 'package:driving_profits/domain/entry/entry_dto.dart';
+import 'package:driving_profits/domain/entry/validations/edit_entry_validations.dart';
+import 'package:driving_profits/domain/expense/dtos/expense_dto.dart';
 import 'package:driving_profits/l10n/app_localizations.dart';
 import 'package:driving_profits/ui/feature/entry/edit/edit_entry_viewmodel.dart';
-import 'package:driving_profits/domain/entry/entry_dto.dart';
+import 'package:driving_profits/ui/feature/entry/widget/entry_expenses_widget.dart';
+import 'package:driving_profits/ui/widget/app_bar_screen_form.dart';
 import 'package:driving_profits/ui/widget/custom_snackbar.dart';
-import 'package:result_command/result_command.dart';
+import 'package:driving_profits/ui/widget/text_field_custom.dart';
 
 class EditEntryScreen extends StatefulWidget {
   final EntryDto entryDto;
@@ -35,6 +38,10 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
     viewmodel.updateCommand.addListener(_listanable);
 
     entry.addListener(() => viewmodel.markAsUnsaved());
+
+    viewmodel.getExpensesCommand.addListener(_loadExpenses);
+
+    viewmodel.getExpensesCommand.execute();
   }
 
   @override
@@ -64,6 +71,24 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
           message: 'Jornada atualizada com sucesso!',
         );
       }
+    }
+  }
+
+  void _loadExpenses() async {
+    if (viewmodel.getExpensesCommand.value.isRunning) return;
+
+    if (viewmodel.getExpensesCommand.value.isSuccess) {
+      final result =
+          viewmodel.getExpensesCommand.value
+              as SuccessCommand<List<ExpenseDto>>;
+      widget.entryDto.setExpense(result.value);
+    }
+
+    if (viewmodel.getExpensesCommand.value.isFailure) {
+      CustomSnackBar.error(
+        context: context,
+        message: 'Erro ao carregar despesas calculadas.',
+      );
     }
   }
 
@@ -333,7 +358,7 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
                         EditEntryValidations.validateNumberOfTrips(entry),
                   ),
                   ListenableBuilder(
-                    listenable: viewmodel,
+                    listenable: entry,
                     builder: (context, _) {
                       return Column(
                         children: [
@@ -400,6 +425,18 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
                                 .colorScheme
                                 .surfaceContainerHighest
                                 .withValues(alpha: 0.1),
+                          ),
+
+                          const SizedBox(height: 32),
+
+                          // Quadro de Despesas Calculadas
+                          ListenableBuilder(
+                            listenable: widget.entryDto,
+                            builder: (context, child) {
+                              return EntryExpensesWidget(
+                                entryExpenses: widget.entryDto.getEntryExpenses,
+                              );
+                            },
                           ),
                         ],
                       );

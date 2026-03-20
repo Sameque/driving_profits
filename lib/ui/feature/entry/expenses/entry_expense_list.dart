@@ -165,11 +165,11 @@ class _EntryExpenseListState extends State<EntryExpenseList> {
                 decoration: BoxDecoration(
                   border: Border(
                     top: BorderSide(
-                      color: Colors.grey.withOpacity(0.3),
+                      color: Colors.grey..withValues(alpha: 0.3),
                       width: 1,
                     ),
                   ),
-                  color: Colors.grey.withOpacity(0.05),
+                  color: Colors.grey..withValues(alpha: 0.5),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,

@@ -3,7 +3,6 @@ import 'package:driving_profits/domain/entry/daily_entry.dart';
 import 'package:driving_profits/domain/entry/entry_dto.dart';
 import 'package:result_command/result_command.dart';
 import 'package:result_dart/result_dart.dart';
-import 'package:result_dart/src/types.dart';
 
 class EntryExpenseListViewmodel {
   final EntryRepository _repository;

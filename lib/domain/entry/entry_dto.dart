@@ -1,11 +1,12 @@
-import 'package:driving_profits/domain/entry/entry_expense/entry_expense_dto.dart';
+import 'package:flutter/material.dart';
+import 'package:uuid/uuid.dart';
+
 import 'package:driving_profits/domain/entry/daily_entry.dart';
+import 'package:driving_profits/domain/entry/entry_expense/entry_expense_dto.dart';
+import 'package:driving_profits/domain/entry/entry_status.dart';
 import 'package:driving_profits/domain/expense/charge_type.dart';
 import 'package:driving_profits/domain/expense/dtos/expense_dto.dart';
 import 'package:driving_profits/domain/expense/expense_type.dart';
-import 'package:flutter/material.dart';
-import 'package:driving_profits/domain/entry/entry_status.dart';
-import 'package:uuid/uuid.dart';
 
 class EntryDto extends ChangeNotifier {
   final String id;
@@ -273,7 +274,7 @@ class EntryDto extends ChangeNotifier {
       : '';
 
   String get getKmStart => kmStart?.toString() ?? '';
-  String get getKmEnd => kmEnd == null || kmEnd! <= 0 ? '' : kmEnd.toString();
+  String get getKmEnd => kmEnd == null || kmEnd! <= 0 ? '0' : kmEnd.toString();
   String get getUberEarnings =>
       uberEarnings.toStringAsFixed(2).replaceAll('.', ',');
   String get getTips => tips.toStringAsFixed(2).replaceAll('.', ',');
@@ -369,27 +370,6 @@ class EntryDto extends ChangeNotifier {
     return 'EntryDto{id: $id, date: $startDate, endDate: $endDate, startTime: $startTime, endTime: $endTime, kmStart: $kmStart, kmEnd: $kmEnd, uberEarnings: $uberEarnings, tips: $tips, cleaningCost: $cleaningCost, otherCosts: $otherCosts, status: $status, numberOfTrips: $numberOfTrips ,fuelEfficiency: $fuelEfficiency, fuelPrice: $fuelPrice, entryExpenses: $getEntryExpenses, expenses: $_expenses, totalEarnings: $totalEarnings, netEarnings: $netEarnings, totalKm: $totalKm, totalHoursWorked: $totalHoursWorked, totalHoursWorkedStr: $totalHoursWorkedStr}';
   }
 
-  @override
-  int get hashCode =>
-      id.hashCode ^
-      startDate.hashCode ^
-      startTime.hashCode ^
-      kmStart.hashCode ^
-      uberEarnings.hashCode ^
-      tips.hashCode ^
-      cleaningCost.hashCode ^
-      otherCosts.hashCode ^
-      status.hashCode ^
-      numberOfTrips.hashCode ^
-      fuelEfficiency.hashCode ^
-      fuelPrice.hashCode ^
-      _entryExpenses.hashCode ^
-      totalEarnings.hashCode ^
-      netEarnings.hashCode ^
-      totalKm.hashCode ^
-      totalHoursWorked.hashCode ^
-      totalHoursWorkedStr.hashCode;
-
   EntryDto copy() {
     final copyDto = EntryDto(id: id);
     copyDto.startDate = startDate;
@@ -409,10 +389,5 @@ class EntryDto extends ChangeNotifier {
     copyDto.setEntryExpenses(_entryExpenses);
     copyDto._expenses = _expenses;
     return copyDto;
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return super == other;
   }
 }

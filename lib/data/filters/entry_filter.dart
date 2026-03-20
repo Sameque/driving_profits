@@ -24,9 +24,9 @@ class EntryFilter {
     if (statusEq != null) {
       filters.add(
         Filter(
-          column: 'status',
+          column: 'status_id',
           operator: Operator.equal,
-          value: statusEq!.name,
+          value: statusEq!.index,
         ),
       );
     }

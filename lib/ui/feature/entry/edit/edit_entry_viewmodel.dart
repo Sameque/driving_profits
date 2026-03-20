@@ -1,16 +1,21 @@
-import 'package:driving_profits/domain/entry/entry_dto.dart';
 import 'package:flutter/foundation.dart';
-import 'package:driving_profits/data/repositories/entry_repository.dart';
-import 'package:driving_profits/domain/entry/daily_entry.dart';
 import 'package:result_command/result_command.dart';
 import 'package:result_dart/result_dart.dart';
 
+import 'package:driving_profits/data/repositories/entry_repository.dart';
+import 'package:driving_profits/data/repositories/expense_repository.dart';
+import 'package:driving_profits/domain/entry/daily_entry.dart';
+import 'package:driving_profits/domain/entry/entry_dto.dart';
+import 'package:driving_profits/domain/expense/dtos/expense_dto.dart';
+
 class EditEntryViewModel with ChangeNotifier {
   final EntryRepository _repository;
+  final ExpenseRepository _expenseRepository;
 
-  EditEntryViewModel(this._repository);
+  EditEntryViewModel(this._repository, this._expenseRepository);
 
   late final updateCommand = Command1(_updateEntry);
+  late final getExpensesCommand = Command0(_getExpenses);
 
   bool _hasUnsavedChanges = false;
 
@@ -37,5 +42,17 @@ class EditEntryViewModel with ChangeNotifier {
 
     markAsSaved();
     return Success(unit);
+  }
+
+  AsyncResult<List<ExpenseDto>> _getExpenses() async {
+    final result = await _expenseRepository.getAllExpenses();
+
+    final List<ExpenseDto> expenseDtos = result.fold(
+      (expenses) => expenses
+          .map((expense) => ExpenseDto.fromMap(expense.toMap()))
+          .toList(),
+      (e) => [],
+    );
+    return Success(expenseDtos);
   }
 }

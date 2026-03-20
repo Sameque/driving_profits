@@ -1,6 +1,5 @@
 import 'package:driving_profits/domain/entry/daily_entry.dart';
 import 'package:driving_profits/domain/entry/entry_expense/entry_expense_dto.dart';
-import 'package:driving_profits/domain/entry/entry_status.dart';
 
 class EntrySummaryModel {
   late DateTime startDate;

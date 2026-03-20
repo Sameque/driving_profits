@@ -85,9 +85,7 @@ class _AddExpenseDialogWidgetState extends State<AddExpenseDialogWidget> {
                 entryExpense.amount > 0 &&
                 entryExpense.description.isNotEmpty) {
               widget.onAdd(entryExpense);
-              Future.delayed(const Duration(milliseconds: 800), () {
-                Navigator.of(context).pop();
-              });
+              Navigator.of(context).pop();
             }
           },
           child: const Text('Adicionar'),
